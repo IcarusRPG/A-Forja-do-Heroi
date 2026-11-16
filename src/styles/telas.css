@@ -1,0 +1,279 @@
+/* ---------- Carregamento ---------- */
+.tela-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  padding: 16px;
+  background: radial-gradient(ellipse at center, #1a1510 0%, var(--fundo) 70%);
+  cursor: default;
+}
+.loading-logo {
+  width: min(300px, 62vw);
+  opacity: 0;
+  transform: scale(0.97);
+  transition: opacity 1s ease, transform 1.2s ease;
+  filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.8));
+}
+.loading-logo.visivel { opacity: 1; transform: none; }
+
+.barra {
+  width: min(360px, 78vw);
+  display: grid;
+  gap: 0.6rem;
+  justify-items: center;
+  transition: opacity 0.4s ease;
+}
+.barra.some { opacity: 0; }
+.barra-trilho {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(214, 169, 74, 0.12);
+  border: 1px solid rgba(214, 169, 74, 0.25);
+}
+.barra-preenchimento {
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: linear-gradient(90deg, var(--ouro-escuro), var(--ouro), var(--ouro-claro));
+  box-shadow: 0 0 12px var(--ouro-brilho);
+  transition: transform 0.25s ease-out;
+}
+.barra-porcentagem {
+  font-family: var(--fonte-titulo);
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  color: var(--ouro);
+  font-variant-numeric: tabular-nums;
+}
+.loading-comecar {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 1rem 2rem;
+  font-family: var(--fonte-titulo);
+  font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+  letter-spacing: 0.15em;
+  color: var(--ouro-claro);
+  text-shadow: 0 0 18px var(--ouro-brilho);
+  animation: aparecer 0.8s ease, pulsar 2.4s ease-in-out 0.8s infinite;
+}
+@keyframes pulsar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+/* ---------- Vídeo (abertura, prólogo) ---------- */
+.tela-video {
+  background: #000;
+  cursor: pointer;
+  user-select: none;
+}
+.video-cheio {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+.dica-pular {
+  position: absolute;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  color: rgba(243, 238, 229, 0.75);
+  font-size: clamp(0.75rem, 2.4vw, 0.9rem);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+}
+.dica-pular.visivel { opacity: 1; }
+
+.tela-prologo { background: #000; }
+.tela-prologo > .tela-video { position: absolute; inset: 0; }
+
+.tela-sequencia {
+  display: grid;
+  place-items: center;
+  padding: 24px var(--gutter);
+}
+.sequencia-linhas {
+  max-width: 760px;
+  display: grid;
+  gap: 1rem;
+  text-align: center;
+  transition: opacity 1.5s ease;
+}
+.sequencia-linhas.apagando { opacity: 0; }
+.sequencia-linha {
+  font-family: var(--fonte-titulo);
+  font-size: clamp(1rem, 2.6vw, 1.45rem);
+  line-height: 1.5;
+  color: var(--marmore);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 1.4s ease, transform 1.4s ease, color 1.2s ease;
+}
+.sequencia-linha.visivel { opacity: 1; transform: none; }
+.sequencia-linha.visivel:not(:last-child) { color: rgba(217, 209, 195, 0.55); }
+.sequencia-linha.final {
+  margin-top: 0.8rem;
+  font-size: clamp(1.25rem, 3.4vw, 1.9rem);
+  color: var(--ouro-claro);
+  text-shadow: 0 0 24px var(--ouro-brilho);
+}
+
+/* ---------- Menu inicial ---------- */
+.tela-menu { background: #000; overflow: hidden; }
+.menu-wallpaper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 65% center;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 0.9s ease, transform 6s ease-out;
+}
+.menu-sombra {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(6, 5, 4, 0.82) 0%, rgba(6, 5, 4, 0.55) 30%, rgba(6, 5, 4, 0.12) 58%, transparent 75%);
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.menu-conteudo {
+  position: relative;
+  height: 100%;
+  width: min(760px, 58vw);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(1.2rem, 4vh, 2.8rem);
+  padding: max(24px, env(safe-area-inset-top)) var(--gutter) max(24px, env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+}
+.menu-logos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: clamp(0.4rem, 1.5vh, 1rem);
+}
+.menu-logo-icarus {
+  width: 100%;
+  max-height: 38vh;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.85));
+}
+.menu-logo-forja {
+  width: 60%;
+  max-height: 22vh;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.85));
+}
+.menu-logo-icarus, .menu-logo-forja, .menu-botoes {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.menu-botoes {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  width: min(300px, 100%);
+  align-self: center;
+}
+.menu-versao {
+  position: absolute;
+  right: var(--gutter);
+  bottom: max(12px, env(safe-area-inset-bottom));
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(243, 238, 229, 0.45);
+  opacity: 0;
+  transition: opacity 0.6s ease 1.4s;
+}
+/* Entrada: wallpaper → logos → botões (~1,5 s). */
+.tela-menu.entrou .menu-wallpaper { opacity: 1; transform: none; }
+.tela-menu.entrou .menu-sombra { opacity: 1; }
+.tela-menu.entrou .menu-logo-icarus { opacity: 1; transform: none; transition-delay: 0.45s; }
+.tela-menu.entrou .menu-logo-forja { opacity: 1; transform: none; transition-delay: 0.7s; }
+.tela-menu.entrou .menu-botoes { opacity: 1; transform: none; transition-delay: 0.95s; }
+.tela-menu.entrou .menu-versao { opacity: 1; }
+
+/* Celular em pé: logos no topo, botões embaixo, tudo centralizado. */
+@media (max-aspect-ratio: 4/5) {
+  .menu-wallpaper { object-position: 70% center; }
+  .menu-sombra {
+    background: linear-gradient(180deg, rgba(6, 5, 4, 0.78) 0%, rgba(6, 5, 4, 0.35) 38%, rgba(6, 5, 4, 0.2) 55%, rgba(6, 5, 4, 0.8) 100%);
+  }
+  .menu-conteudo {
+    width: 100%;
+    justify-content: space-between;
+    padding-top: max(7vh, env(safe-area-inset-top));
+    padding-bottom: max(6vh, env(safe-area-inset-bottom));
+  }
+  .menu-logo-icarus { width: min(94%, 520px); max-height: 26vh; }
+  .menu-logo-forja { width: min(58%, 320px); }
+  .menu-botoes { width: min(320px, 86%); }
+  .menu-versao { left: 0; right: 0; text-align: center; bottom: max(8px, env(safe-area-inset-bottom)); }
+}
+
+/* Celular deitado: pouco espaço vertical. */
+@media (max-height: 500px) and (min-aspect-ratio: 4/5) {
+  .menu-conteudo { width: min(560px, 54vw); gap: 0.6rem; padding-top: 12px; padding-bottom: 12px; }
+  .menu-logo-icarus { max-height: 30vh; }
+  .menu-logo-forja { max-height: 16vh; }
+  .menu-botoes { gap: 0.4rem; width: min(260px, 100%); }
+  .menu-botoes .btn { min-height: 38px; padding: 0.35em 1em; font-size: 0.9rem; }
+}
+
+/* ---------- Tela "Em breve" ---------- */
+.tela-embreve {
+  display: grid;
+  place-items: center;
+  padding: 24px var(--gutter);
+  background: radial-gradient(ellipse at 30% 40%, #2a1e12 0%, #120d09 55%, #070605 100%);
+  overflow: auto;
+}
+.embreve-conteudo {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 5vw, 4rem);
+  max-width: 900px;
+}
+.embreve-heroi { margin: 0; text-align: center; opacity: 0; transform: translateY(10px); transition: opacity 1s ease, transform 1s ease; }
+.embreve-heroi img {
+  width: clamp(160px, 26vw, 300px);
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--borda);
+  box-shadow: 0 0 40px rgba(214, 169, 74, 0.18), 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+.embreve-heroi figcaption { margin-top: 0.8rem; display: grid; }
+.embreve-nome { font-family: var(--fonte-titulo); font-size: 1.3rem; color: var(--ouro-claro); }
+.embreve-raca { color: var(--texto-suave); font-size: 0.9rem; }
+.embreve-texto { display: grid; gap: 0.6rem; justify-items: start; opacity: 0; transition: opacity 1.2s ease 0.4s; }
+.embreve-capitulo { font-family: var(--fonte-titulo); letter-spacing: 0.3em; text-transform: uppercase; color: var(--ouro); font-size: 0.9rem; }
+.embreve-titulo { font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.1; color: var(--marmore); text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8); }
+.embreve-breve { font-style: italic; color: var(--texto-suave); margin-bottom: 1.4rem; letter-spacing: 0.1em; }
+.tela-embreve.entrou .embreve-heroi { opacity: 1; transform: none; }
+.tela-embreve.entrou .embreve-texto { opacity: 1; }
+
+@media (max-width: 640px) {
+  .embreve-conteudo { flex-direction: column; text-align: center; }
+  .embreve-texto { justify-items: center; }
+}
