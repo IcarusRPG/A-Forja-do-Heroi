@@ -1,0 +1,10 @@
+{
+  "arake": {
+    "m": ["Aldren", "Bastian", "Caio Venner", "Dario", "Edran", "Feliks", "Gaspar", "Ivo Marrow", "Lucan", "Tomas Brenn"],
+    "f": ["Alina", "Brisa", "Celina Venner", "Dalia", "Elora", "Fiora", "Helena Marrow", "Isadora", "Liana", "Selene Brenn"]
+  },
+  "azakar": {
+    "m": ["Azrael", "Brakkus", "Caim", "Dravon", "Esdras", "Malkor", "Nyx'ar", "Sarvek", "Thalor", "Zevrin"],
+    "f": ["Ashara", "Belith", "Cyrene", "Dhalia", "Ezra'na", "Lilith", "Morwen", "Nerys", "Sahrana", "Zaphira"]
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "_nota": "Gerado a partir de IcarusSystem/tools/dados/classes.json. Arcanista: só a linhagem Mago na demo. reliquia: a definir na fase da Forja.",
+  "classes": [
+    {
+      "id": "guerreiro",
+      "nome": "Guerreiro",
+      "papel": "Combatente Especialista",
+      "jogavelDemo": true,
+      "pv": {
+        "inicial": 20,
+        "porNivel": 5,
+        "atributo": "CON"
+      },
+      "pm": {
+        "inicial": 3,
+        "porNivel": 3,
+        "atributo": null,
+        "atributoSoNoPrimeiroNivel": false,
+        "texto": "3 por nível (classe não conjuradora: sem atributo-chave de PM)"
+      },
+      "atributoChave": "Força (para CD de habilidades de Guerreiro)",
+      "periciasObrigatorias": "Fortitude e (Luta ou Pontaria)",
+      "reliquia": null,
+      "texto": "Todo exército, toda caravana e toda taverna de beira de estrada guarda um guerreiro. Não há dogma, escola ou juramento que una todos eles. O que os une é a prática: anos de treino, de cicatrizes e de lutas que ensinaram o que funciona e o que mata."
+    },
+    {
+      "id": "paladino",
+      "nome": "Paladino",
+      "papel": "Campeão Divino",
+      "jogavelDemo": true,
+      "pv": {
+        "inicial": 18,
+        "porNivel": 4,
+        "atributo": "CON"
+      },
+      "pm": {
+        "inicial": 4,
+        "porNivel": 4,
+        "atributo": null,
+        "atributoSoNoPrimeiroNivel": false,
+        "texto": "4 por nível (classe não conjuradora: sem atributo-chave de PM)"
+      },
+      "atributoChave": "Carisma (usado nas habilidades da classe e na CD das magias, se você tiver Preces de Guerra)",
+      "periciasObrigatorias": "Luta e Vontade",
+      "reliquia": null,
+      "texto": "O paladino é o devoto que escolheu a espada em vez do altar. Onde o clérigo reza ao lado da batalha, o paladino reza dentro dela: carrega a fé nos ombros, o escudo no braço e o juramento na boca. Não precisa de templo; a divindade vai com ele."
+    },
+    {
+      "id": "ladino",
+      "nome": "Ladino",
+      "papel": "Especialista em Furtividade",
+      "jogavelDemo": true,
+      "pv": {
+        "inicial": 16,
+        "porNivel": 4,
+        "atributo": "CON"
+      },
+      "pm": {
+        "inicial": 4,
+        "porNivel": 4,
+        "atributo": null,
+        "atributoSoNoPrimeiroNivel": false,
+        "texto": "4 por nível"
+      },
+      "atributoChave": "Destreza",
+      "periciasObrigatorias": "Furtividade e Prestidigitação",
+      "reliquia": null,
+      "texto": "Todo mundo julga o ladino pelo que ele leva embora. Poucos reparam no que ele precisou saber para chegar até lá: a hora certa, o passo certo, a palavra certa. O ladino não vence o inimigo mais forte; vence o mais distraído, e faz com que todos estejam distraídos."
+    },
+    {
+      "id": "arcanista",
+      "nome": "Arcanista (Mago)",
+      "papel": "Conjurador Arcano",
+      "jogavelDemo": true,
+      "pv": {
+        "inicial": 12,
+        "porNivel": 4,
+        "atributo": "CON"
+      },
+      "pm": {
+        "inicial": 5,
+        "porNivel": 5,
+        "atributo": "INT",
+        "atributoSoNoPrimeiroNivel": true,
+        "texto": "5 + Inteligência no 1º nível; +5 por nível seguinte"
+      },
+      "atributoChave": "Inteligência",
+      "periciasObrigatorias": "Misticismo e Vontade",
+      "reliquia": null,
+      "texto": "A mana corre por tudo, mas poucos aprendem a dobrá-la. O arcanista é quem aprendeu. Uns a conquistaram linha por linha, com livros, noites em claro e fórmulas que falharam mil vezes. Outros nasceram com ela correndo nas veias, herança de seres antigos que o mundo já não vê. E há os que descobriram que o próprio sangue guarda mana, e que ela não pede licença a ninguém."
+    },
+    {
+      "id": "monge",
+      "nome": "Monge",
+      "papel": "Combatente Marcial",
+      "jogavelDemo": true,
+      "pv": {
+        "inicial": 18,
+        "porNivel": 4,
+        "atributo": "CON"
+      },
+      "pm": {
+        "inicial": 4,
+        "porNivel": 4,
+        "atributo": "SAB",
+        "atributoSoNoPrimeiroNivel": true,
+        "texto": "4 + Sabedoria no 1º nível; +4 por nível seguinte"
+      },
+      "atributoChave": "Sabedoria",
+      "periciasObrigatorias": "Acrobacia e Fortitude",
+      "reliquia": null,
+      "texto": "O monge não carrega armas porque o corpo dele já é a arma. Anos de disciplina, respiração e silêncio fizeram dos punhos, dos pés e da mente uma só ferramenta, e é a mente que decide o golpe: quem controla a si mesmo controla a luta."
+    },
+    {
+      "id": "pistoleiro",
+      "nome": "Pistoleiro",
+      "papel": "Combate à Distância",
+      "jogavelDemo": false,
+      "pv": {
+        "inicial": 16,
+        "porNivel": 4,
+        "atributo": "CON"
+      },
+      "pm": {
+        "inicial": 4,
+        "porNivel": 4,
+        "atributo": null,
+        "atributoSoNoPrimeiroNivel": false,
+        "texto": "4 por nível"
+      },
+      "atributoChave": "Destreza",
+      "periciasObrigatorias": "Pontaria e Reflexos",
+      "reliquia": null,
+      "texto": "A pólvora trocou o duelo de espadas por algo mais honesto: quem atira primeiro e melhor volta para casa. O pistoleiro não confia em encantos nem em ancestrais. Confia na mão firme, no cano limpo e no segundo exato em que o dedo aperta o gatilho."
+    },
+    {
+      "id": "patrulheiro",
+      "nome": "Patrulheiro",
+      "papel": "Explorador e Caçador",
+      "jogavelDemo": false,
+      "pv": {
+        "inicial": 18,
+        "porNivel": 4,
+        "atributo": "CON"
+      },
+      "pm": {
+        "inicial": 4,
+        "porNivel": 4,
+        "atributo": null,
+        "atributoSoNoPrimeiroNivel": false,
+        "texto": "4 por nível"
+      },
+      "atributoChave": "Destreza",
+      "periciasObrigatorias": "Sobrevivência e (Luta ou Pontaria)",
+      "reliquia": null,
+      "texto": "A floresta não perdoa, e o patrulheiro aprendeu a falar a língua dela. Lê uma pegada como outros leem uma carta, ouve o galho que quebra antes do inimigo perceber que o pisou, e sabe que toda caçada se vence com paciência: escolher a presa, segui-la e acertar uma única vez no lugar certo."
+    },
+    {
+      "id": "mistico",
+      "nome": "Místico",
+      "papel": "Conjurador Espiritual",
+      "jogavelDemo": false,
+      "pv": {
+        "inicial": 14,
+        "porNivel": 4,
+        "atributo": "CON"
+      },
+      "pm": {
+        "inicial": 5,
+        "porNivel": 5,
+        "atributo": "SAB",
+        "atributoSoNoPrimeiroNivel": true,
+        "texto": "5 + Sabedoria no 1º nível; +5 por nível seguinte"
+      },
+      "atributoChave": "Sabedoria",
+      "periciasObrigatorias": "Misticismo e Vontade",
+      "reliquia": null,
+      "texto": "O místico nasceu com um pé em cada mundo. Enquanto o clérigo pede e o arcanista calcula, o místico escuta: o fogo tem um temperamento, a água tem uma memória, a pedra tem paciência e o vento não tem dono. Ele aprendeu a conversar com cada um deles até o elemento passar a responder pelo que ele quer, não pelo que ele manda."
+    }
+  ]
+}

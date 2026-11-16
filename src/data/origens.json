@@ -1,0 +1,49 @@
+{
+  "origens": [
+    {
+      "id": "estudioso",
+      "nome": "Estudioso",
+      "texto": "Livros, bibliotecas e debates. Você sabe a data da batalha, o nome do rei e a diferença entre as duas versões da lenda.",
+      "pericia": "Misticismo",
+      "bonusPericia": 2,
+      "poder": { "nome": "Conhecimento Útil", "descricao": "Uma vez por cena, você faz uma pergunta ao Mestre sobre uma criatura, local ou objeto que consiga ver, e recebe uma informação útil e verdadeira." },
+      "itens": ["Estojo de escrita completo", "Livro raro de estudo"]
+    },
+    {
+      "id": "religioso",
+      "nome": "Religioso",
+      "texto": "Suas lembranças são de orações, cânticos e de cuidar do altar.",
+      "pericia": "Religião",
+      "bonusPericia": 2,
+      "poder": { "nome": "Refúgio da Fé", "descricao": "Pousada simples e informações em qualquer templo, para você e até 4 aliados, uma vez por cidade." },
+      "itens": ["Símbolo sagrado", "Traje de cerimônia"]
+    },
+    {
+      "id": "campones",
+      "nome": "Camponês",
+      "texto": "Dias de sol a sol na terra. Você conhece o preço do pão e o peso de uma enxada.",
+      "pericia": "Adestramento",
+      "bonusPericia": 2,
+      "poder": { "nome": "Corpo Calejado", "descricao": "Uma vez por dia, você pode rolar de novo um teste de Fortitude que acabou de falhar." },
+      "itens": ["Enxada", "Sacola de grãos e sementes"]
+    },
+    {
+      "id": "curandeiro",
+      "nome": "Curandeiro",
+      "texto": "Remédio de ervas, febre e osso quebrado: você era quem chamavam na madrugada.",
+      "pericia": "Cura",
+      "bonusPericia": 2,
+      "poder": { "nome": "Primeiros Socorros", "descricao": "Uma vez por cena, você estabiliza um aliado com 0 PV e ele recupera 1d6 PV + metade do seu nível." },
+      "itens": ["Maleta de curandeiro", "Saco de ervas"]
+    },
+    {
+      "id": "guarda",
+      "nome": "Guarda",
+      "texto": "Você patrulhava muralhas, vigiava portões e separava briga de taverna.",
+      "pericia": "Investigação",
+      "bonusPericia": 2,
+      "poder": { "nome": "Faro para Mentiras", "descricao": "Gastando 2 PM, você sabe se a resposta que uma criatura acabou de dar foi uma mentira." },
+      "itens": ["Apito", "Algemas"]
+    }
+  ]
+}

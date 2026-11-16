@@ -1,0 +1,124 @@
+{
+  "flexao": {
+    "heroi": { "m": "herói", "f": "heroína" },
+    "Heroi": { "m": "Herói", "f": "Heroína" },
+    "o": { "m": "o", "f": "a" },
+    "escolhido": { "m": "escolhido", "f": "escolhida" },
+    "pronto": { "m": "pronto", "f": "pronta" },
+    "seu": { "m": "seu", "f": "sua" },
+    "Seu": { "m": "Seu", "f": "Sua" },
+    "do": { "m": "do", "f": "da" }
+  },
+  "loading": {
+    "carregando": "Carregando",
+    "comecar": "Clique para começar",
+    "comecarToque": "Toque para começar"
+  },
+  "video": {
+    "pular": "Clique na tela para pular a apresentação",
+    "pularToque": "Toque na tela para pular a apresentação"
+  },
+  "menu": {
+    "novoJogo": "Novo Jogo",
+    "continuar": "Continuar",
+    "opcoes": "Opções",
+    "creditos": "Créditos",
+    "versao": "Versão DEMO"
+  },
+  "opcoes": {
+    "titulo": "Opções",
+    "musica": "Volume da música",
+    "efeitos": "Volume dos efeitos",
+    "mudo": "Sem som",
+    "fechar": "Fechar"
+  },
+  "creditos": {
+    "titulo": "Créditos",
+    "linhas": [
+      "Criado por Adam Calaça",
+      "Baseado no livro de Izor e no sistema Icarus RPG"
+    ],
+    "extras": [],
+    "fechar": "Fechar"
+  },
+  "criacao": {
+    "titulo": "Forje {o} {seu} {heroi}",
+    "passos": ["Gênero", "Raça", "Origem", "Nome", "Atributos", "Revisão"],
+    "voltar": "Voltar",
+    "avancar": "Avançar",
+    "menu": "Menu",
+    "genero": {
+      "titulo": "Quem atende ao chamado?",
+      "m": "Homem",
+      "f": "Mulher",
+      "texto": "Essa escolha muda apenas como o mundo de Icarus se refere a você."
+    },
+    "raca": {
+      "titulo": "De que povo você vem?",
+      "indisponivel": "Indisponível na versão DEMO",
+      "naPratica": "Na prática",
+      "variante": "Escolha a sua centelha",
+      "varianteObrigatoria": "Escolha Luz ou Sombra para avançar."
+    },
+    "origem": {
+      "titulo": "Quem você era antes da aventura?",
+      "pericia": "Perícia",
+      "poder": "Poder",
+      "itens": "Itens"
+    },
+    "nome": {
+      "titulo": "Como chamam você?",
+      "placeholder": "Nome {do} {heroi}",
+      "sugerir": "Sugerir nome",
+      "regra": "De 2 a 24 caracteres."
+    },
+    "atributos": {
+      "titulo": "Distribua seus atributos",
+      "pontos": "Pontos",
+      "comprado": "Comprado",
+      "final": "Final",
+      "custo": "Custo: +1 = 1 · +2 = 2 · +3 = 4 · +4 = 7. Você pode baixar um atributo para −1 e ganhar 1 ponto.",
+      "bonusArake": "Bônus de Araké: escolha três atributos diferentes para receber +1.",
+      "escolha": "Bônus {n}",
+      "gasteTudo": "Gaste todos os pontos para avançar.",
+      "escolhaBonus": "Escolha os três bônus de Araké para avançar."
+    },
+    "revisao": {
+      "titulo": "{Seu} {heroi} está {pronto}",
+      "confirmar": "Confirmar {heroi}"
+    },
+    "resumo": {
+      "genero": "Gênero",
+      "raca": "Raça",
+      "origem": "Origem",
+      "nome": "Nome",
+      "vazio": "—"
+    }
+  },
+  "atributos": {
+    "FOR": "Força",
+    "DES": "Destreza",
+    "CON": "Constituição",
+    "INT": "Inteligência",
+    "SAB": "Sabedoria",
+    "CAR": "Carisma"
+  },
+  "prologo": {
+    "linhas": [
+      "Antes das espadas… havia os deuses.",
+      "Alfars e Baldurs. Travaram guerras que os livros mal ousam contar…",
+      "e ainda hoje observam Icarus, em silêncio.",
+      "Em Füllmun, uma vila onde nada nunca acontecia, uma criança adotada cresceu entre livros e lendas…",
+      "e com um sonho que voltava todas as noites.",
+      "Mãos divinas apontando. Uma voz que começa a dizer… \"O escolhido…\"",
+      "E então, o céu escureceu.",
+      "Faça o seu juramento."
+    ]
+  },
+  "emBreve": {
+    "capitulo": "Capítulo 01",
+    "titulo": "Amanhecer Tardio",
+    "emBreve": "Em breve",
+    "voltar": "Voltar ao menu"
+  }
+}

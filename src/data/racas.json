@@ -1,0 +1,80 @@
+{
+  "racas": [
+    {
+      "id": "arake",
+      "nome": "Araké",
+      "classico": "Humano",
+      "significado": "Os Filhos da Terra",
+      "jogavelDemo": true,
+      "texto": "Os Araké estão em toda parte: nos campos, nas cidades, nos exércitos e nos templos. Não têm a longevidade dos Ayoran nem a força dos Ogbari, mas têm o que nenhum outro povo tem na mesma medida: aprendem qualquer coisa e se reinventam a cada geração.",
+      "naPratica": "+1 em três atributos à escolha; especialista em uma perícia; Improviso, para testar como treinado por 2 PM.",
+      "atributos": { "tipo": "escolha", "quantidade": 3, "valor": 1 }
+    },
+    {
+      "id": "azakar",
+      "nome": "Azakar",
+      "classico": "Tiefling",
+      "significado": "Os Marcados pelo Abismo",
+      "jogavelDemo": true,
+      "texto": "Nascem com chifres, cauda e olhos que brilham no escuro, e com uma marca que ninguém escolheu. Uns carregam a centelha da Luz; outros, a das Sombras. Muitas vilas os recebem com desconfiança, mas quem convive com um Azakar descobre que a marca diz de onde ele veio, não quem ele é.",
+      "naPratica": "CAR +2, INT +1, CON −1; variante Luz (eletricidade, +2 em Diplomacia e Intuição) ou Sombra (ácido, +2 em Enganação e Furtividade).",
+      "atributos": { "tipo": "fixo", "valores": { "CAR": 2, "INT": 1, "CON": -1 } },
+      "variantes": [
+        {
+          "id": "luz",
+          "nome": "Luz",
+          "texto": "A centelha da Luz corre em você. Resistência e afinidade com eletricidade; +2 em Diplomacia e Intuição.",
+          "elemento": "eletricidade",
+          "pericias": { "Diplomacia": 2, "Intuição": 2 }
+        },
+        {
+          "id": "sombra",
+          "nome": "Sombra",
+          "texto": "A centelha das Sombras corre em você. Resistência e afinidade com ácido; +2 em Enganação e Furtividade.",
+          "elemento": "ácido",
+          "pericias": { "Enganação": 2, "Furtividade": 2 }
+        }
+      ]
+    },
+    {
+      "id": "dorun",
+      "nome": "Dorun",
+      "classico": "Anão",
+      "significado": "Os Guardiões da Pedra",
+      "jogavelDemo": false,
+      "texto": "Teimosos como a montanha onde nascem, os Dorun medem a vida pelo que constroem e pelo que protegem. Para eles, um martelo serve tanto para erguer uma casa quanto para defendê-la."
+    },
+    {
+      "id": "ayoran",
+      "nome": "Ayoran",
+      "classico": "Elfo",
+      "significado": "Os Primevos",
+      "jogavelDemo": false,
+      "texto": "O povo mais antigo de Icarus guarda nas veias uma mana que os outros precisam buscar. Movem-se como quem dança e lutam como quem escreve: com precisão e sem pressa."
+    },
+    {
+      "id": "ogbari",
+      "nome": "Ogbari",
+      "classico": "Orc",
+      "significado": "Os Filhos da Guerra",
+      "jogavelDemo": false,
+      "texto": "Nasceram em terras onde só o forte come, e aprenderam cedo a ser fortes. Por trás das presas, muitos guardam uma lealdade que nenhum contrato compra."
+    },
+    {
+      "id": "aramaku",
+      "nome": "Ara'Maku",
+      "classico": "Troll",
+      "significado": "Os Filhos da Colheita",
+      "jogavelDemo": false,
+      "texto": "Para os Ara'Maku, nada se toma sem devolver. Cada caça, cada colheita e cada vitória é seguida de um rito de gratidão, e é dessa reciprocidade que tiram a própria força."
+    },
+    {
+      "id": "kirai",
+      "nome": "Kirai",
+      "classico": "Halfling",
+      "significado": "Os Peregrinos",
+      "jogavelDemo": false,
+      "texto": "Pequenos, curiosos e sempre de partida, os Kirai acreditam que a sorte acompanha quem sorri para a estrada. Conhecem um pouco de cada lugar e um amigo em cada vila."
+    }
+  ]
+}
