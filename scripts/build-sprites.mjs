@@ -13,6 +13,7 @@ import { mkdir, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { colar, idx, ler, limparFundo, nova, reduzir, reduzirPaleta, salvarPng } from './sprites-comum.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ENTRADA = path.join(ROOT, 'assets-src', 'sprites');
@@ -21,8 +22,6 @@ const PREVIAS = path.join(ROOT, 'tests', 'screenshots', 'sprites');
 
 const QUADRO = 48;
 const ALTURA_ALVO = 46;
-const LIMIAR_ALPHA = 110;
-const CORES = 28;
 
 /**
  * Ordem das vistas em cada folha: [baixo, esquerda, direita, cima] → quadrante (coluna, linha).
@@ -31,42 +30,6 @@ const CORES = 28;
 const ORDEM_PADRAO = { baixo: [0, 0], esquerda: [1, 0], direita: [0, 1], cima: [1, 1] };
 const ORDEM_ESPECIAL = {};
 const DIRECOES = ['baixo', 'esquerda', 'direita', 'cima'];
-
-// ---------- imagem em memória: { w, h, d: Uint8ClampedArray RGBA } ----------
-const nova = (w, h) => ({ w, h, d: new Uint8ClampedArray(w * h * 4) });
-const idx = (img, x, y) => (y * img.w + x) * 4;
-
-async function ler(arquivo) {
-  const { data, info } = await sharp(arquivo).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  return { w: info.width, h: info.height, d: new Uint8ClampedArray(data) };
-}
-
-/** 1. Fundo: alpha < 128 vira transparente; o branco ligado às bordas some (flood fill). */
-function limparFundo(img) {
-  const { w, h, d } = img;
-  const branco = (i) => d[i] > 225 && d[i + 1] > 225 && d[i + 2] > 225;
-  for (let i = 0; i < d.length; i += 4) if (d[i + 3] < 128) d[i + 3] = 0;
-  const visto = new Uint8Array(w * h);
-  const pilha = [];
-  const empurrar = (x, y) => {
-    if (x < 0 || y < 0 || x >= w || y >= h) return;
-    const p = y * w + x;
-    if (visto[p]) return;
-    const i = p * 4;
-    if (d[i + 3] !== 0 && !branco(i)) return;
-    visto[p] = 1;
-    pilha.push(p);
-  };
-  for (let x = 0; x < w; x++) { empurrar(x, 0); empurrar(x, h - 1); }
-  for (let y = 0; y < h; y++) { empurrar(0, y); empurrar(w - 1, y); }
-  while (pilha.length) {
-    const p = pilha.pop();
-    d[p * 4 + 3] = 0;
-    const x = p % w, y = (p - x) / w;
-    empurrar(x + 1, y); empurrar(x - 1, y); empurrar(x, y + 1); empurrar(x, y - 1);
-  }
-  for (let i = 0; i < d.length; i += 4) if (d[i + 3] === 0) d[i] = d[i + 1] = d[i + 2] = 0;
-}
 
 /**
  * 2. Separa as 4 vistas. Algumas folhas têm a cabeça de baixo invadindo a metade de cima (juba,
@@ -117,60 +80,6 @@ function separarVistas(img) {
   };
 }
 
-/** 4. Reduz (Lanczos) e aplica o limiar de alpha. */
-async function reduzir(vista, fator) {
-  const w = Math.max(1, Math.round(vista.w * fator));
-  const h = Math.max(1, Math.round(vista.h * fator));
-  const { data } = await sharp(Buffer.from(vista.d.buffer), { raw: { width: vista.w, height: vista.h, channels: 4 } })
-    .resize(w, h, { kernel: 'lanczos3', fit: 'fill' })
-    .raw().toBuffer({ resolveWithObject: true });
-  const r = { w, h, d: new Uint8ClampedArray(data) };
-  for (let i = 0; i < r.d.length; i += 4) {
-    if (r.d[i + 3] > LIMIAR_ALPHA) r.d[i + 3] = 255;
-    else r.d[i] = r.d[i + 1] = r.d[i + 2] = r.d[i + 3] = 0;
-  }
-  return r;
-}
-
-/** Reduz a paleta das 4 vistas juntas (paleta única por personagem). */
-async function reduzirPaleta(vistas) {
-  const largura = vistas.reduce((s, v) => s + v.w + 1, 0);
-  const altura = Math.max(...vistas.map((v) => v.h));
-  const tira = nova(largura, altura);
-  let x0 = 0;
-  for (const v of vistas) { colar(tira, v, x0, 0); x0 += v.w + 1; }
-  const png = await sharp(Buffer.from(tira.d.buffer), { raw: { width: largura, height: altura, channels: 4 } })
-    .png({ palette: true, colors: CORES, dither: 0, effort: 10 }).toBuffer();
-  const q = await ler(png);
-  x0 = 0;
-  return vistas.map((v) => {
-    const r = nova(v.w, v.h);
-    for (let y = 0; y < v.h; y++) for (let x = 0; x < v.w; x++) {
-      const a = idx(q, x0 + x, y), b = idx(r, x, y);
-      if (q.d[a + 3] > 127) { r.d[b] = q.d[a]; r.d[b + 1] = q.d[a + 1]; r.d[b + 2] = q.d[a + 2]; r.d[b + 3] = 255; }
-    }
-    x0 += v.w + 1;
-    return r;
-  });
-}
-
-/** Cola `src` em `dst` (só pixels opacos), com filtro opcional de linhas/colunas e deslocamento por linha. */
-function colar(dst, src, dx, dy, { linhas, colunas, desloc } = {}) {
-  for (let y = 0; y < src.h; y++) {
-    if (linhas && (y < linhas[0] || y >= linhas[1])) continue;
-    const sx = desloc ? desloc(y) : 0;
-    for (let x = 0; x < src.w; x++) {
-      if (colunas && (x < colunas[0] || x >= colunas[1])) continue;
-      const a = idx(src, x, y);
-      if (src.d[a + 3] === 0) continue;
-      const tx = dx + x + sx, ty = dy + y;
-      if (tx < 0 || ty < 0 || tx >= dst.w || ty >= dst.h) continue;
-      const b = idx(dst, tx, ty);
-      for (let c = 0; c < 4; c++) dst.d[b + c] = src.d[a + c];
-    }
-  }
-}
-
 /** 5–7. Monta os 4 quadros de uma direção. */
 function quadrosDaDirecao(v, direcao) {
   const ox = Math.floor((QUADRO - v.w) / 2);
@@ -201,12 +110,6 @@ function quadrosDaDirecao(v, direcao) {
     quadros.push(q);
   }
   return quadros;
-}
-
-async function salvarPng(img, arquivo, escala = 1) {
-  let s = sharp(Buffer.from(img.d.buffer), { raw: { width: img.w, height: img.h, channels: 4 } });
-  if (escala !== 1) s = s.resize(img.w * escala, img.h * escala, { kernel: 'nearest' });
-  await s.png({ compressionLevel: 9 }).toFile(arquivo);
 }
 
 async function salvarGif(folha, arquivo) {
@@ -257,8 +160,10 @@ async function processar(arquivo) {
 
 await mkdir(SAIDA, { recursive: true });
 await mkdir(PREVIAS, { recursive: true });
-const arquivos = (await readdir(ENTRADA)).filter((f) => /^[a-z]+-[mf]\.png$/.test(f)).sort();
-if (arquivos.length !== 8) console.warn(`  Atenção: esperava 8 folhas, achei ${arquivos.length}.`);
+// Heróis: <raca>-<m|f>.png; NPCs: <id>.png (artho, nyme…). Saída: chibi-<nome>.png.
+const arquivos = (await readdir(ENTRADA)).filter((f) => /^[a-z]+(-[mf])?\.png$/.test(f)).sort();
+const herois = arquivos.filter((f) => /-[mf]\.png$/.test(f));
+if (herois.length !== 8) console.warn(`  Atenção: esperava 8 folhas de herói, achei ${herois.length}.`);
 const avisos = [];
 for (const f of arquivos) avisos.push(...(await processar(f)));
 if (avisos.length) console.warn('  AVISOS:\n   - ' + avisos.join('\n   - '));

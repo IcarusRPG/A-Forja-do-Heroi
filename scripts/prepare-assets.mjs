@@ -122,25 +122,70 @@ async function wallpaper() {
   console.log(`  wallpaper "${orig}" → menu.webp (${fmt(await sizeOf(out))})`);
 }
 
+/** Nome comparável: minúsculas, sem acento, sem espaços extras. */
+const chave = (n) => nfc(n).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+
+/** Músicas: cada arquivo da pasta de músicas tem um destino fixo em public/assets/music. */
+const MUSICAS = [
+  ['menu e tela de personagem', 'the-first-choice'],
+  ['sonho', 'sonho'],
+  ['fullmun 01', 'fullmun-01'],
+  ['fullmun 02', 'fullmun-02'],
+  ['porco azul de fullmun', 'tensao-porco'],
+  ['vitoria', 'vitoria'],
+  ['gameover', 'game-over'],
+];
+
 async function musica() {
-  const dir = path.join(SRC, (await readdir(SRC)).find((n) => nfc(n).toLowerCase().startsWith('m') && nfc(n).toLowerCase().includes('sica')));
+  const dir = path.join(SRC, (await readdir(SRC)).find((n) => chave(n) === 'musicas'));
   const todos = (await readdir(dir)).filter((n) => /\.(mp3|ogg|wav|m4a|flac)$/i.test(n));
-  // Faixa opcional do sonho dos deuses: qualquer arquivo cujo nome comece com "sonho".
-  const sonho = todos.find((n) => nfc(n).toLowerCase().startsWith('sonho'));
-  const audios = todos.filter((n) => n !== sonho);
-  if (sonho) {
-    const out = path.join(OUT, 'music', `sonho${path.extname(sonho).toLowerCase()}`);
-    await ensureDir(path.dirname(out));
-    await copyFile(path.join(dir, sonho), out);
-    console.log(`  música do sonho "${sonho}" → ${path.basename(out)}`);
-  }
-  if (audios.length !== 1) console.warn(`  atenção: ${audios.length} arquivos de áudio em ${dir}; usando o primeiro.`);
-  const orig = audios[0];
   const outDir = path.join(OUT, 'music');
   await ensureDir(outDir);
-  const out = path.join(outDir, `the-first-choice${path.extname(orig).toLowerCase()}`);
-  await copyFile(path.join(dir, orig), out);
-  console.log(`  música "${orig}" → ${path.basename(out)} (${fmt(await sizeOf(out))})`);
+  for (const [nome, destino] of MUSICAS) {
+    const orig = todos.find((n) => chave(path.parse(n).name) === nome);
+    if (!orig) { console.warn(`  música não encontrada: "${nome}"`); continue; }
+    const out = path.join(outDir, `${destino}${path.extname(orig).toLowerCase()}`);
+    await copyFile(path.join(dir, orig), out);
+    console.log(`  música "${orig}" → ${path.basename(out)} (${fmt(await sizeOf(out))})`);
+  }
+  for (const n of todos) if (!MUSICAS.some(([nome]) => chave(path.parse(n).name) === nome)) console.warn(`  música sem destino (ignorada): ${n}`);
+}
+
+/** Capítulo 01: cenas, retratos de NPC, ameaças, fundo de batalha e tela de game over. */
+async function capitulo01() {
+  const IMG = path.join(SRC, 'img');
+  const pasta = async (nome) => path.join(IMG, (await readdir(IMG)).find((n) => chave(n) === nome));
+  const converter = async (orig, out, { largura, qualidade = 85, png = false } = {}) => {
+    await ensureDir(path.dirname(out));
+    let s = sharp(orig);
+    if (largura) s = s.resize({ width: largura, withoutEnlargement: true });
+    // Pixel art: PNG sem perda e sem reamostragem.
+    await (png ? s.png({ compressionLevel: 9, palette: false }) : s.webp({ quality: qualidade, alphaQuality: 90 })).toFile(out);
+    console.log(`  ${path.basename(orig)} → ${path.relative(OUT, out).split(path.sep).join('/')} (${fmt(await sizeOf(out))})`);
+  };
+  // Cenas 16:9
+  const cenas = await pasta('cenas');
+  for (const f of (await readdir(cenas)).filter((n) => /\.png$/i.test(n)))
+    await converter(path.join(cenas, f), path.join(OUT, 'img', 'cenas', `${chave(path.parse(f).name).replace(/\s+/g, '-')}.webp`), { qualidade: 82 });
+  // Bustos de NPC (fundo transparente)
+  const RETRATOS = { 'artho-portrait': 'artho', aylin: 'aylin', gerulf: 'gerulf', kobanu: 'kobanu', 'nyme-portrait': 'nyme', 'osric balanca': 'osric', 'vo hulda': 'vo-hulda' };
+  const retratos = await pasta('portraits');
+  for (const f of (await readdir(retratos)).filter((n) => /\.png$/i.test(n))) {
+    const id = RETRATOS[chave(path.parse(f).name)];
+    if (!id) { console.warn(`  retrato sem id: ${f}`); continue; }
+    await converter(path.join(retratos, f), path.join(OUT, 'img', 'retratos', `npc-${id}.webp`), { largura: 768 });
+  }
+  // Ameaças (bestiário)
+  const ameacas = await pasta('ameacas');
+  for (const f of (await readdir(ameacas)).filter((n) => /\.png$/i.test(n)))
+    await converter(path.join(ameacas, f), path.join(OUT, 'img', 'ameacas', `${chave(path.parse(f).name)}.webp`), { largura: 900 });
+  // Fundo de batalha (pixel art: PNG sem perda)
+  const batalha = await pasta('batalha');
+  await converter(path.join(batalha, 'fundo-chiqueiro.png'), path.join(OUT, 'img', 'batalha', 'fundos', 'chiqueiro.png'), { png: true });
+  // Game over
+  const wall = await pasta('wallpapers');
+  const go = (await readdir(wall)).find((n) => chave(n).startsWith('game-over'));
+  if (go) await converter(path.join(wall, go), path.join(OUT, 'img', 'telas', 'game-over.webp'));
 }
 
 /** Mapas navegáveis: PNG → WebP na resolução original. Aceita nomes com extensão dupla (.png.png). */
@@ -220,6 +265,7 @@ console.log('Favicon…'); await favicon();
 console.log('Wallpaper…'); await wallpaper();
 console.log('Mapas…'); await mapas();
 console.log('Música…'); await musica();
+console.log('Capítulo 01…'); await capitulo01();
 console.log('Vídeo…'); await video();
 await conferirLimite();
 console.log(process.exitCode ? 'Terminou com problemas.' : 'Pronto.');

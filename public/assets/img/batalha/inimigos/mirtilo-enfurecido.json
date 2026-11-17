@@ -1,0 +1,23 @@
+{
+  "quadro": {
+    "largura": 136,
+    "altura": 105
+  },
+  "base": 103,
+  "poses": {
+    "parado": 0,
+    "mordida": 1,
+    "investida": 2,
+    "atingido": 3,
+    "exausto": 4,
+    "fugindo": 5
+  },
+  "altura": {
+    "parado": 93,
+    "mordida": 83,
+    "investida": 90,
+    "atingido": 101,
+    "exausto": 84,
+    "fugindo": 95
+  }
+}

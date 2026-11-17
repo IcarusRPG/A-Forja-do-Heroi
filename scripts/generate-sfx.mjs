@@ -218,6 +218,95 @@ const efeitos = {
     tom(b, { freq: 46, freqFim: 34, dur: 1.0, amp: 0.55, ataque: 0.05, decai: 0.3 });
     return normalizar(b, 0.8);
   },
+
+  // ---------- Capítulo 01 ----------
+  // d20 rolando na mesa: batidinhas de madeira que vão espaçando, e o assentar final (~1 s)
+  'dice-roll': () => {
+    const b = buffer(1.1);
+    let t = 0, intervalo = 0.045;
+    while (t < 0.9) {
+      const f = 1400 + rand() * 900;
+      ruido(b, { inicio: t, dur: 0.05, amp: 0.55, ataque: 0.001, decai: 0.012, corte: 5000, passaAlta: 700 });
+      tom(b, { inicio: t, freq: f, freqFim: f * 0.8, dur: 0.05, amp: 0.25, ataque: 0.001, decai: 0.015, forma: 'tri' });
+      t += intervalo;
+      intervalo *= 1.16;
+    }
+    ruido(b, { inicio: 0.95, dur: 0.12, amp: 0.7, ataque: 0.001, decai: 0.03, corte: 2500, passaAlta: 300 });
+    return normalizar(b, 0.7);
+  },
+  // Grito agudo de criança, curto (~0,8 s): vogal aguda com vibrato e ruído de fôlego
+  'grito-crianca': () => {
+    const b = buffer(0.85);
+    const n = b.length;
+    let fase = 0;
+    for (let i = 0; i < n; i++) {
+      const t = i / SR;
+      const f = 980 + 260 * Math.sin(Math.min(1, t / 0.12) * Math.PI / 2) - 180 * (t / 0.85) + 18 * Math.sin(TAU * 7 * t);
+      fase += f / SR;
+      const x = TAU * fase;
+      // Formantes aproximados de "ah" agudo
+      const s = Math.sin(x) * 0.6 + Math.sin(2 * x) * 0.35 + Math.sin(3 * x) * 0.22 + Math.sin(4 * x) * 0.1;
+      b[i] += s * env(t, 0.03, 0.45) * 0.6;
+    }
+    ruido(b, { dur: 0.8, amp: 0.12, ataque: 0.02, decai: 0.3, corte: 6000, passaAlta: 1500 });
+    return normalizar(b, 0.8);
+  },
+  // Bicuda acertando: baque surdo com estalo
+  'kick': () => {
+    const b = buffer(0.32);
+    tom(b, { freq: 150, freqFim: 55, dur: 0.3, amp: 1, ataque: 0.002, decai: 0.08 });
+    ruido(b, { dur: 0.08, amp: 0.8, ataque: 0.001, decai: 0.02, corte: 3500, passaAlta: 400 });
+    return normalizar(b, 0.9);
+  },
+  // Golpe que passa no ar: assobio de ar
+  'miss': () => {
+    const b = buffer(0.35);
+    ruido(b, { dur: 0.33, amp: 0.8, ataque: 0.09, decai: 0.08, corte: 900, corteFim: 3800, passaAlta: 500 });
+    return normalizar(b, 0.6);
+  },
+  // Crítico: baque forte + brilho metálico subindo
+  'crit': () => {
+    const b = buffer(0.7);
+    tom(b, { freq: 120, freqFim: 45, dur: 0.35, amp: 1, ataque: 0.002, decai: 0.1 });
+    ruido(b, { dur: 0.1, amp: 0.9, ataque: 0.001, decai: 0.025, corte: 6000, passaAlta: 600 });
+    tom(b, { inicio: 0.04, freq: 880, freqFim: 1760, dur: 0.6, amp: 0.35, ataque: 0.005, decai: 0.25, parciais: [[1, 1], [2.01, 0.4], [3.02, 0.2]] });
+    return normalizar(b, 0.85);
+  },
+  // Guincho do porco: ruído nasal com o tom subindo e descendo
+  'pig-squeal': () => {
+    const b = buffer(0.75);
+    const n = b.length;
+    let fase = 0;
+    for (let i = 0; i < n; i++) {
+      const t = i / SR;
+      const f = 620 + 520 * Math.sin(Math.PI * Math.min(1, t / 0.7)) + 40 * Math.sin(TAU * 23 * t);
+      fase += f / SR;
+      const x = TAU * fase;
+      const serra = 2 * (fase % 1) - 1;
+      b[i] += (serra * 0.5 + Math.sin(2 * x) * 0.3) * env(t, 0.02, 0.35) * 0.6;
+    }
+    ruido(b, { dur: 0.7, amp: 0.25, ataque: 0.02, decai: 0.3, corte: 4500, passaAlta: 800 });
+    return normalizar(b, 0.75);
+  },
+  // Galope da Investida: cascos batendo cada vez mais perto
+  'pig-charge': () => {
+    const b = buffer(1.0);
+    for (let k = 0; k < 8; k++) {
+      const t = k * 0.11 + (k % 2) * 0.03;
+      const amp = 0.4 + k * 0.08;
+      tom(b, { inicio: t, freq: 110, freqFim: 60, dur: 0.09, amp, ataque: 0.001, decai: 0.03 });
+      ruido(b, { inicio: t, dur: 0.06, amp: amp * 0.7, ataque: 0.001, decai: 0.015, corte: 1800, passaAlta: 150 });
+    }
+    return normalizar(b, 0.85);
+  },
+  // Queda: corpo batendo no chão de lama
+  'fall': () => {
+    const b = buffer(0.6);
+    tom(b, { freq: 90, freqFim: 40, dur: 0.5, amp: 1, ataque: 0.004, decai: 0.13 });
+    ruido(b, { dur: 0.4, amp: 0.7, ataque: 0.003, decai: 0.09, corte: 700, corteFim: 250 });
+    ruido(b, { inicio: 0.12, dur: 0.3, amp: 0.25, ataque: 0.01, decai: 0.08, corte: 1500, passaAlta: 400 });
+    return normalizar(b, 0.85);
+  },
 };
 
 await mkdir(OUT, { recursive: true });

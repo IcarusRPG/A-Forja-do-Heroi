@@ -1,0 +1,23 @@
+{
+  "quadro": {
+    "largura": 130,
+    "altura": 90
+  },
+  "base": 88,
+  "poses": {
+    "parado": 0,
+    "ataque": 1,
+    "atingido": 2,
+    "recuando": 3,
+    "fugindo": 4,
+    "tonto": 5
+  },
+  "altura": {
+    "parado": 82,
+    "ataque": 84,
+    "atingido": 86,
+    "recuando": 74,
+    "fugindo": 78,
+    "tonto": 73
+  }
+}

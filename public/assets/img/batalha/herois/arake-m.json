@@ -1,0 +1,23 @@
+{
+  "quadro": {
+    "largura": 97,
+    "altura": 81
+  },
+  "base": 79,
+  "poses": {
+    "parado": 0,
+    "ataque": 1,
+    "atingido": 2,
+    "ferido": 3,
+    "caido": 4,
+    "vitoria": 5
+  },
+  "altura": {
+    "parado": 72,
+    "ataque": 73,
+    "atingido": 73,
+    "ferido": 59,
+    "caido": 33,
+    "vitoria": 77
+  }
+}
