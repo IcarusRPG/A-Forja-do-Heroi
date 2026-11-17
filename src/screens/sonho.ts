@@ -21,9 +21,18 @@ const MAPA = MAPA_JSON as unknown as DadosMapa & { estatuas: EstatuaSonho[] };
 const T = textos.sonho;
 const VOZES = T.vozes as Record<string, { titulo: string; mensagem: string }>;
 const TOTAL = MAPA.estatuas.length;
-const COR_HEROI = '#d6a94a';
 
 const parametros = () => new URLSearchParams(location.search);
+
+/**
+ * Com ?test=1, os marcos da cena (caminhada, chegada ao altar, feixes, "O escolhido…") ficam registrados em
+ * window.__fdgLog, que sobrevive à troca de tela: em máquinas lentas o teste pode olhar depois que a cena acabou.
+ */
+function registrar(evento: string, dados: Record<string, unknown> = {}) {
+  if (!parametros().has('test')) return;
+  const w = window as unknown as { __fdgLog?: { evento: string; t: number }[] };
+  (w.__fdgLog ??= []).push({ evento, t: Math.round(performance.now()), ...dados });
+}
 
 async function musicaDoSonho(): Promise<string | null> {
   for (const c of ASSETS.musicaSonho) if (await existeAsset(c, 'audio')) return c;
@@ -45,7 +54,11 @@ export function telaSonho(): Tela {
   let saiu = false;
   let pausado = false;
   let emClimax = false;
+  /** O herói está indo sozinho até o altar (depois da 7ª voz). */
+  let emCaminhada = false;
+
   let musica: string | null = null;
+  let spriteUsado = '';
   let menuPausa: HTMLElement | null = null;
   let motor: import('../exploracao/motor').Motor | null = null;
   let efeitos: import('../exploracao/efeitosSonho').EfeitosSonho | null = null;
@@ -70,7 +83,7 @@ export function telaSonho(): Tela {
   /* ----------------------------- interação ----------------------------- */
 
   function interagir() {
-    if (!motor || pausado || emClimax) return;
+    if (!motor || pausado || emClimax || emCaminhada) return;
     if (caixa.aberta) return caixa.avancar();
     const id = motor.proximo();
     const voz = id ? VOZES[id] : null;
@@ -81,7 +94,7 @@ export function telaSonho(): Tela {
     const jaTinhaTodas = getEstado().sonho.ouvidas.length === TOTAL;
     ouvirVoz(id);
     atualizarContador();
-    if (!jaTinhaTodas && getEstado().sonho.ouvidas.length === TOTAL) efeitos?.altarPronto();
+    const ultimaVoz = !jaTinhaTodas && getEstado().sonho.ouvidas.length === TOTAL;
     motor.bloquear(true);
     controles.mostrarInteracao(false);
     caixa.mostrar({
@@ -89,6 +102,8 @@ export function telaSonho(): Tela {
       texto: voz.mensagem,
       cor: estatua.cor,
       aoFechar: () => {
+        // Fechou a fala da 7ª voz: o herói vai sozinho até o altar.
+        if (ultimaVoz) return void caminharAteOAltar(1000);
         motor?.bloquear(false);
         controles.mostrarInteracao(motor?.proximo() !== null);
       },
@@ -103,17 +118,44 @@ export function telaSonho(): Tela {
   function aoProximidade(id: string | null) {
     for (const e of MAPA.estatuas) efeitos?.perto(e.id, e.id === id);
     if (id) audio.sfx('statue-glow', { ganho: 0.8 });
-    controles.mostrarInteracao(id !== null && !caixa.aberta && !emClimax);
+    controles.mostrarInteracao(id !== null && !caixa.aberta && !emClimax && !emCaminhada);
   }
 
+  /** Antes das sete vozes, pisar no altar não faz nada. Com as sete, o clímax começa. */
   function aoEntrarGatilho(id: string) {
-    if (id !== 'altar' || emClimax || caixa.aberta) return;
-    if (getEstado().sonho.ouvidas.length < TOTAL) {
-      motor?.bloquear(true);
-      caixa.mostrar({ titulo: p?.nome, texto: T.altarIncompleto, cor: COR_HEROI, aoFechar: () => motor?.bloquear(false) });
-    } else {
-      void climax();
-    }
+    if (id !== 'altar' || emClimax || emCaminhada || caixa.aberta) return;
+    if (getEstado().sonho.ouvidas.length === TOTAL) void climax();
+  }
+
+  /* ----------------------------- caminhada até o altar ----------------------------- */
+
+  /**
+   * Depois da 7ª voz (ou ao recarregar com as sete ouvidas): os controles somem, o altar brilha e o herói
+   * anda sozinho, pelo caminho andável, até o centro do altar; lá vira para baixo e o clímax começa.
+   */
+  async function caminharAteOAltar(pausaMs: number) {
+    if (!motor || emCaminhada || emClimax) return;
+    emCaminhada = true;
+    const m = motor;
+    m.bloquear(true);
+    controles.habilitar(false);
+    controles.mostrarInteracao(false);
+    el.classList.add('controles-ocultos');
+    registrar('caminhada', { ...m.posicao() });
+    await esperar(pausaMs);
+    if (saiu) return;
+    efeitos?.altarPronto();
+    audio.sfx('statue-glow');
+    await esperar(600);
+    if (saiu) return;
+    const altar = MAPA.pontos!.altar;
+    const chegou = await m.caminharAte(altar.x, altar.y);
+    if (saiu) return;
+    if (!chegou) m.teleportar(altar.x, altar.y);
+    m.virar('baixo');
+    registrar('altar', { ...m.posicao(), chegou });
+    emCaminhada = false;
+    void climax();
   }
 
   /* ----------------------------- pausa ----------------------------- */
@@ -162,6 +204,7 @@ export function telaSonho(): Tela {
   async function climax() {
     if (!motor || !efeitos || emClimax) return;
     emClimax = true;
+    registrar('climax');
     const m = motor;
     const fx = efeitos;
     controles.habilitar(false);
@@ -206,7 +249,7 @@ export function telaSonho(): Tela {
 
     // 1. O herói para no centro do altar, virado para baixo.
     const altar = MAPA.pontos?.altar ?? { x: m.posicao().x, y: m.posicao().y };
-    await m.andarAte(altar.x, altar.y, 700);
+    if (Math.hypot(m.posicao().x - altar.x, m.posicao().y - altar.y) > 3) await m.andarAte(altar.x, altar.y, 700);
     m.virar('baixo');
     if (pulou || saiu) return;
     // 2. As sete estátuas acendem ao mesmo tempo.
@@ -215,12 +258,14 @@ export function telaSonho(): Tela {
     if (pulou || saiu) return;
     // 3–4. Os feixes convergem no herói; acorde coral; zoom lento.
     fx.iniciarFeixes(1600);
+    registrar('feixes', { n: fx.feixesAtivos });
     audio.sfx('divine-chord');
     m.zoomPara(1.7, 5000);
     await esperar(1700);
     if (pulou || saiu) return;
     // 5. "O escolhido…", mais devagar.
     caixa.mostrar({ texto: T.escolhido, cor: '#ffd25a', velocidade: 7, interativa: false });
+    registrar('escolhido');
     await esperar(3200);
     if (pulou || saiu) return;
     // 6. Antes de a frase continuar: o trovão.
@@ -232,11 +277,17 @@ export function telaSonho(): Tela {
   function ganchosDeTeste() {
     if (!parametros().has('test')) return;
     (window as unknown as { __fdg: unknown }).__fdg = {
+      /** Id de estátua, 'altar' ou "x,y" (pixels do mapa). */
       teleport(id: string) {
         if (!motor) return false;
         if (id === 'altar') {
           const a = MAPA.pontos!.altar;
           motor.teleportar(a.x, a.y + 30, 'cima');
+          return true;
+        }
+        const xy = /^(\d+),(\d+)$/.exec(id);
+        if (xy) {
+          motor.teleportar(Number(xy[1]), Number(xy[2]), 'cima');
           return true;
         }
         const i = MAPA.interacoes.find((x) => x.id === id);
@@ -246,6 +297,11 @@ export function telaSonho(): Tela {
       },
       interact: () => interagir(),
       fecharFala: () => caixa.aberta && caixa.fechar(),
+      /** Anda (pelo caminho andável, na velocidade normal) até "x,y". Resolve true ao chegar. */
+      walkTo: async (xy: string) => {
+        const [x, y] = xy.split(',').map(Number);
+        return motor ? motor.caminharAte(x, y) : false;
+      },
       state: () => ({
         pronto: motor !== null,
         heroi: motor?.posicao() ?? null,
@@ -256,6 +312,9 @@ export function telaSonho(): Tela {
         climax: emClimax,
         feixes: efeitos?.feixesAtivos ?? 0,
         pausado,
+        caminhando: emCaminhada,
+        atrasDe: motor?.atrasDe() ?? null,
+        sprite: spriteUsado,
       }),
     };
   }
@@ -272,6 +331,7 @@ export function telaSonho(): Tela {
     ]);
     if (saiu) return;
     musica = faixa;
+    spriteUsado = temSprite ? ASSETS.spriteChibi(raca, genero) : 'provisorio';
     const debug = parametros().has('debug');
     const m = await criarMotor({
       container: palco,
@@ -298,6 +358,8 @@ export function telaSonho(): Tela {
     else audio.tocarAmbiente(2000);
     depois(6000, () => dica.classList.add('some'));
     ganchosDeTeste();
+    // Recarregou com as sete vozes e o sonho não terminou: o herói já vai sozinho até o altar.
+    if (getEstado().sonho.ouvidas.length === TOTAL) void caminharAteOAltar(900);
   }
 
   return {

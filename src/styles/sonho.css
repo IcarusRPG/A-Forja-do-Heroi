@@ -153,6 +153,10 @@
 .joystick.ativo { border-color: rgba(242, 212, 138, 0.7); }
 .sem-controle .joystick,
 .sem-controle .btn-interagir { opacity: 0.35; pointer-events: none; }
+.joystick, .btn-interagir { transition: opacity 0.6s ease; }
+/* Caminhada automática até o altar: joystick e botão ✦ somem com fade. */
+.tela-sonho.controles-ocultos .joystick,
+.tela-sonho.controles-ocultos .btn-interagir { opacity: 0; pointer-events: none; }
 .tela-sonho.em-climax .joystick,
 .tela-sonho.em-climax .btn-pausa { opacity: 0; pointer-events: none; transition: opacity 0.6s; }
 
