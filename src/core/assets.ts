@@ -19,6 +19,14 @@ export const ASSETS = {
   spriteChibi: (raca: string, genero: Genero) => `sprites/chibi-${raca}-${genero}.png`,
   retrato: (raca: string, genero: Genero, classe = 'comum') => `img/herois/${raca}-${genero}-${classe}.webp`,
   sfx: (nome: string) => `sfx/${nome}.wav`,
+  musica: (id: string) => `music/${id}.mp3`,
+  cena: (id: string) => `img/cenas/${id}.webp`,
+  retratoNpc: (id: string) => `img/retratos/npc-${id}.webp`,
+  ameaca: (id: string) => `img/ameacas/${id}.webp`,
+  fundoBatalha: (id: string) => `img/batalha/fundos/${id}.png`,
+  spriteBatalhaHeroi: (raca: string, genero: Genero) => `img/batalha/herois/${raca}-${genero}`,
+  spriteBatalhaInimigo: (id: string) => `img/batalha/inimigos/${id}`,
+  gameOver: 'img/telas/game-over.webp',
 } as const;
 
 export const SFX = [
@@ -29,7 +37,11 @@ export const SFX = [
 export const SFX_SONHO = [
   'step-marble', 'statue-glow', 'statue-awaken', 'divine-chord', 'thunder', 'text-blip', 'tremor',
 ] as const;
-export type NomeSfx = (typeof SFX)[number] | (typeof SFX_SONHO)[number];
+/** Efeitos do Capítulo 01 (cenas e batalha): carregados ao entrar no capítulo. */
+export const SFX_CAPITULO = [
+  'text-blip', 'dice-roll', 'grito-crianca', 'kick', 'miss', 'crit', 'pig-squeal', 'pig-charge', 'fall', 'tremor',
+] as const;
+export type NomeSfx = (typeof SFX)[number] | (typeof SFX_SONHO)[number] | (typeof SFX_CAPITULO)[number];
 
 /** O arquivo existe e é do tipo esperado? (No dev server do Vite, um arquivo ausente pode voltar como HTML.) */
 export async function existeAsset(caminho: string, tipo: 'image' | 'audio' | 'video'): Promise<boolean> {

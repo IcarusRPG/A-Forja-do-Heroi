@@ -170,8 +170,8 @@
     ]
   },
   "emBreve": {
-    "capitulo": "Capítulo 01",
-    "titulo": "Amanhecer Tardio",
+    "capitulo": "Capítulo 02",
+    "titulo": "O Templo de Sólem",
     "emBreve": "Em breve",
     "voltar": "Voltar ao menu"
   },
@@ -224,5 +224,79 @@
       "Pelas frestas da janela, o sol já vai alto.",
       "Você está atrasad{o}. De novo."
     ]
+  },
+  "cenas": {
+    "capitulo": "Capítulo",
+    "avancar": "Avançar a fala",
+    "escolhas": "Escolhas",
+    "continuar": "Continuar",
+    "seuBonus": "seu bônus",
+    "pausa": "Pausa",
+    "fechar": "Fechar",
+    "rolagem": {
+      "critico": "CRÍTICO!",
+      "sucesso": "SUCESSO",
+      "falha": "FALHA",
+      "seguir": "Continuar"
+    },
+    "diario": {
+      "titulo": "Diário",
+      "vozes": "Vozes do sonho",
+      "semVozes": "Nenhuma voz ouvida.",
+      "semResumo": "Ainda não aconteceu nada digno de nota."
+    },
+    "fim": {
+      "fimDo": "Fim do",
+      "seguir": "Continuar"
+    }
+  },
+  "batalha": {
+    "ordem": "Ordem dos turnos",
+    "comandos": "Comandos",
+    "defesa": "Defesa",
+    "registro": "Registro",
+    "caido": "Caído",
+    "cmd": {
+      "bicuda": "Bicuda",
+      "intimidar": "Intimidar",
+      "acalmar": "Acalmar",
+      "aguardar": "Aguardar"
+    },
+    "furiosoDemais": "Ele está furioso demais.",
+    "aparece": "{inimigo} bloqueia o caminho!",
+    "iniciativa": "Iniciativa: {a} · {b}",
+    "logIniciativa": "Iniciativa de {nome}: {d} {b} = {t}",
+    "vezDoHeroi": "Vez de {nome}.",
+    "bicuda": "{nome} acerta uma Bicuda!",
+    "revida": "{nome} revida antes do golpe!",
+    "aguardando": "{nome} se prepara para revidar.",
+    "intimidando": "{nome} grita e bate no peito!",
+    "acalmando": "{nome} fala baixo e estende a mão…",
+    "intimidarFalhou": "Ele não se impressiona.",
+    "acalmarFalhou": "Ele não se acalma.",
+    "intimidarDeuCerto": "{inimigo} hesita, com medo!",
+    "acalmarDeuCerto": "{inimigo} se acalma…",
+    "inimigoFoge": "{inimigo} foge!",
+    "inimigoVolta": "{inimigo} volta trotando para o chiqueiro.",
+    "levantando": "Levantando…",
+    "logLevantando": "{nome} se levanta (perde a ação de movimento).",
+    "derrubado": "{nome} vai ao chão!",
+    "resistiu": "{nome} aguenta o tranco e fica de pé.",
+    "fortitude": "Fortitude",
+    "errou": "Errou!",
+    "contra": "contra",
+    "acerto": "acerto",
+    "erro": "erro",
+    "critico": "crítico!",
+    "sucesso": "sucesso",
+    "falha": "falha",
+    "vitoria": "Vitória!",
+    "derrota": "{nome} cai na lama…",
+    "continuar": "Continuar"
+  },
+  "gameOver": {
+    "texto": "Sua jornada termina aqui…",
+    "tentar": "Tentar novamente",
+    "menu": "Voltar ao menu"
   }
 }

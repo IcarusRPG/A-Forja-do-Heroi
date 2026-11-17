@@ -44,11 +44,38 @@ export interface ProgressoSonho {
   ouvidas: string[];
 }
 
+/** Um passo do caminho do jogador: a cena e, se houve, a escolha feita nela. */
+export interface PassoCaminho {
+  cena: string;
+  escolha?: string;
+  resultado?: string;
+}
+
+/**
+ * Progresso nos capítulos. `cena` é a cena atual (null = início do capítulo, com o cartão de título);
+ * `modo` diz se ela retoma nas falas ou direto nas escolhas.
+ */
+export interface Campanha {
+  capitulo: number;
+  cena: string | null;
+  modo: 'falas' | 'escolhas';
+  flags: string[];
+  caminho: PassoCaminho[];
+  /** Escolhas "uma vez só" já usadas ("cena#índice"). */
+  usadas: string[];
+  /** PV atuais do herói (null = cheio). */
+  pvAtual: number | null;
+  bonusProximoTeste: number;
+  /** Cena com a escolha que levou à última batalha (Game Over → "Tentar novamente"). */
+  cenaAntesDaBatalha: string | null;
+}
+
 export interface EstadoJogo {
   versao: 1;
   config: Config;
   personagem: Personagem | null;
   sonho: ProgressoSonho;
+  campanha: Campanha;
 }
 
 const CHAVE = 'a-forja-do-heroi:estado';
@@ -58,6 +85,11 @@ const padrao = (): EstadoJogo => ({
   config: { musica: 0.7, efeitos: 0.8, mudo: false },
   personagem: null,
   sonho: { concluido: false, ouvidas: [] },
+  campanha: campanhaNova(),
+});
+
+export const campanhaNova = (): Campanha => ({
+  capitulo: 1, cena: null, modo: 'falas', flags: [], caminho: [], usadas: [], pvAtual: null, bonusProximoTeste: 0, cenaAntesDaBatalha: null,
 });
 
 function carregar(): EstadoJogo {
@@ -74,6 +106,7 @@ function carregar(): EstadoJogo {
         concluido: dados.sonho?.concluido === true,
         ouvidas: Array.isArray(dados.sonho?.ouvidas) ? dados.sonho!.ouvidas.filter((x) => typeof x === 'string') : [],
       },
+      campanha: { ...base.campanha, ...(dados.campanha ?? {}) },
     };
   } catch {
     return padrao();
@@ -108,7 +141,25 @@ export function atualizarConfig(parcial: Partial<Config>): void {
 export function salvarPersonagem(p: Personagem): void {
   estado.personagem = p;
   estado.sonho = { concluido: false, ouvidas: [] };
+  estado.campanha = campanhaNova();
   salvar();
+}
+
+/** Atualiza o progresso do capítulo e salva. */
+export function atualizarCampanha(parcial: Partial<Campanha>): void {
+  Object.assign(estado.campanha, parcial);
+  salvar();
+}
+
+export function temFlag(flag: string): boolean {
+  return estado.campanha.flags.includes(flag);
+}
+
+export function marcarFlag(flag: string): void {
+  if (!temFlag(flag)) {
+    estado.campanha.flags.push(flag);
+    salvar();
+  }
 }
 
 /** Registra uma voz ouvida no sonho (sem repetir). */

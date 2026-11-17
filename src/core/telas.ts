@@ -11,7 +11,9 @@ export interface Tela {
   aoSair?: () => void;
 }
 
-export type NomeTela = 'loading' | 'intro' | 'menu' | 'criacao' | 'prologo' | 'sonho' | 'despertar' | 'emBreve';
+export type NomeTela =
+  | 'loading' | 'intro' | 'menu' | 'criacao' | 'prologo' | 'sonho' | 'despertar'
+  | 'capitulo' | 'batalha' | 'fimCapitulo' | 'gameOver' | 'emBreve';
 type Fabrica = (params?: unknown) => Tela;
 
 const fabricas = new Map<NomeTela, Fabrica>();

@@ -1,0 +1,353 @@
+/* Cenas narrativas (Capítulo 01): fundo ilustrado, caixa de fala com busto, escolhas e d20. */
+
+.tela-capitulo {
+  background: #000;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.cena-fundo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.cena-fundo.visivel { opacity: 1; }
+.cena-fundo.lento { transition-duration: 2.4s; }
+.cena-veu {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(5, 4, 3, 0.55) 70%, rgba(5, 4, 3, 0.82) 100%);
+}
+
+/* ---------- Painel de baixo: busto, caixa de fala e escolhas ---------- */
+.cena-painel {
+  position: absolute;
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  max-height: calc(100dvh - max(64px, env(safe-area-inset-top) + 56px) - max(12px, env(safe-area-inset-bottom)));
+}
+.cena-busto {
+  align-self: flex-start;
+  width: auto;
+  height: clamp(110px, 30dvh, 340px);
+  max-width: 60%;
+  margin: 0 0 -18px 4px;
+  object-fit: contain;
+  object-position: left bottom;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.6));
+  position: relative;
+  z-index: 1;
+  animation: busto-entra 0.35s ease;
+}
+.cena-busto[hidden] { display: none; }
+@keyframes busto-entra { from { opacity: 0; transform: translateX(-12px); } }
+.cena-painel.com-escolhas .cena-busto { height: clamp(90px, 20dvh, 240px); }
+
+.cena-caixa {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  min-height: 104px;
+  padding: 0.9rem 1.2rem 1.2rem;
+  border: 2px solid var(--borda-forte);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(22, 17, 12, 0.93), rgba(12, 9, 7, 0.96));
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(242, 212, 138, 0.12);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.cena-caixa:focus-visible { outline: 2px solid var(--ouro-claro); outline-offset: 3px; }
+.cena-nome {
+  margin: 0 0 0.35rem;
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  color: var(--ouro-claro);
+}
+.cena-nome[hidden] { display: none; }
+.cena-texto {
+  margin: 0;
+  font-size: clamp(1rem, 3.9vw, 1.16rem);
+  line-height: 1.55;
+  color: var(--marmore);
+  white-space: pre-line;
+}
+.cena-caixa.pensamento .cena-texto { font-style: italic; color: var(--marmore-suave); }
+.cena-caixa.pensamento .cena-texto::before { content: '“'; }
+.cena-caixa.pensamento .cena-texto::after { content: '”'; }
+.cena-caixa.heroi { border-color: var(--ouro); }
+.cena-seta {
+  position: absolute;
+  right: 14px;
+  bottom: 6px;
+  color: var(--ouro);
+  opacity: 0;
+}
+.cena-caixa.completa .cena-seta { opacity: 1; animation: seta-fala 0.9s ease-in-out infinite; }
+.cena-painel.com-escolhas .cena-seta { opacity: 0; animation: none; }
+
+.cena-escolhas {
+  display: none;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.6rem;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px;
+}
+.cena-escolhas.visivel { display: flex; animation: subir 0.3s ease; }
+.cena-escolha {
+  flex: none;
+  display: grid;
+  justify-items: start;
+  justify-content: stretch;
+  align-content: center;
+  gap: 0.2rem;
+  width: 100%;
+  min-height: 52px;
+  padding: 0.65rem 1rem;
+  text-align: left;
+  font-family: var(--fonte-texto);
+  font-size: clamp(0.98rem, 3.6vw, 1.06rem);
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.35;
+  background: linear-gradient(180deg, rgba(40, 30, 18, 0.94), rgba(20, 15, 10, 0.96));
+}
+.cena-escolha.cena-seguir { justify-items: center; justify-content: center; text-align: center; font-family: var(--fonte-titulo); letter-spacing: 0.06em; }
+.escolha-rotulo, .escolha-selo {
+  font-family: var(--fonte-titulo);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ouro-claro);
+}
+.escolha-selo {
+  padding: 0.12rem 0.55rem;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  background: rgba(214, 169, 74, 0.12);
+  overflow-wrap: anywhere;
+}
+.escolha-texto { overflow-wrap: anywhere; }
+
+/* ---------- Pausa (botão) ---------- */
+.cena-btn-pausa {
+  position: absolute;
+  z-index: 5;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+}
+
+/* ---------- Cartão de ameaça ---------- */
+.cena-ameaca {
+  position: absolute;
+  z-index: 3;
+  top: max(66px, calc(env(safe-area-inset-top) + 60px));
+  right: max(12px, env(safe-area-inset-right));
+  width: min(300px, 44vw);
+  border: 2px solid #b23a2e;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(14, 10, 8, 0.92);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 22px rgba(178, 58, 46, 0.35);
+  transform: translateX(calc(100% + 24px));
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cena-ameaca.entrou { transform: none; }
+.cena-ameaca img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.ameaca-legenda { padding: 0.5rem 0.7rem 0.6rem; }
+.ameaca-selo {
+  display: inline-block;
+  padding: 0.08rem 0.5rem;
+  border-radius: 999px;
+  background: #3c6b2f;
+  color: #e9f6dc;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ameaca-nome {
+  margin: 0.3rem 0 0;
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 0.86rem;
+  letter-spacing: 0.06em;
+  color: var(--marmore);
+}
+
+/* ---------- Cartão de título do capítulo ---------- */
+.cena-cartao-titulo {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-content: center;
+  gap: 0.4rem;
+  padding: 24px;
+  text-align: center;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.cena-cartao-titulo.visivel { opacity: 1; }
+.cartao-capitulo { margin: 0; font-family: var(--fonte-titulo); letter-spacing: 0.3em; text-transform: uppercase; color: var(--ouro); font-size: clamp(0.9rem, 3vw, 1.1rem); }
+.cartao-titulo { margin: 0; font-size: clamp(2rem, 8vw, 3.6rem); color: var(--marmore); text-shadow: 0 0 24px rgba(242, 212, 138, 0.35); }
+
+/* ---------- Tremor ---------- */
+.tela-capitulo.tremendo { animation: tremor-cena 0.45s linear; }
+@keyframes tremor-cena {
+  10%, 50%, 90% { transform: translate(-3px, 1px); }
+  30%, 70% { transform: translate(3px, -1px); }
+}
+
+/* ---------- d20 ---------- */
+.rolagem-fundo {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.rolagem-fundo.visivel { opacity: 1; }
+.rolagem {
+  width: min(440px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 1.2rem 1.2rem 1.4rem;
+  border: 2px solid var(--borda-forte);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(24, 18, 12, 0.97), rgba(12, 9, 7, 0.98));
+  text-align: center;
+}
+.rolagem-titulo { margin: 0; font-family: var(--fonte-titulo); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ouro-claro); }
+.d20 {
+  position: relative;
+  width: clamp(96px, 26vw, 140px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+.d20 svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.d20-borda { fill: #2a2016; stroke: var(--ouro); stroke-width: 3; }
+.d20-face { fill: #3a2c1c; stroke: var(--ouro-escuro); stroke-width: 1.5; }
+.d20-arestas { fill: none; stroke: var(--ouro-escuro); stroke-width: 1.2; }
+.d20-numero {
+  position: relative;
+  margin-top: 8%;
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 7vw, 2.5rem);
+  color: var(--marmore);
+  font-variant-numeric: tabular-nums;
+}
+.d20.girando svg { animation: girar-d20 0.45s linear infinite; }
+@keyframes girar-d20 { to { transform: rotate(360deg); } }
+.d20.sucesso .d20-borda { stroke: var(--ouro-claro); filter: drop-shadow(0 0 10px rgba(242, 212, 138, 0.7)); }
+.d20.sucesso .d20-numero { color: var(--ouro-claro); }
+.d20.falha .d20-borda { stroke: #8f2a22; }
+.d20.falha .d20-numero { color: #d36a5c; }
+.d20.critico { animation: pulso-critico 0.6s ease 2; }
+@keyframes pulso-critico { 50% { transform: scale(1.12); } }
+.rolagem-critico { margin: 0; font-family: var(--fonte-titulo); font-weight: 700; font-size: 1.3rem; letter-spacing: 0.12em; color: #ffd25a; text-shadow: 0 0 14px rgba(255, 210, 90, 0.8); }
+.rolagem-critico[hidden] { display: none; }
+.rolagem-conta { margin: 0; font-size: 1rem; font-variant-numeric: tabular-nums; color: var(--marmore); overflow-wrap: anywhere; }
+.rolagem-veredito { margin: 0; font-family: var(--fonte-titulo); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.14em; }
+.rolagem.sucesso .rolagem-conta, .rolagem.sucesso .rolagem-veredito { color: var(--ouro-claro); }
+.rolagem.falha .rolagem-conta, .rolagem.falha .rolagem-veredito { color: #c2564a; }
+.rolagem-seguir { margin-top: 0.4rem; min-width: 12rem; }
+
+/* ---------- Diário ---------- */
+.diario h3 { margin: 0.8rem 0 0.4rem; font-size: 1rem; color: var(--ouro-claro); }
+.diario h3:first-child { margin-top: 0; }
+.diario ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.45rem; }
+.diario-vozes li { display: grid; gap: 0.1rem; }
+.diario-vozes strong { color: var(--marmore); font-weight: 600; }
+.diario-vozes span, .diario-vazio { color: var(--marmore-suave); font-size: 0.92rem; }
+.pausa-botoes { display: grid; gap: 0.7rem; }
+.pausa-botoes .btn { width: 100%; }
+
+/* ---------- Fim do capítulo ---------- */
+.tela-fim-capitulo { background: #000; overflow: auto; }
+.fim-fundo { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; opacity: 0; filter: brightness(0.35) blur(2px); transition: opacity 2s ease; }
+.tela-fim-capitulo.entrou .fim-fundo { opacity: 1; }
+.fim-conteudo {
+  position: relative;
+  min-height: 100%;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.6rem;
+  padding: max(24px, env(safe-area-inset-top)) var(--gutter) max(24px, env(safe-area-inset-bottom));
+  text-align: center;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 1.2s ease 0.4s, transform 1.2s ease 0.4s;
+}
+.tela-fim-capitulo.entrou .fim-conteudo { opacity: 1; transform: none; }
+.fim-rotulo { margin: 0; font-family: var(--fonte-titulo); letter-spacing: 0.24em; text-transform: uppercase; color: var(--ouro); }
+.fim-titulo { margin: 0 0 0.6rem; font-size: clamp(2rem, 8vw, 3.2rem); }
+.fim-resumo { margin: 0 0 1.2rem; padding: 0; list-style: none; display: grid; gap: 0.5rem; max-width: 34rem; color: var(--marmore-suave); }
+.fim-resumo li::before { content: '✦ '; color: var(--ouro); }
+
+/* ---------- Game Over ---------- */
+.tela-game-over { background: #000; }
+.go-fundo { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; opacity: 0; transition: opacity 3s ease; }
+.go-veu { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 60%, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.7)); }
+.tela-game-over.entrou .go-fundo { opacity: 1; }
+.go-conteudo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1.6rem;
+  padding: max(24px, env(safe-area-inset-top)) var(--gutter) max(24px, env(safe-area-inset-bottom));
+  text-align: center;
+}
+.go-texto {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-size: clamp(1.5rem, 6vw, 2.6rem);
+  color: var(--marmore);
+  text-shadow: 0 2px 20px #000;
+  opacity: 0;
+  transition: opacity 2s ease 1.2s;
+}
+.go-botoes { display: grid; gap: 0.7rem; width: min(320px, 100%); opacity: 0; transition: opacity 1.2s ease 2.6s; }
+.go-botoes .btn { width: 100%; }
+.tela-game-over.entrou .go-texto, .tela-game-over.entrou .go-botoes { opacity: 1; }
+
+/* ---------- Celular deitado: pouca altura ---------- */
+@media (max-height: 500px) {
+  .cena-busto { height: clamp(80px, 34dvh, 160px); max-width: 34%; }
+  .cena-painel.com-escolhas .cena-busto { display: none; }
+  .cena-caixa { min-height: 80px; padding: 0.6rem 1rem 0.9rem; }
+  .cena-texto { font-size: 0.98rem; line-height: 1.45; }
+  .cena-escolha { min-height: 46px; padding: 0.45rem 0.9rem; }
+  .cena-ameaca { width: min(190px, 26vw); top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 56px); }
+  /* Pouca altura: o cartão de ameaça sai quando as escolhas aparecem, para não cobri-las. */
+  .tela-capitulo.com-escolhas .cena-ameaca { display: none; }
+}

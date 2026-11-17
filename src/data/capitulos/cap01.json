@@ -1,0 +1,162 @@
+{
+  "id": "cap01",
+  "numero": 1,
+  "titulo": "Amanhecer Tardio",
+  "inicio": "c01-quarto",
+  "proximoCapitulo": {
+    "numero": 2,
+    "titulo": "O Templo de Sólem"
+  },
+  "resumo": [
+    {
+      "flag": "pista_sonho",
+      "texto": "Você lembrou que, nos relatos, a guerra sempre começa com alguém tendo um sonho."
+    },
+    {
+      "flag": "prece",
+      "texto": "Você começou o dia com uma prece a Sólem."
+    },
+    {
+      "flag": "ritual",
+      "texto": "Você se despediu da porta dos seus pais, como todos os dias."
+    }
+  ],
+  "cenas": [
+    {
+      "id": "c01-quarto",
+      "fundo": "cena-quarto",
+      "musica": "fullmun",
+      "falas": [
+        {
+          "texto": "Você abre os olhos. A luz dourada entra pelas frestas da janela, e o sol já vai alto."
+        },
+        {
+          "texto": "O quarto é o de sempre: paredes de madeira bruta, o baú escuro ao lado da cama, as botas largadas no chão. Sobre a mesinha, livros empoeirados e anotações sobre os Alfars e os Baldurs."
+        },
+        {
+          "texto": "Seus ouvidos ainda zunem. O sonho parecia real demais."
+        },
+        {
+          "quem": "pensamento",
+          "texto": "Eu realmente devia ter parado de estudar mais cedo…"
+        }
+      ],
+      "escolhas": [
+        {
+          "texto": "Olhar as anotações sobre os deuses",
+          "uma_vez": true,
+          "efeitos": {
+            "flag": "leu_anotacoes"
+          },
+          "vai_para": "c01-quarto-anotacoes"
+        },
+        {
+          "texto": "Arrumar o quarto às pressas",
+          "uma_vez": true,
+          "vai_para": "c01-quarto-arrumar"
+        },
+        {
+          "texto": "Fazer uma prece rápida",
+          "requer": {
+            "origem": "religioso"
+          },
+          "uma_vez": true,
+          "efeitos": {
+            "flag": "prece",
+            "bonusProximoTeste": 1
+          },
+          "vai_para": "c01-quarto-prece"
+        },
+        {
+          "texto": "Despedir-se à porta dos pais",
+          "uma_vez": true,
+          "efeitos": {
+            "flag": "ritual"
+          },
+          "vai_para": "c01-quarto-pais"
+        },
+        {
+          "texto": "Sair de casa",
+          "vai_para": "c01-soleira"
+        }
+      ]
+    },
+    {
+      "id": "c01-quarto-anotacoes",
+      "fundo": "cena-quarto",
+      "musica": "fullmun",
+      "falas": [
+        {
+          "texto": "Entre os rabiscos, uma frase sublinhada três vezes: “Os Alfars e os Baldurs já guerrearam antes. Os livros não dizem por quê.”"
+        },
+        {
+          "requer": {
+            "origem": "estudioso"
+          },
+          "efeitos": {
+            "flag": "pista_sonho"
+          },
+          "texto": "Você lembra de um detalhe que quase ninguém nota: em todos os relatos, a guerra começa com alguém tendo um sonho."
+        }
+      ],
+      "retorna": "c01-quarto"
+    },
+    {
+      "id": "c01-quarto-arrumar",
+      "fundo": "cena-quarto",
+      "musica": "fullmun",
+      "falas": [
+        {
+          "texto": "Você empurra as cobertas, empilha os livros numa torre torta e calça as botas. Longe de arrumado, mas o suficiente para parecer em ordem."
+        }
+      ],
+      "retorna": "c01-quarto"
+    },
+    {
+      "id": "c01-quarto-prece",
+      "fundo": "cena-quarto",
+      "musica": "fullmun",
+      "falas": [
+        {
+          "texto": "Você toca o pequeno sol de Sólem pendurado na parede e murmura uma prece curta. Por um instante, a dor de cabeça alivia."
+        }
+      ],
+      "retorna": "c01-quarto"
+    },
+    {
+      "id": "c01-quarto-pais",
+      "fundo": "cena-quarto",
+      "musica": "fullmun",
+      "falas": [
+        {
+          "texto": "Você encosta a mão na porta fechada do quarto de Bran e Liessa. Eles estão longe, servindo em Vön Bicken, mas o ritual é o mesmo de todos os dias."
+        },
+        {
+          "quem": "pensamento",
+          "texto": "Amo vocês. Até mais tarde."
+        }
+      ],
+      "retorna": "c01-quarto"
+    },
+    {
+      "id": "c01-soleira",
+      "fundo": "cena-fullmun-rua",
+      "musica": "fullmun",
+      "falas": [
+        {
+          "texto": "Você para na soleira por um instante. Füllmun acorda sem pressa: casas de madeira e pedra, telhados de palha brilhando ao sol, o cheiro de pão fresco vindo de alguma casa vizinha."
+        },
+        {
+          "texto": "Lá embaixo, o mercado começa a se formar."
+        },
+        {
+          "texto": "Você olha para o sol. Duas horas de atraso. Artho vai perceber."
+        }
+      ],
+      "seguir": {
+        "fim": true,
+        "texto": "Continuar"
+      }
+    }
+  ]
+}
