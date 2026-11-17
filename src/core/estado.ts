@@ -32,10 +32,18 @@ export interface Config {
   mudo: boolean;
 }
 
+/** Progresso do sonho dos deuses (primeira cena de exploração). */
+export interface ProgressoSonho {
+  concluido: boolean;
+  /** Ids das estátuas cuja voz o herói já ouviu. */
+  ouvidas: string[];
+}
+
 export interface EstadoJogo {
   versao: 1;
   config: Config;
   personagem: Personagem | null;
+  sonho: ProgressoSonho;
 }
 
 const CHAVE = 'a-forja-do-heroi:estado';
@@ -44,6 +52,7 @@ const padrao = (): EstadoJogo => ({
   versao: 1,
   config: { musica: 0.7, efeitos: 0.8, mudo: false },
   personagem: null,
+  sonho: { concluido: false, ouvidas: [] },
 });
 
 function carregar(): EstadoJogo {
@@ -56,6 +65,10 @@ function carregar(): EstadoJogo {
       versao: 1,
       config: { ...base.config, ...(dados.config ?? {}) },
       personagem: dados.personagem ?? null,
+      sonho: {
+        concluido: dados.sonho?.concluido === true,
+        ouvidas: Array.isArray(dados.sonho?.ouvidas) ? dados.sonho!.ouvidas.filter((x) => typeof x === 'string') : [],
+      },
     };
   } catch {
     return padrao();
@@ -79,8 +92,23 @@ export function atualizarConfig(parcial: Partial<Config>): void {
   salvar();
 }
 
+/** Salva um herói novo (e zera o progresso do sonho, que é dele). */
 export function salvarPersonagem(p: Personagem): void {
   estado.personagem = p;
+  estado.sonho = { concluido: false, ouvidas: [] };
+  salvar();
+}
+
+/** Registra uma voz ouvida no sonho (sem repetir). */
+export function ouvirVoz(id: string): void {
+  if (!estado.sonho.ouvidas.includes(id)) {
+    estado.sonho.ouvidas.push(id);
+    salvar();
+  }
+}
+
+export function concluirSonho(): void {
+  estado.sonho.concluido = true;
   salvar();
 }
 

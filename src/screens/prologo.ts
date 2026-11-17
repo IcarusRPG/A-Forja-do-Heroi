@@ -16,13 +16,13 @@ async function existeVideoPrologo(): Promise<boolean> {
 
 /**
  * Prólogo: toca public/assets/video/prologo.mp4 se existir; senão, o texto linha por linha.
- * Ao terminar (ou pular), vai para a tela "Em breve".
+ * Ao terminar (ou pular), o herói adormece: começa o sonho dos deuses.
  */
 export function telaPrologo(): Tela {
   const el = h('div', { class: 'tela-prologo' });
   let atual: Tela | null = null;
   let saiu = false;
-  const fim = () => void irPara('emBreve', undefined, { som: false, duracao: 800 });
+  const fim = () => void irPara('sonho', undefined, { som: false, duracao: 800 });
   const usarTexto = () => {
     if (saiu) return;
     atual?.aoSair?.();

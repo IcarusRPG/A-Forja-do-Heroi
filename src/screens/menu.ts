@@ -13,6 +13,8 @@ export function telaMenu(): Tela {
     const p = getEstado().personagem;
     // Heróis salvos antes da escolha de classe retomam a criação no passo Classe.
     if (p && !p.classe) void irPara('criacao', { retomar: p });
+    // Herói pronto que ainda não terminou o sonho dos deuses: retoma no sonho.
+    else if (p && !getEstado().sonho.concluido) void irPara('sonho');
     else void irPara('emBreve');
   }, { desabilitado: !temSave() });
   const botoes = h('nav', { class: 'menu-botoes', 'aria-label': 'Menu principal' },

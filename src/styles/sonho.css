@@ -1,0 +1,243 @@
+/* Sonho dos deuses: exploração (canvas do Phaser + HUD em HTML por cima). */
+
+.tela-sonho {
+  background: #0b1020;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.sonho-palco {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.tela-sonho.pronto .sonho-palco { opacity: 1; }
+.sonho-palco canvas { display: block; touch-action: none; }
+
+.sonho-carregando {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--fonte-titulo);
+  font-size: clamp(1rem, 3.5vw, 1.4rem);
+  letter-spacing: 0.08em;
+  color: var(--marmore-suave);
+  pointer-events: none;
+  transition: opacity 0.8s ease;
+}
+.tela-sonho.pronto .sonho-carregando { opacity: 0; }
+
+/* ---------- HUD ---------- */
+.sonho-hud {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  right: calc(max(12px, env(safe-area-inset-right)) + 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.6s;
+}
+.tela-sonho.pronto .sonho-hud { opacity: 1; }
+.tela-sonho.em-climax .sonho-hud { opacity: 0; transition-delay: 0s; }
+.sonho-contador {
+  padding: 0.35rem 0.8rem;
+  border: 1px solid rgba(214, 169, 74, 0.35);
+  border-radius: 999px;
+  background: rgba(10, 12, 24, 0.55);
+  color: var(--marmore);
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.sonho-dica {
+  max-width: 34rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 6px;
+  background: rgba(10, 12, 24, 0.45);
+  color: var(--marmore-suave);
+  font-size: 0.8rem;
+  transition: opacity 1s ease;
+}
+.sonho-dica.some { opacity: 0; }
+
+/* ---------- Botões de toque ---------- */
+.btn-pausa,
+.btn-interagir {
+  position: absolute;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--borda);
+  color: var(--ouro-claro);
+  background: rgba(14, 14, 28, 0.6);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-pausa {
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.btn-interagir {
+  right: max(20px, calc(env(safe-area-inset-right) + 12px));
+  bottom: max(24px, calc(env(safe-area-inset-bottom) + 16px));
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border-width: 2px;
+  font-size: 2rem;
+  box-shadow: 0 0 22px rgba(242, 212, 138, 0.45);
+  animation: pulso-interagir 1.4s ease-in-out infinite;
+}
+.btn-interagir[hidden] { display: none; }
+.btn-interagir-tecla {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 4px;
+  border-radius: 6px;
+  background: var(--ouro);
+  color: #1b130b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 22px;
+}
+@keyframes pulso-interagir {
+  50% { box-shadow: 0 0 34px rgba(242, 212, 138, 0.75), inset 0 0 12px rgba(242, 212, 138, 0.35); }
+}
+@media (hover: hover) {
+  .btn-pausa:hover, .btn-interagir:hover { border-color: var(--borda-forte); background: rgba(30, 26, 40, 0.75); }
+}
+
+.joystick {
+  position: absolute;
+  z-index: 5;
+  left: max(20px, calc(env(safe-area-inset-left) + 12px));
+  bottom: max(24px, calc(env(safe-area-inset-bottom) + 16px));
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  border: 2px solid rgba(242, 212, 138, 0.35);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08), rgba(10, 12, 24, 0.45));
+  touch-action: none;
+}
+.joystick[hidden] { display: none; }
+.joystick-pino {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 54px;
+  height: 54px;
+  margin: -27px 0 0 -27px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, rgba(255, 240, 200, 0.9), rgba(214, 169, 74, 0.75));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.joystick.ativo { border-color: rgba(242, 212, 138, 0.7); }
+.sem-controle .joystick,
+.sem-controle .btn-interagir { opacity: 0.35; pointer-events: none; }
+.tela-sonho.em-climax .joystick,
+.tela-sonho.em-climax .btn-pausa { opacity: 0; pointer-events: none; transition: opacity 0.6s; }
+
+/* ---------- Caixa de fala ---------- */
+.caixa-fala {
+  --cor-fala: var(--ouro);
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: max(16px, calc(env(safe-area-inset-bottom) + 10px));
+  width: min(680px, calc(100% - 32px));
+  min-height: 96px;
+  padding: 0.9rem 1.2rem 1.1rem;
+  transform: translate(-50%, 12px);
+  border: 2px solid var(--cor-fala);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(14, 16, 32, 0.92), rgba(8, 9, 20, 0.95));
+  box-shadow: 0 0 28px color-mix(in srgb, var(--cor-fala) 45%, transparent), 0 12px 40px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  cursor: pointer;
+}
+.caixa-fala.visivel { opacity: 1; transform: translate(-50%, 0); }
+.caixa-fala[hidden] { display: none; }
+.fala-titulo {
+  margin-bottom: 0.35rem;
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  color: var(--cor-fala);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--cor-fala) 60%, transparent);
+}
+.fala-texto {
+  font-size: clamp(1rem, 3.6vw, 1.15rem);
+  line-height: 1.5;
+  color: var(--marmore);
+}
+.caixa-fala.sem-titulo { text-align: center; display: grid; place-items: center; }
+.caixa-fala.sem-titulo .fala-texto {
+  font-family: var(--fonte-titulo);
+  font-size: clamp(1.3rem, 5vw, 1.8rem);
+  letter-spacing: 0.08em;
+  color: #ffe7a6;
+  text-shadow: 0 0 16px rgba(255, 210, 90, 0.8);
+}
+.fala-seta {
+  position: absolute;
+  right: 14px;
+  bottom: 6px;
+  color: var(--cor-fala);
+  opacity: 0;
+}
+.caixa-fala.completa .fala-seta { opacity: 1; animation: seta-fala 0.9s ease-in-out infinite; }
+@keyframes seta-fala { 50% { transform: translateY(3px); } }
+
+/* ---------- Pausa ---------- */
+.pausa-botoes { display: grid; gap: 0.7rem; }
+.pausa-botoes .btn { width: 100%; }
+
+/* ---------- Clímax ---------- */
+.sonho-pular { z-index: 7; bottom: auto; top: max(16px, env(safe-area-inset-top)); }
+.sonho-clarao {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  background: #fff;
+  opacity: 0;
+}
+.sonho-clarao.branco { opacity: 1; transition: opacity 0.12s ease-out; }
+.sonho-clarao.preto { background: #000; transition: background-color 1.2s ease; }
+
+/* ---------- Modo de ajuste (F2 / ?debug=1) ---------- */
+.debug-coords {
+  position: absolute;
+  left: 50%;
+  bottom: max(176px, calc(env(safe-area-inset-bottom) + 168px));
+  transform: translateX(-50%);
+  z-index: 4;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #7dffb0;
+  font: 12px/1.4 ui-monospace, Consolas, monospace;
+  pointer-events: none;
+  white-space: nowrap;
+}
