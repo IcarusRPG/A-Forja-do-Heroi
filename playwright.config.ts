@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const PORTA = 4174;
+/** BASE_URL=https://icarusrpg.github.io/A-Forja-do-Heroi/ testa o site publicado (sem servidor local). */
+const EXTERNO = process.env.BASE_URL;
 
 /** Testes e2e de celular contra o build de produção (o mesmo que vai para o GitHub Pages). */
 export default defineConfig({
@@ -10,7 +12,7 @@ export default defineConfig({
   fullyParallel: true,
   reporter: [['list']],
   use: {
-    baseURL: `http://localhost:${PORTA}/A-Forja-do-Heroi/`,
+    baseURL: EXTERNO ?? `http://localhost:${PORTA}/A-Forja-do-Heroi/`,
     trace: 'retain-on-failure',
   },
   projects: [
@@ -21,7 +23,7 @@ export default defineConfig({
       use: { ...devices['Pixel 7'], viewport: { width: 844, height: 390 }, screen: { width: 844, height: 390 } },
     },
   ],
-  webServer: {
+  webServer: EXTERNO ? undefined : {
     command: `npm run build && npx vite preview --port ${PORTA} --strictPort`,
     url: `http://localhost:${PORTA}/A-Forja-do-Heroi/`,
     reuseExistingServer: !process.env.CI,
