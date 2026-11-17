@@ -47,7 +47,11 @@ html, body {
 
 #app {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   overflow: clip;
 }
@@ -113,7 +117,7 @@ p { margin: 0; }
 }
 .btn-secundario { font-size: 0.95rem; padding: 0.6em 1.2em; }
 .btn-discreto {
-  min-height: 40px;
+  min-height: 44px;
   padding: 0.4em 1em;
   font-size: 0.85rem;
   background: rgba(15, 12, 9, 0.55);

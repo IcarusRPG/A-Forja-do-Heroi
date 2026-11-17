@@ -52,7 +52,7 @@ export function telaCriacao(): Tela {
         if (racaPorId(r.raca)?.variantes && !r.variante) return T.raca.varianteObrigatoria;
         return null;
       case 2: return r.origem ? null : '';
-      case 3: return nomeValido() ? null : T.nome.regra;
+      case 3: return nomeValido() ? null : '';
       case 4:
         if (saldo(r.comprados) !== 0) return T.atributos.gasteTudo;
         if (!bonusCompleto()) return T.atributos.escolhaBonus;
@@ -70,6 +70,8 @@ export function telaCriacao(): Tela {
   const titulo = h('h1', { class: 'criacao-titulo' });
   const listaPassos = h('ol', { class: 'passos' });
   const conteudo = h('main', { class: 'criacao-conteudo', tabindex: '-1' });
+  /** Quem rola: o cartão (desktop) ou a área inteira do corpo (celular). */
+  const rolador = () => (conteudo.scrollHeight > conteudo.clientHeight + 1 ? conteudo : corpo);
   const retrato = h('img', { class: 'painel-retrato', alt: '', draggable: 'false' });
   const legendaRetrato = h('figcaption', { class: 'painel-legenda' });
   const resumo = h('div', { class: 'painel-resumo' });
@@ -79,6 +81,7 @@ export function telaCriacao(): Tela {
   const btnVoltar = botao(T.voltar, () => voltar(), { som: 'ui-back' });
   const btnAvancar = botao(T.avancar, () => avancar(), { classe: 'btn-principal', som: null });
 
+  const corpo = h('div', { class: 'criacao-corpo' }, conteudo, painel);
   const el = h('div', { class: 'tela-criacao' },
     h('img', { class: 'criacao-fundo', src: src(ASSETS.wallpaperMenu), alt: '', draggable: 'false' }),
     h('div', { class: 'criacao-veu' }),
@@ -87,7 +90,7 @@ export function telaCriacao(): Tela {
       titulo,
       h('nav', { class: 'passos-nav', 'aria-label': 'Passos da criação' }, listaPassos),
     ),
-    h('div', { class: 'criacao-corpo' }, conteudo, painel),
+    corpo,
     h('footer', { class: 'criacao-rodape' }, btnVoltar, aviso, btnAvancar),
     h('div', { class: 'criacao-cortina' }),
   );
@@ -100,6 +103,7 @@ export function telaCriacao(): Tela {
     passo = novo;
     renderizar(true);
     conteudo.scrollTop = 0;
+    corpo.scrollTop = 0;
     conteudo.focus({ preventScroll: true });
   }
   function avancar() {
@@ -148,9 +152,10 @@ export function telaCriacao(): Tela {
       const secao = PASSOS[passo]() as HTMLElement;
       // Só anima a entrada quando o passo muda (não a cada card escolhido).
       if (conteudo.dataset.passo !== String(passo)) secao.classList.add('entrando');
-      const rolagem = conteudo.scrollTop;
+      const quem = rolador();
+      const rolagem = quem.scrollTop;
       conteudo.replaceChildren(secao);
-      if (conteudo.dataset.passo === String(passo)) conteudo.scrollTop = rolagem;
+      if (conteudo.dataset.passo === String(passo)) quem.scrollTop = rolagem;
       conteudo.dataset.passo = String(passo);
     }
     renderPainel();
@@ -166,7 +171,7 @@ export function telaCriacao(): Tela {
           class: `passo ${i === passo ? 'atual' : ''} ${i < passo ? 'feito' : ''}`,
           disabled: !liberado,
           'aria-current': i === passo ? 'step' : undefined,
-        }, h('span', { class: 'passo-num' }, i === ULTIMO ? '✦' : String(i + 1)), h('span', { class: 'passo-nome' }, nome));
+        }, h('span', { class: 'passo-num' }, i === ULTIMO ? '✦' : String(i + 1)), h('span', { class: 'passo-rotulo' }, nome));
         item.addEventListener('click', () => irParaPasso(i, i < passo ? 'ui-back' : 'ui-confirm'));
         return h('li', {}, item);
       }),
@@ -274,7 +279,7 @@ export function telaCriacao(): Tela {
           audio.sfx('ui-locked');
           c.classList.add('mostrar-aviso');
           clearTimeout(timer);
-          timer = window.setTimeout(() => c.classList.remove('mostrar-aviso'), 2200);
+          timer = window.setTimeout(() => c.classList.remove('mostrar-aviso'), 2000);
         });
         grade.append(c);
       }
@@ -322,36 +327,46 @@ export function telaCriacao(): Tela {
   function passoNome(): Node {
     const input = h('input', {
       type: 'text', class: 'campo-nome', maxlength: NOME_MAX, minlength: NOME_MIN, autocomplete: 'off', spellcheck: 'false',
-      placeholder: fmt(T.nome.placeholder, r.genero), 'aria-label': T.nome.titulo, value: r.nome,
+      autocapitalize: 'words', enterkeyhint: 'next', id: 'campo-nome',
+      placeholder: fmt(T.nome.placeholder, r.genero), value: r.nome,
     });
-    const contador = h('span', { class: 'nome-contador' });
-    const atualizarContador = () => (contador.textContent = `${r.nome.trim().length}/${NOME_MAX}`);
-    atualizarContador();
-    input.addEventListener('input', () => {
-      r.nome = input.value.slice(0, NOME_MAX);
-      atualizarContador();
+    const contador = h('span', { class: 'nome-contador', 'aria-hidden': 'true' });
+    const dica = h('p', { class: 'nome-dica', id: 'nome-dica' }, T.nome.regra);
+    input.setAttribute('aria-describedby', 'nome-dica');
+    const atualizar = () => {
+      contador.textContent = `${r.nome.trim().length}/${NOME_MAX}`;
+      dica.classList.toggle('ok', nomeValido());
       renderPainel();
       renderRodape();
       renderPassos();
+    };
+    input.addEventListener('input', () => {
+      r.nome = input.value.slice(0, NOME_MAX);
+      atualizar();
     });
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') avancar();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        input.blur();
+        avancar();
+      }
     });
+    // Com o teclado virtual aberto, mantém o campo no meio da área visível.
+    input.addEventListener('focus', () => setTimeout(() => input.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300));
     const sugerir = botao(T.nome.sugerir, () => {
       const lista = ((NOMES as Record<string, Record<Genero, string[]>>)[r.raca ?? 'arake'] ?? NOMES.arake)[r.genero ?? 'm'];
       const opcoes = lista.filter((n) => n !== r.nome);
       r.nome = opcoes[Math.floor(Math.random() * opcoes.length)];
       input.value = r.nome;
-      atualizarContador();
-      renderPainel();
-      renderRodape();
-      renderPassos();
+      atualizar();
     }, { classe: 'btn-secundario' });
+    contador.textContent = `${r.nome.trim().length}/${NOME_MAX}`;
+    dica.classList.toggle('ok', nomeValido());
     // No celular, não abrir o teclado sozinho por cima da tela.
-    if (!ehToque()) setTimeout(() => input.focus(), 50);
+    if (!ehToque()) setTimeout(() => input.focus({ preventScroll: true }), 50);
     return h('section', { class: 'passo-nome' },
-      cabecalho(T.nome.titulo, T.nome.regra),
-      h('div', { class: 'linha-nome' }, h('div', { class: 'campo-nome-caixa' }, input, contador), sugerir),
+      h('div', { class: 'passo-cabecalho' }, h('h2', {}, h('label', { for: 'campo-nome' }, T.nome.titulo))),
+      h('div', { class: 'passo-nome-campos' }, h('div', { class: 'campo-nome-caixa' }, input, contador), dica, sugerir),
     );
   }
 

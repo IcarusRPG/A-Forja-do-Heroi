@@ -67,7 +67,7 @@
       "itens": "Itens"
     },
     "nome": {
-      "titulo": "Como chamam você?",
+      "titulo": "Como você se chama?",
       "placeholder": "Nome {do} {heroi}",
       "sugerir": "Sugerir nome",
       "regra": "De 2 a 24 caracteres."

@@ -58,7 +58,10 @@
 .passo {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.45rem;
+  min-width: 44px;
+  min-height: 44px;
   padding: 0.25rem 0.35rem;
   border: none;
   background: none;
@@ -214,10 +217,12 @@
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.25s, transform 0.15s, background 0.2s;
 }
+@media (hover: hover) {
 .card:hover:not(.bloqueado) {
   border-color: var(--borda-forte);
   box-shadow: 0 0 18px var(--ouro-brilho);
   transform: translateY(-2px);
+}
 }
 .card.selecionado {
   border-color: var(--ouro-claro);
@@ -236,7 +241,8 @@
 .card-genero { padding: 0.6rem; justify-items: center; }
 .card-genero-img {
   width: 100%;
-  height: clamp(180px, 42vh, 380px);
+  aspect-ratio: 3 / 4;
+  height: auto;
   object-fit: cover;
   object-position: center 12%;
   border-radius: 6px;
@@ -249,7 +255,7 @@
 /* Raça */
 .grade-racas { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.8rem; }
 .card-raca { min-height: 110px; }
-.card-raca.bloqueado {
+.card.bloqueado {
   cursor: not-allowed;
   opacity: 0.42;
   filter: grayscale(0.9);
@@ -274,8 +280,12 @@
   transition: opacity 0.2s;
   pointer-events: none;
 }
-.card-raca.bloqueado:hover, .card-raca.bloqueado.mostrar-aviso, .card-raca.bloqueado:focus-visible { opacity: 1; filter: none; }
-.card-raca.bloqueado:hover .card-aviso, .card-raca.bloqueado.mostrar-aviso .card-aviso, .card-raca.bloqueado:focus-visible .card-aviso { opacity: 1; }
+.bloqueado.mostrar-aviso, .bloqueado:focus-visible { opacity: 1; filter: none; }
+.bloqueado.mostrar-aviso .card-aviso, .bloqueado:focus-visible .card-aviso { opacity: 1; }
+@media (hover: hover) {
+  .bloqueado:hover { opacity: 1; filter: none; }
+  .bloqueado:hover .card-aviso { opacity: 1; }
+}
 
 .detalhe-raca {
   margin-top: 1.4rem;
@@ -303,22 +313,25 @@
 .grade-origens { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.9rem; }
 .card-ambientacao { font-style: italic; margin-bottom: 0.3rem; }
 
-/* Nome */
-.linha-nome { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: stretch; max-width: 640px; }
-.campo-nome-caixa { position: relative; flex: 1 1 260px; }
+/* Nome: título, input em largura total, dica e "Sugerir nome", um embaixo do outro. */
+.passo-nome-campos { display: grid; gap: 0.6rem; max-width: 560px; }
+.campo-nome-caixa { position: relative; }
 .campo-nome {
   width: 100%;
-  height: 56px;
-  padding: 0 4.2rem 0 1rem;
-  border: 1px solid var(--borda);
+  min-height: 56px;
+  padding: 0.6rem 4.2rem 0.6rem 1rem;
+  border: 1px solid var(--borda-forte);
   border-radius: var(--raio);
-  background: rgba(10, 8, 6, 0.7);
+  background: rgba(243, 238, 229, 0.08);
   color: var(--marmore);
   font-family: var(--fonte-titulo);
   font-size: 1.3rem;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.campo-nome:focus { border-color: var(--ouro-claro); box-shadow: 0 0 16px var(--ouro-brilho); }
+.campo-nome:focus { border-color: var(--ouro-claro); background: rgba(243, 238, 229, 0.12); box-shadow: 0 0 0 2px rgba(242, 212, 138, 0.35), 0 0 16px var(--ouro-brilho); }
+.nome-dica { font-size: 0.88rem; color: var(--texto-suave); }
+.nome-dica.ok { color: var(--positivo); }
+.passo-nome-campos .btn { justify-self: start; }
 .campo-nome::placeholder { color: rgba(185, 174, 156, 0.55); font-family: var(--fonte-texto); font-size: 1rem; }
 .nome-contador {
   position: absolute;
@@ -375,8 +388,8 @@
 .atributo-compra { display: flex; align-items: center; gap: 0.4rem; }
 .atributo-comprado { min-width: 2.4rem; text-align: center; font-family: var(--fonte-titulo); font-weight: 700; font-size: 1.2rem; }
 .btn-ponto, .btn-bonus {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--borda);
   border-radius: 50%;
   background: rgba(43, 39, 35, 0.9);
@@ -424,13 +437,16 @@
 
 /* Tablet e celular em pé: o painel do personagem vai para baixo, compacto. */
 @media (max-width: 820px) {
-  .criacao-corpo { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+  /* Celular: o cartão do passo tem altura automática; cartão e resumo rolam juntos, o resumo sempre abaixo. */
+  .criacao-corpo { display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; }
+  .criacao-conteudo { flex: none; overflow: visible; }
+  .criacao-painel { flex: none; }
   .criacao-painel { flex-direction: row; align-items: stretch; padding: 10px; gap: 0.8rem; }
-  .painel-figura { flex: 0 0 76px; height: 114px; }
+  .painel-figura { flex: 0 0 76px; align-self: flex-start; aspect-ratio: 2 / 3; }
   .painel-legenda { display: none; }
   .painel-resumo { flex: 1 1 auto; align-content: center; }
-  .passo-nome { display: none; }
-  .passo.atual .passo-nome { display: inline; }
+  .passo-rotulo { display: none; }
+  .passo.atual .passo-rotulo { display: inline; }
 }
 
 @media (max-width: 560px) {
@@ -438,7 +454,7 @@
   .criacao-topo::after { display: none; }
   .criacao-titulo { text-align: right; font-size: 1.05rem; }
   .passo-num { width: 26px; height: 26px; }
-  .passo.atual .passo-nome { display: none; }
+  .passo.atual .passo-rotulo { display: none; }
   .criacao-corpo { padding: 0.3rem 12px; gap: 10px; }
   .criacao-conteudo { padding: 16px 14px; }
   .criacao-rodape { padding-left: 12px; padding-right: 12px; gap: 0.6rem; grid-template-columns: 1fr 1fr; }
@@ -446,7 +462,6 @@
   .rodape-aviso:empty { display: none; }
   .criacao-rodape .btn { min-width: 0; width: 100%; font-size: 0.95rem; padding: 0.6em 0.8em; }
   .grade-genero { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
-  .card-genero-img { height: clamp(150px, 32vh, 280px); }
   .grade-racas { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
   .card { padding: 0.8rem; }
   .card-raca { min-height: 96px; }
@@ -457,7 +472,7 @@
   .pontos {
     order: -1;
     position: sticky;
-    top: -16px;
+    top: 0;
     z-index: 2;
     margin-bottom: 0.8rem;
     grid-auto-flow: column;
@@ -471,8 +486,8 @@
   .atributos-cabecalho > :nth-child(3), .atributo-custo { display: none; }
   .atributo { padding: 0.45rem 0.55rem; }
   .atributo-extenso { display: none; }
-  .btn-ponto { width: 38px; height: 38px; }
-  .btn-bonus { width: 42px; height: 38px; }
+  .btn-ponto { width: 44px; height: 44px; }
+  .btn-bonus { width: 44px; height: 44px; }
   .atributo-final { font-size: 1.25rem; }
   .revisao-item { grid-template-columns: 1fr; gap: 0.1rem; }
   .revisao-atributos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -484,7 +499,7 @@
   .criacao-topo::after { display: none; }
   .criacao-titulo { font-size: 1rem; }
   .passos-nav { grid-column: auto; justify-self: end; }
-  .passo-nome { display: none; }
+  .passo-rotulo { display: none; }
   .passo-num { width: 24px; height: 24px; font-size: 0.72rem; }
   .criacao-corpo { grid-template-columns: minmax(0, 1fr) 200px; grid-template-rows: none; padding-top: 0.2rem; padding-bottom: 0.2rem; }
   .criacao-painel { flex-direction: column; padding: 8px; gap: 0.5rem; }
@@ -492,7 +507,7 @@
   .resumo-lista { display: none; }
   .criacao-conteudo { padding: 14px 18px; }
   .criacao-rodape { padding-top: 0.35rem; padding-bottom: max(6px, env(safe-area-inset-bottom)); }
-  .criacao-rodape .btn { min-height: 38px; padding: 0.3em 1em; font-size: 0.9rem; }
-  .card-genero-img { height: 46vh; }
+  .criacao-rodape .btn { min-height: 44px; padding: 0.3em 1em; font-size: 0.9rem; }
+  .grade-genero { grid-template-columns: repeat(2, minmax(0, 200px)); }
   .passo-cabecalho { margin-bottom: 0.8rem; }
 }
