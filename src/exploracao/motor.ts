@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import type { Genero } from '../core/assets';
 import { h } from '../core/ui';
 import { COLUNAS, QUADRO, desenharFolhaChibi } from './chibi';
-import { PES, dentroDoPoligono, pesLivres } from './geometria';
+import { PES, dentroDoPoligono, encontrarCaminho, pesLivres } from './geometria';
+import { caixaDoContorno, mascaraRecorte } from './recorte';
 import { DIRECOES, type DadosMapa, type Direcao } from './tipos';
 
 /**
@@ -43,6 +44,13 @@ export interface Motor {
   teleportar(x: number, y: number, direcao?: Direcao): void;
   virar(direcao: Direcao): void;
   andarAte(x: number, y: number, ms: number): Promise<void>;
+  /**
+   * Anda sozinho até (x, y) na velocidade normal, com a animação de caminhada, desviando das colisões
+   * (caminho calculado na malha andável). Resolve ao chegar; false se não houver caminho.
+   */
+  caminharAte(x: number, y: number): Promise<boolean>;
+  /** Id do recorte que está cobrindo o herói agora (ele está atrás dele), ou null. */
+  atrasDe(): string | null;
   posicao(): { x: number; y: number; direcao: Direcao };
   proximo(): string | null;
   /** Multiplica o zoom base (1 = normal), suavemente. */
@@ -54,6 +62,19 @@ export interface Motor {
 }
 
 const VELOCIDADE = 150; // px do mapa por segundo
+
+/**
+ * Profundidade (ordem de desenho). Tudo o que fica "em pé" no mapa usa o próprio y como profundidade
+ * (o herói, pelo y dos pés; os recortes, pelo y da base): quem está mais abaixo na tela fica na frente.
+ */
+export const PROF = {
+  mapa: -100_000,
+  luzChao: -50_000,
+  /** Camadas acima de tudo o que está no mapa (neblina da frente, feixes, depuração). */
+  neblinaFrente: 200_000,
+  feixes: 300_000,
+  debug: 1_000_000,
+} as const;
 const CHAVE_FOLHA = 'heroi';
 
 export function criarMotor(o: OpcoesMotor): Promise<Motor> {
@@ -80,6 +101,7 @@ export function criarMotor(o: OpcoesMotor): Promise<Motor> {
     };
 
     let heroi!: Phaser.GameObjects.Sprite;
+    const recortes: { id: string; base: number; img: Phaser.GameObjects.Image }[] = [];
     let gDebug!: Phaser.GameObjects.Graphics;
     let gPes!: Phaser.GameObjects.Graphics;
     let motor!: Motor;
@@ -109,6 +131,15 @@ export function criarMotor(o: OpcoesMotor): Promise<Motor> {
       for (const i of mapa.interacoes) {
         gDebug.fillStyle(0x00d0ff, 0.2).lineStyle(2, 0x00d0ff, 1);
         gDebug.fillCircle(i.x, i.y, i.raio).strokeCircle(i.x, i.y, i.raio);
+      }
+      // Recortes de profundidade: contorno em magenta e a linha da base.
+      for (const oc of mapa.oclusores ?? []) {
+        gDebug.lineStyle(1.5, 0xff40ff, 0.9);
+        gDebug.strokePoints(oc.contorno.map(([x, y]) => new Phaser.Math.Vector2(x, y)), true);
+        if (oc.base < mapa.altura) {
+          const xs = oc.contorno.map((p) => p[0]);
+          gDebug.lineStyle(1, 0xff40ff, 0.6).lineBetween(Math.min(...xs), oc.base, Math.max(...xs), oc.base);
+        }
       }
     };
 
@@ -147,7 +178,8 @@ export function criarMotor(o: OpcoesMotor): Promise<Motor> {
       }
 
       create() {
-        this.add.image(0, 0, 'mapa').setOrigin(0).setDepth(0);
+        this.add.image(0, 0, 'mapa').setOrigin(0).setDepth(PROF.mapa);
+        criarRecortes(this);
 
         // Sem sprite real (ou se ele falhar): o boneco desenhado por código.
         if (!this.textures.exists(CHAVE_FOLHA)) {
@@ -164,7 +196,7 @@ export function criarMotor(o: OpcoesMotor): Promise<Motor> {
         });
 
         heroi = this.add.sprite(mapa.inicio.x, mapa.inicio.y, CHAVE_FOLHA, DIRECOES.indexOf(direcao) * COLUNAS);
-        heroi.setOrigin(0.5, 45 / QUADRO).setDepth(10);
+        heroi.setOrigin(0.5, 46 / QUADRO).setDepth(heroi.y);
         heroi.on(Phaser.Animations.Events.ANIMATION_UPDATE, (_a: unknown, quadro: Phaser.Animations.AnimationFrame) => {
           if (quadro.index === 2 || quadro.index === 4) o.aoPasso?.();
         });
@@ -175,8 +207,8 @@ export function criarMotor(o: OpcoesMotor): Promise<Motor> {
         cam.startFollow(heroi, false, 0.12, 0.12);
         cam.centerOn(heroi.x, heroi.y);
 
-        gDebug = this.add.graphics().setDepth(1000);
-        gPes = this.add.graphics().setDepth(1001);
+        gDebug = this.add.graphics().setDepth(PROF.debug);
+        gPes = this.add.graphics().setDepth(PROF.debug + 1);
         desenharDebug();
 
         // No modo de ajuste, um toque/clique mostra as coordenadas do mapa naquele ponto.
@@ -216,6 +248,32 @@ export function criarMotor(o: OpcoesMotor): Promise<Motor> {
               onComplete: () => { movendoPorScript = false; animar(false); ok(); },
             });
           }),
+          caminharAte: async (x, y) => {
+            const caminho = encontrarCaminho(mapa.colisoes, mapa.largura, mapa.altura, { x: heroi.x, y: heroi.y }, { x, y });
+            if (!caminho) return false;
+            movendoPorScript = true;
+            for (const p of caminho) {
+              if (destruido) return false;
+              await new Promise<void>((ok) => {
+                const dx = p.x - heroi.x;
+                const dy = p.y - heroi.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist < 1) return ok();
+                direcao = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'esquerda' : 'direita') : dy < 0 ? 'cima' : 'baixo';
+                heroi.anims.timeScale = 1;
+                animar(true);
+                this.tweens.add({ targets: heroi, x: p.x, y: p.y, duration: (dist / VELOCIDADE) * 1000, ease: 'Linear', onComplete: () => ok() });
+              });
+            }
+            movendoPorScript = false;
+            animar(false);
+            return true;
+          },
+          atrasDe: () => {
+            const b = heroi.getBounds();
+            const r = recortes.find((rc) => rc.base > heroi.y && Phaser.Geom.Intersects.RectangleToRectangle(b, rc.img.getBounds()) && cobre(rc.id, b));
+            return r?.id ?? null;
+          },
           posicao: () => ({ x: heroi.x, y: heroi.y, direcao }),
           proximo: () => proximo,
           zoomPara(fator, ms) {
@@ -263,6 +321,7 @@ export function criarMotor(o: OpcoesMotor): Promise<Motor> {
             animar(false);
           }
         }
+        heroi.setDepth(heroi.y);
         avaliarAreas();
         if (debugLigado) {
           gPes.clear().lineStyle(2, 0xff00ff, 1).strokeEllipse(heroi.x, heroi.y, PES.rx * 2, PES.ry * 2);
@@ -270,6 +329,41 @@ export function criarMotor(o: OpcoesMotor): Promise<Motor> {
         }
         o.aoAtualizar?.(delta);
       }
+    }
+
+    /** Recorta do próprio mapa as partes que devem passar na frente do herói (estátuas, balaustrada). */
+    const mascaras = new Map<string, { m: Uint8Array; x0: number; y0: number; w: number }>();
+    function criarRecortes(cena: Phaser.Scene) {
+      const fonte = cena.textures.get('mapa').getSourceImage() as CanvasImageSource;
+      for (const oc of mapa.oclusores ?? []) {
+        const c = caixaDoContorno(oc.contorno, mapa.largura, mapa.altura);
+        const canvas = document.createElement('canvas');
+        canvas.width = c.largura;
+        canvas.height = c.altura;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+        ctx.drawImage(fonte, c.x0, c.y0, c.largura, c.altura, 0, 0, c.largura, c.altura);
+        const dados = ctx.getImageData(0, 0, c.largura, c.altura);
+        const m = mascaraRecorte({ rgba: dados.data, ...c, contorno: oc.contorno, sementes: oc.sementes, fixo: oc.fixo, limiar: oc.limiar });
+        for (let p = 0; p < m.length; p++) if (!m[p]) dados.data[p * 4 + 3] = 0;
+        ctx.putImageData(dados, 0, 0);
+        const chave = `recorte-${oc.id}`;
+        if (cena.textures.exists(chave)) cena.textures.remove(chave);
+        cena.textures.addCanvas(chave, canvas);
+        const img = cena.add.image(c.x0, c.y0, chave).setOrigin(0).setDepth(oc.base);
+        recortes.push({ id: oc.id, base: oc.base, img });
+        mascaras.set(oc.id, { m, x0: c.x0, y0: c.y0, w: c.largura });
+      }
+    }
+
+    /** Algum pixel do recorte cai dentro da caixa do herói? (amostra a cada 2 px) */
+    function cobre(id: string, b: Phaser.Geom.Rectangle) {
+      const k = mascaras.get(id);
+      if (!k) return false;
+      const alt = k.m.length / k.w;
+      for (let y = Math.max(0, Math.floor(b.top - k.y0)); y < Math.min(alt, b.bottom - k.y0); y += 2)
+        for (let x = Math.max(0, Math.floor(b.left - k.x0)); x < Math.min(k.w, b.right - k.x0); x += 2)
+          if (k.m[y * k.w + x]) return true;
+      return false;
     }
 
     const largura = () => Math.max(1, o.container.clientWidth);

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { PROF } from './motor';
 
 /** Efeitos de luz do sonho dos deuses: brilho das estátuas, altar, aura do herói e feixes do clímax. */
 
@@ -43,9 +44,9 @@ class LuzEstatua {
   constructor(private cena: Phaser.Scene, readonly dados: EstatuaSonho) {
     const tinta = cor(dados.cor);
     this.base = cena.add.image(dados.base.x, dados.base.y, TEX_LUZ)
-      .setTint(tinta).setBlendMode(Phaser.BlendModes.ADD).setScale(2.1, 0.95).setDepth(5).setAlpha(0);
+      .setTint(tinta).setBlendMode(Phaser.BlendModes.ADD).setScale(2.1, 0.95).setDepth(dados.base.y + 0.5).setAlpha(0);
     this.pilar = cena.add.image(dados.foco.x, (dados.foco.y + dados.base.y) / 2, TEX_LUZ)
-      .setTint(tinta).setBlendMode(Phaser.BlendModes.ADD).setScale(1.5, 2.6).setDepth(5).setAlpha(0);
+      .setTint(tinta).setBlendMode(Phaser.BlendModes.ADD).setScale(1.5, 2.6).setDepth(dados.base.y + 0.5).setAlpha(0);
     this.definir('repouso');
   }
 
@@ -54,6 +55,20 @@ class LuzEstatua {
     this.pulso?.remove();
     this.base.setAlpha(de);
     this.pulso = this.cena.tweens.add({ targets: this.base, alpha: ate, duration: ms, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+  }
+
+  /** Tremula por um instante (tremor de terra): pisca algumas vezes. */
+  tremular() {
+    const alvos = [this.base, this.pilar];
+    let n = 0;
+    this.cena.time.addEvent({
+      delay: 70,
+      repeat: 5,
+      callback: () => {
+        n++;
+        for (const a of alvos) a.setVisible(n % 2 === 0 || n >= 6);
+      },
+    });
   }
 
   definir(estado: Estado) {
@@ -96,14 +111,19 @@ export class EfeitosSonho {
     for (const e of estatuas) this.luzes.set(e.id, new LuzEstatua(cena, e));
     // Aura dourada suave e pulsante ao redor do herói (no sonho)
     this.aura = cena.add.image(heroi.x, heroi.y - 20, TEX_LUZ)
-      .setTint(cor('#ffd98a')).setBlendMode(Phaser.BlendModes.ADD).setScale(0.75, 0.9).setDepth(9).setAlpha(0.35);
+      .setTint(cor('#ffd98a')).setBlendMode(Phaser.BlendModes.ADD).setScale(0.75, 0.9).setDepth(heroi.y + 0.1).setAlpha(0.35);
     cena.tweens.add({ targets: this.aura, alpha: 0.6, scaleX: 0.85, scaleY: 1, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    this.feixes = cena.add.graphics().setDepth(20).setBlendMode(Phaser.BlendModes.ADD);
+    this.feixes = cena.add.graphics().setDepth(PROF.feixes).setBlendMode(Phaser.BlendModes.ADD);
     cena.events.on(Phaser.Scenes.Events.UPDATE, this.atualizar, this);
   }
 
   perto(id: string, sim: boolean) {
     this.luzes.get(id)?.definir(sim ? 'perto' : 'repouso');
+  }
+
+  /** Tremor: o brilho de todas as estátuas tremula. */
+  tremular() {
+    for (const l of this.luzes.values()) l.tremular();
   }
 
   acender(id: string) {
@@ -114,7 +134,7 @@ export class EfeitosSonho {
   altarPronto() {
     if (this.altar) return;
     this.altar = this.cena.add.image(this.centroAltar.x, this.centroAltar.y, TEX_LUZ)
-      .setTint(cor('#ffd25a')).setBlendMode(Phaser.BlendModes.ADD).setScale(2.4, 1.4).setDepth(4).setAlpha(0);
+      .setTint(cor('#ffd25a')).setBlendMode(Phaser.BlendModes.ADD).setScale(2.4, 1.4).setDepth(PROF.luzChao).setAlpha(0);
     this.cena.tweens.add({ targets: this.altar, alpha: { from: 0.35, to: 0.75 }, duration: 1300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
   }
 
@@ -130,7 +150,7 @@ export class EfeitosSonho {
   }
 
   private atualizar() {
-    this.aura.setPosition(this.heroi.x, this.heroi.y - 20);
+    this.aura.setPosition(this.heroi.x, this.heroi.y - 20).setDepth(this.heroi.y + 0.1);
     if (this.feixesInicio < 0) return;
     const t = Math.min(1, (this.cena.time.now - this.feixesInicio) / this.feixesDuracao);
     const p = Phaser.Math.Easing.Sine.Out(t);

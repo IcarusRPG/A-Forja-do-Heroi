@@ -29,6 +29,20 @@ export interface Gatilho {
   pontos: Ponto[];
 }
 
+/**
+ * Pedaço do próprio mapa recortado e desenhado por cima do herói quando ele passa atrás (profundidade).
+ * O recorte é desenhado na profundidade `base` (o y do "pé" do elemento): se os pés do herói estão acima
+ * dessa linha (y menor), ele fica atrás. Ver recorte.ts.
+ */
+export interface Oclusor {
+  id: string;
+  base: number;
+  contorno: Ponto[];
+  sementes: Ponto[];
+  fixo?: Ponto[];
+  limiar?: number;
+}
+
 export interface DadosMapa {
   id: string;
   /** Caminho relativo a public/assets. */
@@ -41,4 +55,5 @@ export interface DadosMapa {
   gatilhos: Gatilho[];
   /** Pontos nomeados que a cena usa (centro do altar, por exemplo). */
   pontos?: Record<string, { x: number; y: number }>;
+  oclusores?: Oclusor[];
 }
