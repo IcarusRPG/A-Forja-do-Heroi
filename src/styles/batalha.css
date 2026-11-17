@@ -1,0 +1,205 @@
+/* Batalha no estilo Final Fantasy VI: arena em pixel art em cima, janela de comandos azul embaixo. */
+
+.tela-batalha {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  background: #05060c;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.batalha-arena {
+  position: relative;
+  overflow: hidden;
+  background-color: #2b2016;
+  background-size: cover;
+  background-position: center 70%;
+  image-rendering: pixelated;
+}
+.batalha-lado { position: absolute; bottom: 9%; display: flex; align-items: flex-end; }
+.batalha-lado.inimigos { left: max(4%, env(safe-area-inset-left)); }
+.batalha-lado.herois { right: max(8%, env(safe-area-inset-right)); bottom: 11%; }
+
+.sprite-batalha { position: relative; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); }
+.sprite-batalha::after {
+  /* sombra no chão */
+  content: '';
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: -4px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: -1;
+}
+.sprite-corpo {
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  transform-origin: 50% 100%;
+}
+.sprite-desfazendo { display: block; image-rendering: pixelated; }
+.sprite-batalha.respirando .sprite-corpo { animation: respirar 1.7s ease-in-out infinite alternate; }
+@keyframes respirar { to { transform: scaleY(1.025); } }
+.sprite-batalha.piscando .sprite-corpo { animation: piscar-branco 0.21s steps(1) 2; }
+@keyframes piscar-branco { 0% { filter: brightness(0) invert(1); } 50% { filter: none; } }
+.heroi-preparado .sprite-batalha.heroi { filter: drop-shadow(0 0 6px rgba(242, 212, 138, 0.9)); }
+
+/* ---------- Topo: mensagem e ordem dos turnos ---------- */
+.batalha-topo {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top));
+  left: max(8px, env(safe-area-inset-left));
+  right: max(8px, env(safe-area-inset-right));
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.batalha-mensagem, .batalha-janela, .batalha-caixa-log {
+  border: 2px solid var(--ouro);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(34, 52, 132, 0.95), rgba(14, 22, 66, 0.97));
+  box-shadow: inset 0 0 0 2px rgba(10, 14, 40, 0.9), 0 6px 18px rgba(0, 0, 0, 0.5);
+  color: #f4f1ff;
+}
+.batalha-mensagem {
+  margin: 0;
+  min-height: 2.4em;
+  width: min(640px, 100%);
+  padding: 0.45rem 0.9rem;
+  text-align: center;
+  font-size: clamp(0.95rem, 3.6vw, 1.1rem);
+  text-shadow: 1px 1px 0 #000;
+}
+.batalha-mensagem:empty { visibility: hidden; }
+.batalha-turnos {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.72rem;
+}
+.batalha-turnos:empty { display: none; }
+.batalha-turnos li {
+  display: flex;
+  gap: 0.35rem;
+  align-items: baseline;
+  padding: 0.12rem 0.5rem;
+  border: 1px solid rgba(242, 212, 138, 0.35);
+  border-radius: 999px;
+  background: rgba(10, 14, 40, 0.75);
+  color: #dfe3ff;
+  opacity: 0.8;
+}
+.batalha-turnos li.atual { opacity: 1; border-color: var(--ouro-claro); color: #fff; box-shadow: 0 0 10px rgba(242, 212, 138, 0.45); }
+.turno-valor { font-variant-numeric: tabular-nums; color: var(--ouro-claro); }
+.mostrando-iniciativa .batalha-turnos li { opacity: 1; }
+
+/* ---------- Números de dano ---------- */
+.batalha-efeitos { position: absolute; inset: 0; pointer-events: none; }
+.batalha-numero {
+  position: absolute;
+  transform: translate(-50%, 0);
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 5vw, 1.8rem);
+  color: #fff;
+  text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
+  animation: numero-sobe 1.3s ease-out forwards;
+}
+.batalha-numero.critico { font-size: clamp(1.8rem, 7vw, 2.5rem); color: #ffd25a; }
+.batalha-numero.errou { font-size: clamp(1rem, 4vw, 1.3rem); color: #dfe3ff; }
+@keyframes numero-sobe {
+  0% { opacity: 0; transform: translate(-50%, 10px); }
+  15% { opacity: 1; transform: translate(-50%, -8px); }
+  70% { opacity: 1; transform: translate(-50%, -26px); }
+  100% { opacity: 0; transform: translate(-50%, -38px); }
+}
+
+/* ---------- Fim ---------- */
+.batalha-escuro { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 1.8s ease; }
+.tela-batalha.derrota .batalha-escuro { opacity: 0.75; }
+.tela-batalha.vitoria .batalha-mensagem { color: #ffe7a6; font-family: var(--fonte-titulo); letter-spacing: 0.12em; }
+
+/* ---------- Janela de comandos ---------- */
+.batalha-janela {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.8rem;
+  margin: 8px max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  padding: 0.6rem 0.8rem;
+}
+.janela-esquerda, .janela-direita { min-width: 0; display: grid; align-content: start; gap: 0.35rem; }
+.batalha-comandos { display: grid; gap: 4px; }
+.batalha-cmd {
+  justify-content: flex-start;
+  min-height: 44px;
+  padding: 0.35rem 0.6rem 0.35rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
+  color: #fff;
+  font-family: var(--fonte-texto);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  text-shadow: 1px 1px 0 #000;
+}
+.batalha-cmd::before { content: '▶'; position: absolute; left: 0.45rem; font-size: 0.7rem; color: var(--ouro-claro); opacity: 0; }
+.batalha-cmd:hover:not(:disabled), .batalha-cmd:focus-visible { background: rgba(255, 255, 255, 0.08); border-color: rgba(242, 212, 138, 0.4); outline: none; }
+.batalha-cmd:hover:not(:disabled)::before, .batalha-cmd:focus-visible::before { opacity: 1; }
+.batalha-cmd:disabled { opacity: 0.45; filter: none; }
+.batalha-janela:not(.esperando) .batalha-cmd { opacity: 0.55; }
+.batalha-dica { margin: 0; font-size: 0.78rem; font-style: italic; color: #c9cff5; }
+.batalha-dica:empty { display: none; }
+.batalha-continuar { width: 100%; }
+
+.ficha-nome { margin: 0; font-family: var(--fonte-titulo); font-weight: 700; color: #fff; overflow-wrap: anywhere; }
+.batalha-status { color: #ff9c8a; font-family: var(--fonte-texto); font-size: 0.85rem; }
+.ficha-pv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.2rem 0.5rem; align-items: center; }
+.pv-rotulo { font-size: 0.75rem; font-weight: 700; color: var(--ouro-claro); }
+.pv-barra { height: 10px; border: 1px solid #000; border-radius: 3px; background: #1a1430; overflow: hidden; }
+.pv-preenchido { height: 100%; background: linear-gradient(180deg, #8ef08a, #3fae4a); transition: width 0.4s ease; }
+.pv-barra.baixo .pv-preenchido { background: linear-gradient(180deg, #ffb35a, #d0542a); }
+.pv-numero { grid-column: 2; font-size: 0.9rem; font-variant-numeric: tabular-nums; color: #fff; }
+.ficha-defesa { margin: 0; font-size: 0.8rem; color: #c9cff5; }
+.batalha-btn-log {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 0.8rem;
+  border: 1px solid rgba(242, 212, 138, 0.4);
+  border-radius: 6px;
+  background: rgba(10, 14, 40, 0.6);
+  color: #dfe3ff;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.batalha-caixa-log {
+  position: absolute;
+  z-index: 6;
+  left: max(8px, env(safe-area-inset-left));
+  right: max(8px, env(safe-area-inset-right));
+  bottom: calc(max(8px, env(safe-area-inset-bottom)) + 190px);
+  max-height: 40dvh;
+  overflow: auto;
+  padding: 0.5rem 0.8rem;
+}
+.batalha-caixa-log[hidden] { display: none; }
+.batalha-log { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+
+/* Computador: a arena ocupa ~70% da altura. */
+@media (min-width: 900px) and (min-height: 600px) {
+  .tela-batalha { grid-template-rows: 70% minmax(0, 1fr); }
+  .batalha-janela { max-width: 980px; width: calc(100% - 32px); justify-self: center; align-self: start; margin-top: 12px; padding: 0.9rem 1.2rem; }
+}
+/* Celular deitado: janela compacta, comandos em duas colunas. */
+@media (max-height: 500px) {
+  .batalha-janela { gap: 0.5rem; padding: 0.4rem 0.6rem; margin-top: 4px; }
+  .batalha-comandos { grid-template-columns: 1fr 1fr; }
+  .batalha-cmd { min-height: 44px; font-size: 0.92rem; }
+  .ficha-defesa { display: none; }
+  .batalha-caixa-log { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 120px); }
+}

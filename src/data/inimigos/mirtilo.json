@@ -1,0 +1,16 @@
+{
+  "id": "mirtilo",
+  "nome": "Mirtilo",
+  "regiao": "chiqueiro",
+  "sprite": "mirtilo",
+  "pv": 8,
+  "defesa": 10,
+  "iniciativa": 1,
+  "fogeComPv": 4,
+  "aceitaConversa": true,
+  "poses": { "parado": "parado", "ataque": "ataque", "atingido": "atingido", "recuando": "recuando", "fugindo": "fugindo", "tonto": "tonto" },
+  "ataques": {
+    "presas": { "nome": "Presas", "bonus": 3, "dano": "1d4+1", "tipoDano": "perfuração", "pose": "ataque", "som": "pig-squeal", "mensagem": "O Mirtilo investe com as presas!" }
+  },
+  "ia": { "tipo": "sempre", "ataque": "presas" }
+}
