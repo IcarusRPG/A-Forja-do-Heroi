@@ -270,7 +270,10 @@ class GerenciadorAudio {
   /** Para testes: leva a faixa atual para perto do fim (a playlist emenda na próxima). */
   pularParaOFim(): void {
     const el = this.canal.el;
-    if (Number.isFinite(el.duration)) el.currentTime = Math.max(0, el.duration - 0.4);
+    const ir = () => { el.currentTime = Math.max(0, el.duration - 0.4); };
+    // Pela rede, a faixa nova pode ainda não saber a duração: espera os metadados.
+    if (Number.isFinite(el.duration)) ir();
+    else el.addEventListener('loadedmetadata', ir, { once: true });
   }
 
   private fade(c: Canal, alvo: number, ms: number, aoTerminar?: () => void): void {
