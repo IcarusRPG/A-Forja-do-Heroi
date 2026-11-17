@@ -12,7 +12,7 @@ import { irPara, type Tela } from '../core/telas';
 import { textos } from '../core/textos';
 import { botao, h } from '../core/ui';
 
-/** Tela provisória do fim da fase 1: "Capítulo 01 — Amanhecer Tardio · Em breve". */
+/** Tela provisória depois do Capítulo 01: "Capítulo 02 — O Templo de Sólem · Em breve". */
 export function telaEmBreve(): Tela {
   const t = textos.emBreve;
   const p = getEstado().personagem;

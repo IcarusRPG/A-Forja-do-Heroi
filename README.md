@@ -22,7 +22,7 @@ Abra `http://localhost:5174/A-Forja-do-Heroi/`.
 | `npm run build` | Checa os tipos e gera o site em `dist/` |
 | `npm run assets` | Copia e otimiza as mídias da pasta `FdG` para `public/assets` (retratos, wallpaper e mapas navegáveis em WebP, logos em PNG, vídeo em H.264 se passar de 50 MB). Aceita outra pasta: `node scripts/prepare-assets.mjs "D:\caminho\FdG"` |
 | `npm run sfx` | Regera os efeitos sonoros provisórios em `public/assets/sfx` |
-| `npm run sprites` | Gera as folhas de caminhada do herói (`public/assets/sprites/chibi-<raca>-<m\|f>.png`) a partir das folhas 2 × 2 de vistas paradas em `assets-src/sprites/<raca>-<m\|f>.png`; prévias 6× e GIFs em `tests/screenshots/sprites/` |
+| `npm run sprites` | Gera as folhas de caminhada (heróis e NPCs) e as folhas de batalha (ver abaixo). Caminhada: gera as folhas do herói (`public/assets/sprites/chibi-<raca>-<m\|f>.png`) a partir das folhas 2 × 2 de vistas paradas em `assets-src/sprites/<raca>-<m\|f>.png`; prévias 6× e GIFs em `tests/screenshots/sprites/`. Batalha (`scripts/build-battle-sprites.mjs`): folhas 3 × 2 de poses paradas em `assets-src/batalha/` viram folhas horizontais de 6 quadros alinhadas pelos pés + JSON em `public/assets/img/batalha/`; prévias em `tests/screenshots/batalha/` |
 | `node scripts/conferir-mapa.mjs [saida.png]` | Confere o mapa do sonho: tudo alcançável a pé a partir da escada, caminho até o altar de cada estátua e largura das passagens |
 | `node scripts/ver-mapa.mjs [saida.png]` | Desenha colisões, áreas de interação e recortes de profundidade sobre a imagem do mapa |
 | `npm run test:mobile` | Testes e2e (Playwright) da criação de personagem e do sonho dos deuses em Pixel 7, iPhone 13 e paisagem 844×390; screenshots em `tests/screenshots/`. Na primeira vez: `npx playwright install chromium webkit`. Para testar o site publicado em vez do build local: `BASE_URL=https://icarusrpg.github.io/A-Forja-do-Heroi/ npm run test:mobile` |
@@ -53,6 +53,19 @@ Todo texto visível ao jogador está em `src/data/textos.json` (com flexão de g
 - **Clima:** neblina em duas camadas (densa nas bordas, leve no caminho; a fina passa na frente do herói), partículas douradas e tremores ocasionais a cada 15–30 s. Os tremores de câmera podem ser desligados em Opções → "Tremores de tela" (com `prefers-reduced-motion`, começam desligados). Se o FPS cair abaixo de 45, a neblina e as partículas diminuem.
 - **Modo de ajuste:** abra o jogo com `?debug=1` (ou aperte F2 no `npm run dev`) para ver as colisões (verde/vermelho), as áreas de interação (azul), os gatilhos (amarelo) e os recortes de profundidade (magenta). Um clique no mapa mostra a coordenada daquele ponto.
 - **Ganchos de teste:** com `?test=1`, `window.__fdg.teleport(id | "x,y")`, `__fdg.walkTo("x,y")`, `__fdg.interact()`, `__fdg.tremor()` e `__fdg.state()`.
+
+## Capítulos e cenas narrativas
+
+- **Roteiro em dados:** cada capítulo é um JSON em `src/data/capitulos/` com a lista de cenas: `fundo`, `musica` (`"fullmun"` é a playlist da vila; o resto é o nome do arquivo em `music/`), `falas` (`quem`: vazio = narração, `"pensamento"`, `"heroi"` ou o id de um NPC de `src/data/npcs.json`) e `escolhas` (`requer` por origem/flag/semFlag/gênero, `uma_vez`, `efeitos`, `teste` de perícia com `sucesso`/`falha`, `batalha` com `vitoria`/`derrota`). Texto: `{nome}` e `{homem|mulher}`.
+- **Testes de perícia:** d20 + atributo + 2 da origem (se for a perícia dela) + bônus raciais + bônus do próximo teste. Antes da Forja, o treino de classe não conta.
+- **Save:** cena atual, caminho, escolhas usadas, flags e PV atuais ficam em `campanha` no localStorage; Continuar retoma na última cena.
+
+## Batalha (estilo Final Fantasy VI)
+
+- Inimigos em `src/data/inimigos/*.json` (PV, Defesa, Iniciativa, ataques, IA, poses) e regiões em `src/data/regioes.json` (fundo e música). Um combate novo precisa só de dados e sprites.
+- Iniciativa automática (d20 + DES), ordem fixa; comandos Bicuda, Intimidar, Acalmar e Aguardar. Não existe fugir.
+- Game Over genérico: `?tela=gameover` (não é usado no Capítulo 01).
+- Ganchos de teste (`?test=1`): `__fdg.forceRoll([n, …])` (próximos d20), `__fdg.goto(cena)`, `__fdg.state()`; na batalha também `__fdg.setPv(n)`.
 
 ## Mídias que podem ser trocadas
 

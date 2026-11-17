@@ -3,23 +3,19 @@
   "numero": 1,
   "titulo": "Amanhecer Tardio",
   "inicio": "c01-quarto",
-  "proximoCapitulo": {
-    "numero": 2,
-    "titulo": "O Templo de Sólem"
-  },
+  "proximoCapitulo": { "numero": 2, "titulo": "O Templo de Sólem" },
   "resumo": [
-    {
-      "flag": "pista_sonho",
-      "texto": "Você lembrou que, nos relatos, a guerra sempre começa com alguém tendo um sonho."
-    },
-    {
-      "flag": "prece",
-      "texto": "Você começou o dia com uma prece a Sólem."
-    },
-    {
-      "flag": "ritual",
-      "texto": "Você se despediu da porta dos seus pais, como todos os dias."
-    }
+    { "flag": "intimidou", "texto": "Você espantou o Mirtilo no grito." },
+    { "flag": "acalmou", "texto": "Você acalmou o Mirtilo." },
+    { "flag": "lutou", "semFlag": "machucado", "texto": "Você enfrentou o Mirtilo." },
+    { "flag": "machucado", "texto": "Você enfrentou o Mirtilo e acabou na lama, salv{o|a} pela corda de Gerulf." },
+    { "flag": "salvou_aylin", "texto": "A Aylin está a salvo." },
+    { "flag": "pista_trinco", "texto": "Você notou algo estranho no trinco do chiqueiro." },
+    { "flag": "pista_sonho", "texto": "Você lembrou que, nos relatos, a guerra sempre começa com alguém tendo um sonho." },
+    { "flag": "prece", "texto": "Você começou o dia com uma prece a Sólem." },
+    { "flag": "ritual", "texto": "Você se despediu da porta dos seus pais, como todos os dias." },
+    { "flag": "gentil_hulda", "texto": "Você prometeu à Vó Hulda chegar antes do galo." },
+    { "flag": "cuidou_aylin", "texto": "Você cuidou do joelho ralado da Aylin." }
   ],
   "cenas": [
     {
@@ -27,58 +23,17 @@
       "fundo": "cena-quarto",
       "musica": "fullmun",
       "falas": [
-        {
-          "texto": "Você abre os olhos. A luz dourada entra pelas frestas da janela, e o sol já vai alto."
-        },
-        {
-          "texto": "O quarto é o de sempre: paredes de madeira bruta, o baú escuro ao lado da cama, as botas largadas no chão. Sobre a mesinha, livros empoeirados e anotações sobre os Alfars e os Baldurs."
-        },
-        {
-          "texto": "Seus ouvidos ainda zunem. O sonho parecia real demais."
-        },
-        {
-          "quem": "pensamento",
-          "texto": "Eu realmente devia ter parado de estudar mais cedo…"
-        }
+        { "texto": "Você abre os olhos. A luz dourada entra pelas frestas da janela, e o sol já vai alto." },
+        { "texto": "O quarto é o de sempre: paredes de madeira bruta, o baú escuro ao lado da cama, as botas largadas no chão. Sobre a mesinha, livros empoeirados e anotações sobre os Alfars e os Baldurs." },
+        { "texto": "Seus ouvidos ainda zunem. O sonho parecia real demais." },
+        { "quem": "pensamento", "texto": "Eu realmente devia ter parado de estudar mais cedo…" }
       ],
       "escolhas": [
-        {
-          "texto": "Olhar as anotações sobre os deuses",
-          "uma_vez": true,
-          "efeitos": {
-            "flag": "leu_anotacoes"
-          },
-          "vai_para": "c01-quarto-anotacoes"
-        },
-        {
-          "texto": "Arrumar o quarto às pressas",
-          "uma_vez": true,
-          "vai_para": "c01-quarto-arrumar"
-        },
-        {
-          "texto": "Fazer uma prece rápida",
-          "requer": {
-            "origem": "religioso"
-          },
-          "uma_vez": true,
-          "efeitos": {
-            "flag": "prece",
-            "bonusProximoTeste": 1
-          },
-          "vai_para": "c01-quarto-prece"
-        },
-        {
-          "texto": "Despedir-se à porta dos pais",
-          "uma_vez": true,
-          "efeitos": {
-            "flag": "ritual"
-          },
-          "vai_para": "c01-quarto-pais"
-        },
-        {
-          "texto": "Sair de casa",
-          "vai_para": "c01-soleira"
-        }
+        { "texto": "Olhar as anotações sobre os deuses", "uma_vez": true, "efeitos": { "flag": "leu_anotacoes" }, "vai_para": "c01-quarto-anotacoes" },
+        { "texto": "Arrumar o quarto às pressas", "uma_vez": true, "vai_para": "c01-quarto-arrumar" },
+        { "texto": "Fazer uma prece rápida", "requer": { "origem": "religioso" }, "uma_vez": true, "efeitos": { "flag": "prece", "bonusProximoTeste": 1 }, "vai_para": "c01-quarto-prece" },
+        { "texto": "Despedir-se à porta dos pais", "uma_vez": true, "efeitos": { "flag": "ritual" }, "vai_para": "c01-quarto-pais" },
+        { "texto": "Sair de casa", "vai_para": "c01-soleira" }
       ]
     },
     {
@@ -86,18 +41,8 @@
       "fundo": "cena-quarto",
       "musica": "fullmun",
       "falas": [
-        {
-          "texto": "Entre os rabiscos, uma frase sublinhada três vezes: “Os Alfars e os Baldurs já guerrearam antes. Os livros não dizem por quê.”"
-        },
-        {
-          "requer": {
-            "origem": "estudioso"
-          },
-          "efeitos": {
-            "flag": "pista_sonho"
-          },
-          "texto": "Você lembra de um detalhe que quase ninguém nota: em todos os relatos, a guerra começa com alguém tendo um sonho."
-        }
+        { "texto": "Entre os rabiscos, uma frase sublinhada três vezes: “Os Alfars e os Baldurs já guerrearam antes. Os livros não dizem por quê.”" },
+        { "requer": { "origem": "estudioso" }, "efeitos": { "flag": "pista_sonho" }, "texto": "Você lembra de um detalhe que quase ninguém nota: em todos os relatos, a guerra começa com alguém tendo um sonho." }
       ],
       "retorna": "c01-quarto"
     },
@@ -106,9 +51,7 @@
       "fundo": "cena-quarto",
       "musica": "fullmun",
       "falas": [
-        {
-          "texto": "Você empurra as cobertas, empilha os livros numa torre torta e calça as botas. Longe de arrumado, mas o suficiente para parecer em ordem."
-        }
+        { "texto": "Você empurra as cobertas, empilha os livros numa torre torta e calça as botas. Longe de arrumado, mas o suficiente para parecer em ordem." }
       ],
       "retorna": "c01-quarto"
     },
@@ -117,9 +60,7 @@
       "fundo": "cena-quarto",
       "musica": "fullmun",
       "falas": [
-        {
-          "texto": "Você toca o pequeno sol de Sólem pendurado na parede e murmura uma prece curta. Por um instante, a dor de cabeça alivia."
-        }
+        { "texto": "Você toca o pequeno sol de Sólem pendurado na parede e murmura uma prece curta. Por um instante, a dor de cabeça alivia." }
       ],
       "retorna": "c01-quarto"
     },
@@ -128,13 +69,8 @@
       "fundo": "cena-quarto",
       "musica": "fullmun",
       "falas": [
-        {
-          "texto": "Você encosta a mão na porta fechada do quarto de Bran e Liessa. Eles estão longe, servindo em Vön Bicken, mas o ritual é o mesmo de todos os dias."
-        },
-        {
-          "quem": "pensamento",
-          "texto": "Amo vocês. Até mais tarde."
-        }
+        { "texto": "Você encosta a mão na porta fechada do quarto de Bran e Liessa. Eles estão longe, servindo em Vön Bicken, mas o ritual é o mesmo de todos os dias." },
+        { "quem": "pensamento", "texto": "Amo vocês. Até mais tarde." }
       ],
       "retorna": "c01-quarto"
     },
@@ -143,20 +79,209 @@
       "fundo": "cena-fullmun-rua",
       "musica": "fullmun",
       "falas": [
-        {
-          "texto": "Você para na soleira por um instante. Füllmun acorda sem pressa: casas de madeira e pedra, telhados de palha brilhando ao sol, o cheiro de pão fresco vindo de alguma casa vizinha."
-        },
-        {
-          "texto": "Lá embaixo, o mercado começa a se formar."
-        },
-        {
-          "texto": "Você olha para o sol. Duas horas de atraso. Artho vai perceber."
-        }
+        { "texto": "Você para na soleira por um instante. Füllmun acorda sem pressa: casas de madeira e pedra, telhados de palha brilhando ao sol, o cheiro de pão fresco vindo de alguma casa vizinha." },
+        { "texto": "Lá embaixo, o mercado começa a se formar." },
+        { "texto": "Você olha para o sol. Duas horas de atraso. Artho vai perceber." }
       ],
-      "seguir": {
-        "fim": true,
-        "texto": "Continuar"
-      }
+      "escolhas": [
+        { "texto": "Correr para o templo", "vai_para": "c01-hulda" }
+      ]
+    },
+    {
+      "id": "c01-hulda",
+      "fundo": "cena-fullmun-rua",
+      "musica": "fullmun",
+      "falas": [
+        { "texto": "Você dispara pela rua principal, as botas levantando poeira. Todo mundo em Füllmun conhece você." },
+        { "texto": "Vó Hulda pendura roupas no varal e abre um sorriso quando você passa." },
+        { "quem": "vo-hulda", "texto": "Bom dia, {nome}! O sol chegou antes de você hoje, hein?" }
+      ],
+      "escolhas": [
+        { "texto": "“Bom dia, Vó Hulda! Amanhã eu chego antes do galo, prometo!”", "efeitos": { "flag": "gentil_hulda" }, "vai_para": "c01-osric" },
+        { "texto": "Acenar e seguir correndo", "vai_para": "c01-osric" }
+      ]
+    },
+    {
+      "id": "c01-osric",
+      "fundo": "cena-fullmun-rua",
+      "musica": "fullmun",
+      "falas": [
+        { "texto": "Na barraca da esquina, Osric Balança arruma as hortaliças em fileiras perfeitas." },
+        { "quem": "osric", "texto": "{nome}! {Atrasado|Atrasada} de novo, não é? Se quiser, eu peso esse atraso pra você: duas horas, certinhas!" }
+      ],
+      "escolhas": [
+        { "texto": "“Pesa direito dessa vez, Osric!”", "efeitos": { "flag": "brincou_osric" }, "vai_para": "c01-kobanu" },
+        { "texto": "“Hoje não, Osric!”", "vai_para": "c01-kobanu" }
+      ]
+    },
+    {
+      "id": "c01-kobanu",
+      "fundo": "cena-fullmun-rua",
+      "musica": "fullmun",
+      "falas": [
+        { "texto": "Mais adiante, Kobanu ajeita o chapéu de palha ao lado de uma pilha de abóboras." },
+        { "quem": "kobanu", "texto": "Correndo como sempre, {garoto|garota}! Cuidado pra não tropeçar nas minhas abóboras!" }
+      ],
+      "escolhas": [
+        { "texto": "“Suas abóboras é que vivem no meio do caminho, Kobanu!”", "efeitos": { "flag": "brincou_kobanu" }, "vai_para": "c01-pensamentos" },
+        { "texto": "Acenar e seguir", "vai_para": "c01-pensamentos" }
+      ]
+    },
+    {
+      "id": "c01-pensamentos",
+      "fundo": "cena-fullmun-rua",
+      "musica": "fullmun",
+      "falas": [
+        { "texto": "Você corre, e os pensamentos correm junto." },
+        { "texto": "A voz grave de Artho ecoa na sua cabeça: “Por que você está {atrasado|atrasada}?” Você quase se vê de joelhos, esfregando o piso do templo como castigo." },
+        { "texto": "E o alçapão da biblioteca… Por que Artho nunca deixa ninguém descer lá?" },
+        { "requer": { "flag": "pista_sonho" }, "texto": "Um sonho antes da guerra. Um sonho antes de tudo. Você aperta o passo." },
+        { "texto": "{Distraído|Distraída}, você tropeça, quase cai… e recupera o ritmo." }
+      ],
+      "seguir": { "vai_para": "c01-grito" }
+    },
+    {
+      "id": "c01-grito",
+      "fundo": "cena-chiqueiro",
+      "musica": "tensao-porco",
+      "fadeMusica": 500,
+      "aoEntrar": { "som": "grito-crianca", "tremor": true },
+      "falas": [
+        { "texto": "Um grito agudo corta a manhã." },
+        { "texto": "Encostada na cerca do chiqueiro de Gerulf, a pequena Aylin está sentada no chão, os olhos cheios de lágrimas. Diante dela, um porco azul bufa, os olhos vermelhos fixos na menina." },
+        { "ameaca": "mirtilo", "texto": "É o Mirtilo, o porco de Gerulf. Porcos azuis são territoriais e agressivos, mas temem predadores maiores do que eles." },
+        { "quem": "aylin", "texto": "{nome}! Me ajuda!" },
+        { "requer": { "origem": "guarda" }, "efeitos": { "flag": "trinco_quebrado" }, "texto": "Seu olho treinado nota o portão do chiqueiro: o trinco não foi esquecido aberto. Foi arrebentado." }
+      ],
+      "escolhas": [
+        { "rotulo": "INTIMIDAR", "texto": "Gritar e bater no peito, parecer o maior predador de Füllmun", "teste": { "pericia": "intimidacao", "cd": 12 }, "sucesso": "c01-intimidou", "falha": "c01-intimidar-falhou" },
+        { "rotulo": "ACALMAR", "texto": "Agachar devagar, falar baixo e conduzi-lo de volta ao chiqueiro", "teste": { "pericia": "adestramento", "cd": 13 }, "sucesso": "c01-acalmou", "falha": "c01-acalmar-falhou" },
+        { "rotulo": "LUTAR", "texto": "Ficar entre a Aylin e o porco e enfrentá-lo", "batalha": "mirtilo", "vitoria": "c01-aylin", "derrota": "c01-derrota" }
+      ]
+    },
+    {
+      "id": "c01-intimidou",
+      "fundo": "cena-chiqueiro",
+      "musica": "fullmun",
+      "vinheta": "vitoria",
+      "aoEntrar": { "flag": "intimidou" },
+      "falas": [
+        { "texto": "Você corre na direção da Aylin, gritando e batendo no peito. O Mirtilo para. Pela primeira vez, há uma pitada de medo naqueles olhos vermelhos." },
+        { "texto": "Ele dá meia-volta e dispara de volta para o chiqueiro." }
+      ],
+      "seguir": { "vai_para": "c01-aylin" }
+    },
+    {
+      "id": "c01-intimidar-falhou",
+      "fundo": "cena-chiqueiro",
+      "musica": "tensao-porco",
+      "falas": [
+        { "texto": "Você grita e bate no peito… mas sua voz falha no meio." },
+        { "texto": "O Mirtilo não recua. Os pelos das costas se eriçam, os olhos acendem em vermelho vivo e o vapor escapa do focinho." },
+        { "texto": "Agora ele está furioso." }
+      ],
+      "seguir": { "batalha": "mirtilo-enfurecido", "vitoria": "c01-aylin", "derrota": "c01-derrota", "texto": "Enfrentar o Mirtilo" }
+    },
+    {
+      "id": "c01-acalmou",
+      "fundo": "cena-chiqueiro",
+      "musica": "fullmun",
+      "vinheta": "vitoria",
+      "aoEntrar": { "flag": "acalmou" },
+      "falas": [
+        { "texto": "Você se agacha devagar e fala baixo, com a mão aberta estendida. O Mirtilo hesita, bufa uma última vez…" },
+        { "texto": "…e se deixa conduzir, trotando de volta para dentro do chiqueiro." }
+      ],
+      "seguir": { "vai_para": "c01-aylin" }
+    },
+    {
+      "id": "c01-acalmar-falhou",
+      "fundo": "cena-chiqueiro",
+      "musica": "tensao-porco",
+      "falas": [
+        { "texto": "Você estende a mão devagar, mas um movimento brusco assusta o animal." },
+        { "texto": "O Mirtilo recua, crava os cascos na lama e solta um guincho de fúria." }
+      ],
+      "seguir": { "batalha": "mirtilo-enfurecido", "vitoria": "c01-aylin", "derrota": "c01-derrota", "texto": "Enfrentar o Mirtilo" }
+    },
+    {
+      "id": "c01-derrota",
+      "fundo": "cena-chiqueiro",
+      "musica": "fullmun",
+      "silencioAntes": 2000,
+      "aoEntrar": { "flag": "machucado", "pvDefinir": 1 },
+      "falas": [
+        { "texto": "Tudo gira. Você cai na lama, sem fôlego." },
+        { "texto": "Uma corda zune no ar: Gerulf chega correndo e laça o Mirtilo antes que ele avance de novo." }
+      ],
+      "seguir": { "vai_para": "c01-aylin" }
+    },
+    {
+      "id": "c01-aylin",
+      "fundo": "cena-chiqueiro",
+      "musica": "fullmun",
+      "aoEntrar": { "flag": "salvou_aylin" },
+      "falas": [
+        { "requer": { "semFlag": "machucado" }, "texto": "Você para ao lado da Aylin, ofegante." },
+        { "requer": { "flag": "machucado" }, "texto": "Você se levanta devagar, {coberto|coberta} de lama, e vai até a Aylin." },
+        { "quem": "heroi", "texto": "Você está bem?" },
+        { "quem": "aylin", "texto": "Agora estou, sim… Obrigada, {nome}." },
+        { "requer": { "flag": "machucado" }, "quem": "aylin", "texto": "Você tá {todo sujo|toda suja} de lama… e sangrando! A Nyme vai brigar com você." },
+        { "texto": "Aylin cruza os braços, com cara de teimosa." },
+        { "quem": "aylin", "texto": "Mas mesmo assim, não vou deixar a Nyme ficar muito perto de você!" }
+      ],
+      "escolhas": [
+        { "texto": "“Aylin, você é impossível.” (rindo)", "efeitos": { "flag": "riu_aylin" }, "vai_para": "c01-gerulf" },
+        { "texto": "Sentir o rosto esquentar e não dizer nada", "efeitos": { "flag": "corou" }, "vai_para": "c01-gerulf" },
+        { "texto": "“Deixa eu ver esse joelho ralado.”", "requer": { "origem": "curandeiro" }, "efeitos": { "flag": "cuidou_aylin" }, "vai_para": "c01-aylin-joelho" }
+      ]
+    },
+    {
+      "id": "c01-aylin-joelho",
+      "fundo": "cena-chiqueiro",
+      "musica": "fullmun",
+      "falas": [
+        { "texto": "Você limpa o machucado dela com um pano e uma pitada de ervas. Aylin faz careta, mas não reclama." }
+      ],
+      "seguir": { "vai_para": "c01-gerulf" }
+    },
+    {
+      "id": "c01-gerulf",
+      "fundo": "cena-chiqueiro",
+      "musica": "fullmun",
+      "falas": [
+        { "requer": { "semFlag": "machucado" }, "texto": "Gerulf chega ofegante, com uma corda no ombro." },
+        { "requer": { "flag": "machucado" }, "texto": "Gerulf se aproxima ofegante, ainda segurando o Mirtilo pela corda." },
+        { "quem": "gerulf", "texto": "Mirtilo! Ah, de novo esse porco… {nome}, muito obrigado. Esse portão não fica fechado de jeito nenhum." },
+        { "requer": { "flag": "acalmou" }, "quem": "gerulf", "texto": "Você acalmou o Mirtilo? Nem eu consigo isso!" }
+      ],
+      "escolhas": [
+        { "texto": "“O trinco foi arrebentado, Gerulf. Não esquecido aberto.”", "requer": { "flag": "trinco_quebrado" }, "uma_vez": true, "efeitos": { "flag": "pista_trinco" }, "vai_para": "c01-gerulf-trinco" },
+        { "texto": "Levar a Aylin para casa e seguir para o templo", "vai_para": "c01-caminho" }
+      ]
+    },
+    {
+      "id": "c01-gerulf-trinco",
+      "fundo": "cena-chiqueiro",
+      "musica": "fullmun",
+      "falas": [
+        { "texto": "Gerulf coça a cabeça." },
+        { "quem": "gerulf", "texto": "Arrebentado? …O Mirtilo não tem força pra isso." },
+        { "texto": "Ele olha em volta, desconfiado, e fica em silêncio." }
+      ],
+      "retorna": "c01-gerulf"
+    },
+    {
+      "id": "c01-caminho",
+      "fundo": "cena-fullmun-rua",
+      "musica": "fullmun",
+      "falas": [
+        { "texto": "Você deixa a Aylin em casa e segue para o templo. Agora caminha mais devagar." },
+        { "texto": "O suor escorre pelo rosto, mas a pressa passou. Sim, você está {atrasado|atrasada}. Muito {atrasado|atrasada}. Mas hoje você tem um bom motivo." },
+        { "texto": "Por um instante, é como se você vestisse a armadura do sonho… e sete olhares atentos acompanhassem cada passo seu." },
+        { "fundo": "cena-templo-porta", "texto": "As portas imponentes do Templo de Sólem surgem diante de você." }
+      ],
+      "seguir": { "fim": true, "texto": "Entrar no templo" }
     }
   ]
 }

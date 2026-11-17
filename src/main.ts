@@ -6,6 +6,8 @@ import './styles/base.css';
 import './styles/telas.css';
 import './styles/criacao.css';
 import './styles/sonho.css';
+import './styles/capitulo.css';
+import './styles/batalha.css';
 
 import { irPara, registrarTela } from './core/telas';
 import { telaCriacao } from './screens/criacao';
@@ -16,6 +18,9 @@ import { telaMenu } from './screens/menu';
 import { telaPrologo } from './screens/prologo';
 import { telaSonho } from './screens/sonho';
 import { telaDespertar } from './screens/despertar';
+import { telaCapitulo } from './screens/capitulo';
+import { telaBatalha } from './screens/batalha';
+import { telaFimCapitulo } from './screens/fimCapitulo';
 
 registrarTela('loading', telaLoading);
 registrarTela('intro', telaIntro);
@@ -24,6 +29,9 @@ registrarTela('criacao', telaCriacao);
 registrarTela('prologo', telaPrologo);
 registrarTela('sonho', telaSonho);
 registrarTela('despertar', telaDespertar);
+registrarTela('capitulo', telaCapitulo);
+registrarTela('batalha', telaBatalha);
+registrarTela('fimCapitulo', telaFimCapitulo);
 registrarTela('emBreve', telaEmBreve);
 
 void irPara('loading', undefined, { som: false, duracao: 0 });

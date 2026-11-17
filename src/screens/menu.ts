@@ -15,6 +15,8 @@ export function telaMenu(): Tela {
     if (p && !p.classe) void irPara('criacao', { retomar: p });
     // Herói pronto que ainda não terminou o sonho dos deuses: retoma no sonho.
     else if (p && !getEstado().sonho.concluido) void irPara('sonho');
+    // Capítulo 01 em andamento: retoma na última cena.
+    else if (getEstado().campanha.capitulo === 1) void irPara('capitulo');
     else void irPara('emBreve');
   }, { desabilitado: !temSave() });
   const botoes = h('nav', { class: 'menu-botoes', 'aria-label': 'Menu principal' },

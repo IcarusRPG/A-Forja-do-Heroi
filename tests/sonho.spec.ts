@@ -217,13 +217,10 @@ test('sonho dos deuses: andar, ouvir as sete vozes, caminhada sozinho até o alt
   await expect(page.locator('.tela-sequencia')).toContainText('Você acorda num sobressalto.', { timeout: 20_000 });
   const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado') ?? '{}').sonho);
   expect(salvo.concluido).toBe(true);
-  await expect(page.locator('.tela-embreve')).toBeVisible({ timeout: 30_000 });
-  await expect(page.locator('.tela-embreve')).toContainText('Capítulo 01');
-  await expect(page.locator('.tela-embreve')).toContainText('Em breve');
-  await expect(page.locator('.tela-embreve')).toContainText('Thaelion');
-  await expect(page.locator('.tela-embreve')).toContainText('Ayoran · Arcanista (Mago)');
-  await page.waitForTimeout(1200);
-  await foto(page, 'sonho-fim-embreve', info.project.name);
+  // Depois do despertar, o Capítulo 01 começa com o cartão de título
+  await expect(page.locator('.tela-capitulo .cena-cartao-titulo')).toContainText('Amanhecer Tardio', { timeout: 30_000 });
+  await expect(page.locator('.tela-capitulo .cena-cartao-titulo')).toContainText('Capítulo 01');
+  await foto(page, 'sonho-fim-capitulo01', info.project.name);
 });
 
 test('mapa: percorre o anel, as 4 pontes e a escada e ouve as 7 estátuas', async ({ page }) => {
@@ -340,9 +337,9 @@ test('sonho: Continuar retoma com as vozes já ouvidas; modo de ajuste mostra as
   await foto(page, 'sonho-debug-colisoes', info.project.name);
 });
 
-test('sonho concluído: Continuar vai direto para "Em breve"', async ({ page }) => {
+test('sonho concluído: Continuar abre o Capítulo 01', async ({ page }) => {
   await semearHeroi(page, { concluido: true, ouvidas: ESTATUAS });
   await irAteMenu(page);
   await page.getByRole('button', { name: 'Continuar' }).click();
-  await expect(page.locator('.tela-embreve')).toBeVisible();
+  await expect(page.locator('.tela-capitulo')).toBeVisible({ timeout: 15_000 });
 });
