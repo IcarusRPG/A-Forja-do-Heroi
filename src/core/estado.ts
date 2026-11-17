@@ -30,6 +30,11 @@ export interface Config {
   /** 0 a 1 */
   efeitos: number;
   mudo: boolean;
+  /**
+   * Tremores de tela (câmera) no sonho. Sem valor salvo, o padrão é ligado — ou desligado se o sistema
+   * pede menos movimento (prefers-reduced-motion).
+   */
+  tremores?: boolean;
 }
 
 /** Progresso do sonho dos deuses (primeira cena de exploração). */
@@ -85,6 +90,13 @@ function salvar(): void {
   } catch (erro) {
     console.warn('Não foi possível salvar o jogo.', erro);
   }
+}
+
+/** A câmera pode tremer? (Opções → "Tremores de tela"; o som do tremor toca de qualquer jeito.) */
+export function tremoresLigados(): boolean {
+  const salvo = estado.config.tremores;
+  if (typeof salvo === 'boolean') return salvo;
+  return !(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
 }
 
 export function atualizarConfig(parcial: Partial<Config>): void {

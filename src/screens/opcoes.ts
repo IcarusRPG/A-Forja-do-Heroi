@@ -1,5 +1,5 @@
 import { audio } from '../core/audio';
-import { atualizarConfig, getEstado, type Config } from '../core/estado';
+import { atualizarConfig, getEstado, tremoresLigados, type Config } from '../core/estado';
 import { textos } from '../core/textos';
 import { abrirModal, h } from '../core/ui';
 
@@ -34,10 +34,16 @@ export function abrirOpcoes(): void {
     audio.aplicarVolumes();
     audio.sfx('ui-click');
   });
+  const tremores = h('input', { id: 'opcao-tremores', type: 'checkbox', class: 'interruptor', checked: tremoresLigados() });
+  tremores.addEventListener('change', () => {
+    atualizarConfig({ tremores: tremores.checked });
+    audio.sfx('ui-click');
+  });
   const corpo = h('div', { class: 'opcoes' },
     controleVolume(t.musica, 'musica'),
     controleVolume(t.efeitos, 'efeitos', testarEfeito),
     h('div', { class: 'opcao opcao-linha' }, h('label', { for: 'opcao-mudo' }, t.mudo), mudo),
+    h('div', { class: 'opcao opcao-linha' }, h('label', { for: 'opcao-tremores' }, t.tremores), tremores),
   );
   abrirModal(t.titulo, corpo, t.fechar);
 }

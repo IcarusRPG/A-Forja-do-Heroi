@@ -210,6 +210,14 @@ const efeitos = {
     tom(b, { freq: 1250, dur: 0.045, amp: 0.4, ataque: 0.001, decai: 0.009, forma: 'tri' });
     return normalizar(b, 0.22);
   },
+  // Tremor de terra: ronco grave e curto (~1 s), com um baque no começo
+  'tremor': () => {
+    const b = buffer(1.1);
+    ruido(b, { dur: 1.05, amp: 1.2, ataque: 0.06, decai: 0.32, corte: 150, corteFim: 70 });
+    ruido(b, { inicio: 0.02, dur: 0.25, amp: 0.5, ataque: 0.004, decai: 0.06, corte: 600, corteFim: 200 });
+    tom(b, { freq: 46, freqFim: 34, dur: 1.0, amp: 0.55, ataque: 0.05, decai: 0.3 });
+    return normalizar(b, 0.8);
+  },
 };
 
 await mkdir(OUT, { recursive: true });

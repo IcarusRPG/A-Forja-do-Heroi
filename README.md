@@ -22,6 +22,9 @@ Abra `http://localhost:5174/A-Forja-do-Heroi/`.
 | `npm run build` | Checa os tipos e gera o site em `dist/` |
 | `npm run assets` | Copia e otimiza as mídias da pasta `FdG` para `public/assets` (retratos, wallpaper e mapas navegáveis em WebP, logos em PNG, vídeo em H.264 se passar de 50 MB). Aceita outra pasta: `node scripts/prepare-assets.mjs "D:\caminho\FdG"` |
 | `npm run sfx` | Regera os efeitos sonoros provisórios em `public/assets/sfx` |
+| `npm run sprites` | Gera as folhas de caminhada do herói (`public/assets/sprites/chibi-<raca>-<m\|f>.png`) a partir das folhas 2 × 2 de vistas paradas em `assets-src/sprites/<raca>-<m\|f>.png`; prévias 6× e GIFs em `tests/screenshots/sprites/` |
+| `node scripts/conferir-mapa.mjs [saida.png]` | Confere o mapa do sonho: tudo alcançável a pé a partir da escada, caminho até o altar de cada estátua e largura das passagens |
+| `node scripts/ver-mapa.mjs [saida.png]` | Desenha colisões, áreas de interação e recortes de profundidade sobre a imagem do mapa |
 | `npm run test:mobile` | Testes e2e (Playwright) da criação de personagem e do sonho dos deuses em Pixel 7, iPhone 13 e paisagem 844×390; screenshots em `tests/screenshots/`. Na primeira vez: `npx playwright install chromium webkit`. Para testar o site publicado em vez do build local: `BASE_URL=https://icarusrpg.github.io/A-Forja-do-Heroi/ npm run test:mobile` |
 
 Os originais da pasta `FdG` nunca são movidos nem alterados. Para recodificar o vídeo mesmo que já exista uma versão otimizada, use `FORCAR_VIDEO=1 npm run assets`.
@@ -45,14 +48,17 @@ Todo texto visível ao jogador está em `src/data/textos.json` (com flexão de g
 
 - **Controles:** setas ou WASD para andar; E ou Espaço para interagir; Esc para pausar. No celular: joystick no canto inferior esquerdo, botão ✦ (aparece perto de algo) e botão de pausa.
 - **Motor reutilizável:** cada mapa é um JSON em `src/data/mapas/` com a imagem, o ponto de início, as camadas de colisão (polígonos `andavel`/`bloqueado`, avaliados em ordem: a última camada que contém o ponto decide), as áreas de interação e os gatilhos. O Phaser só é baixado ao entrar na exploração.
-- **Modo de ajuste:** abra o jogo com `?debug=1` (ou aperte F2 no `npm run dev`) para ver as colisões (verde/vermelho), as áreas de interação (azul) e os gatilhos (amarelo). Um clique no mapa mostra a coordenada daquele ponto.
-- **Ganchos de teste:** com `?test=1`, `window.__fdg.teleport(id)`, `__fdg.interact()` e `__fdg.state()`.
+- **Profundidade:** o herói é desenhado na profundidade do y dos pés. Os `oclusores` do JSON (estátuas e balaustrada da frente) são recortados da própria imagem do mapa ao carregar (`src/exploracao/recorte.ts`: o chão claro é "inundado" a partir do contorno e sobra só a peça) e desenhados na profundidade da sua `base`: com os pés acima dessa linha, o herói fica atrás.
+- **Caminhada automática:** `motor.caminharAte(x, y)` calcula o caminho na malha andável (A* + linha de visão) e anda na velocidade normal. Depois da 7ª voz, o herói vai sozinho até o altar.
+- **Clima:** neblina em duas camadas (densa nas bordas, leve no caminho; a fina passa na frente do herói), partículas douradas e tremores ocasionais a cada 15–30 s. Os tremores de câmera podem ser desligados em Opções → "Tremores de tela" (com `prefers-reduced-motion`, começam desligados). Se o FPS cair abaixo de 45, a neblina e as partículas diminuem.
+- **Modo de ajuste:** abra o jogo com `?debug=1` (ou aperte F2 no `npm run dev`) para ver as colisões (verde/vermelho), as áreas de interação (azul), os gatilhos (amarelo) e os recortes de profundidade (magenta). Um clique no mapa mostra a coordenada daquele ponto.
+- **Ganchos de teste:** com `?test=1`, `window.__fdg.teleport(id | "x,y")`, `__fdg.walkTo("x,y")`, `__fdg.interact()`, `__fdg.tremor()` e `__fdg.state()`.
 
 ## Mídias que podem ser trocadas
 
 - **Vídeo do prólogo:** coloque `public/assets/video/prologo.mp4`. Sem ele, o jogo mostra o prólogo em texto.
 - **Efeitos sonoros:** os `.wav` em `public/assets/sfx/` são provisórios. Substitua mantendo os mesmos nomes.
-- **Sprites chibi:** coloque `public/assets/sprites/chibi-<raca>-<m|f>.png` (grade 4 × 4 de quadros de 48 × 48 px; linhas: baixo, esquerda, direita, cima). Sem o arquivo, o jogo desenha um boneco provisório.
+- **Sprites chibi:** as folhas de caminhada são geradas por `npm run sprites` a partir das folhas 2 × 2 em `assets-src/sprites/` (frente, esquerda / direita, costas). Formato final: grade 4 × 4 de quadros de 48 × 48 px; linhas: baixo, esquerda, direita, cima. Sem o arquivo, o jogo desenha um boneco provisório.
 - **Música do sonho:** coloque `public/assets/music/sonho.mp3` (ou `.ogg`/`.m4a`), ou um arquivo cujo nome comece com "sonho" na pasta de músicas do FdG antes de `npm run assets`. Sem ela, toca um ambiente sintetizado.
 - **Créditos:** acrescente linhas em `creditos.extras` no `textos.json`.
 

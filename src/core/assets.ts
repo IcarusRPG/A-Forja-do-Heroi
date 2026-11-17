@@ -27,7 +27,7 @@ export const SFX = [
 ] as const;
 /** Efeitos do sonho: carregados só ao entrar na exploração. */
 export const SFX_SONHO = [
-  'step-marble', 'statue-glow', 'statue-awaken', 'divine-chord', 'thunder', 'text-blip',
+  'step-marble', 'statue-glow', 'statue-awaken', 'divine-chord', 'thunder', 'text-blip', 'tremor',
 ] as const;
 export type NomeSfx = (typeof SFX)[number] | (typeof SFX_SONHO)[number];
 

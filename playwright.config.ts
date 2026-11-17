@@ -7,9 +7,12 @@ const EXTERNO = process.env.BASE_URL;
 /** Testes e2e de celular contra o build de produção (o mesmo que vai para o GitHub Pages). */
 export default defineConfig({
   testDir: 'tests',
-  timeout: 240_000,
+  timeout: 360_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,
+  // O sonho roda Phaser com WebGL por software (sem GPU): mais de 3 cenas ao mesmo tempo disputam a CPU
+  // a ponto de os testes estourarem o tempo.
+  workers: 3,
   reporter: [['list']],
   use: {
     baseURL: EXTERNO ?? `http://localhost:${PORTA}/A-Forja-do-Heroi/`,

@@ -1,6 +1,6 @@
 import { ASSETS, SFX_SONHO, existeAsset, src, urlAsset } from '../core/assets';
 import { audio } from '../core/audio';
-import { concluirSonho, getEstado, ouvirVoz } from '../core/estado';
+import { concluirSonho, getEstado, ouvirVoz, tremoresLigados } from '../core/estado';
 import { irPara, type Tela } from '../core/telas';
 import { ehToque, fmt, textos } from '../core/textos';
 import { botao, esperar, h } from '../core/ui';
@@ -21,6 +21,9 @@ const MAPA = MAPA_JSON as unknown as DadosMapa & { estatuas: EstatuaSonho[] };
 const T = textos.sonho;
 const VOZES = T.vozes as Record<string, { titulo: string; mensagem: string }>;
 const TOTAL = MAPA.estatuas.length;
+/** Intervalo aleatório entre tremores de terra (ms). */
+const TREMOR_MIN = 15_000;
+const TREMOR_MAX = 30_000;
 
 const parametros = () => new URLSearchParams(location.search);
 
@@ -56,12 +59,14 @@ export function telaSonho(): Tela {
   let emClimax = false;
   /** O herói está indo sozinho até o altar (depois da 7ª voz). */
   let emCaminhada = false;
-
+  let tremoresFeitos = 0;
+  let ultimoTremorCamera = false;
   let musica: string | null = null;
   let spriteUsado = '';
   let menuPausa: HTMLElement | null = null;
   let motor: import('../exploracao/motor').Motor | null = null;
   let efeitos: import('../exploracao/efeitosSonho').EfeitosSonho | null = null;
+  let clima: import('../exploracao/climaSonho').ClimaSonho | null = null;
   const timers: number[] = [];
   const depois = (ms: number, fn: () => void) => timers.push(window.setTimeout(() => !saiu && fn(), ms));
 
@@ -156,6 +161,29 @@ export function telaSonho(): Tela {
     registrar('altar', { ...m.posicao(), chegou });
     emCaminhada = false;
     void climax();
+  }
+
+  /* ----------------------------- tremores ----------------------------- */
+
+  function agendarTremor() {
+    const ms = TREMOR_MIN + Math.random() * (TREMOR_MAX - TREMOR_MIN);
+    depois(ms, () => {
+      tremor();
+      agendarTremor();
+    });
+  }
+
+  /** Tremor leve: câmera (se ligado nas Opções), som grave, estátuas tremulam e poeira dourada cai. */
+  function tremor(forcar = false) {
+    if (!motor) return false;
+    if (!forcar && (caixa.aberta || emCaminhada || emClimax || pausado)) return false;
+    tremoresFeitos++;
+    ultimoTremorCamera = tremoresLigados();
+    if (ultimoTremorCamera) motor.tremer(400 + Math.random() * 400, 0.002 + Math.random() * 0.002);
+    audio.sfx('tremor', { ganho: 0.9 });
+    efeitos?.tremular();
+    clima?.derrubarPoeira();
+    return true;
   }
 
   /* ----------------------------- pausa ----------------------------- */
@@ -302,6 +330,10 @@ export function telaSonho(): Tela {
         const [x, y] = xy.split(',').map(Number);
         return motor ? motor.caminharAte(x, y) : false;
       },
+      /** Força um tremor agora (ignora o sorteio de tempo). */
+      tremor: () => ({ ok: tremor(true), cameraTremendo: motor?.cena.cameras.main.shakeEffect.isRunning ?? false }),
+      /** Desce um degrau da neblina, como se o FPS tivesse caído. */
+      reduzirClima: () => clima?.reduzir(),
       state: () => ({
         pronto: motor !== null,
         heroi: motor?.posicao() ?? null,
@@ -315,6 +347,11 @@ export function telaSonho(): Tela {
         caminhando: emCaminhada,
         atrasDe: motor?.atrasDe() ?? null,
         sprite: spriteUsado,
+        tremores: tremoresFeitos,
+        tremorCamera: ultimoTremorCamera,
+        cameraTremendo: motor ? (motor.cena.cameras.main.shakeEffect.isRunning) : false,
+        neblina: clima ? { camadas: clima.camadasVisiveis, nivel: clima.nivel } : null,
+        fps: motor ? Math.round(motor.cena.game.loop.actualFps) : 0,
       }),
     };
   }
@@ -323,9 +360,10 @@ export function telaSonho(): Tela {
     void audio.carregarEfeitos(SFX_SONHO);
     const raca = p?.raca ?? 'arake';
     const genero = p?.genero ?? 'm';
-    const [{ criarMotor }, { EfeitosSonho }, temSprite, faixa] = await Promise.all([
+    const [{ criarMotor }, { EfeitosSonho }, { ClimaSonho }, temSprite, faixa] = await Promise.all([
       import('../exploracao/motor'),
       import('../exploracao/efeitosSonho'),
+      import('../exploracao/climaSonho'),
       existeAsset(ASSETS.spriteChibi(raca, genero), 'image'),
       musicaDoSonho(),
     ]);
@@ -346,6 +384,14 @@ export function telaSonho(): Tela {
       aoPasso: () => audio.sfx('step-marble', { taxa: 0.85 + Math.random() * 0.3, ganho: 0.55 }),
       aoCriar: (mm) => {
         efeitos = new EfeitosSonho(mm.cena, mm.heroi, MAPA.estatuas, MAPA.pontos!.altar);
+        clima = new ClimaSonho(mm.cena, {
+          largura: MAPA.largura,
+          altura: MAPA.altura,
+          centro: { x: 627, y: 571, rx: 592, ry: 452 },
+          claros: [{ x0: 535, y0: 990, x1: 720, y1: MAPA.altura }],
+          economico: toque,
+          vigiarFps: !parametros().has('test'),
+        });
         // Ao retomar um save, as estátuas já ouvidas continuam acesas.
         for (const id of getEstado().sonho.ouvidas) efeitos.acender(id);
         if (getEstado().sonho.ouvidas.length === TOTAL) efeitos.altarPronto();
@@ -358,6 +404,7 @@ export function telaSonho(): Tela {
     else audio.tocarAmbiente(2000);
     depois(6000, () => dica.classList.add('some'));
     ganchosDeTeste();
+    agendarTremor();
     // Recarregou com as sete vozes e o sonho não terminou: o herói já vai sozinho até o altar.
     if (getEstado().sonho.ouvidas.length === TOTAL) void caminharAteOAltar(900);
   }
@@ -377,6 +424,7 @@ export function telaSonho(): Tela {
       caixa.destruir();
       menuPausa?.remove();
       efeitos?.destruir();
+      clima?.destruir();
       motor?.destruir();
       motor = null;
       audio.pararAmbiente(800);
