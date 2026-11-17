@@ -1,13 +1,37 @@
 {
   "flexao": {
-    "heroi": { "m": "herói", "f": "heroína" },
-    "Heroi": { "m": "Herói", "f": "Heroína" },
-    "o": { "m": "o", "f": "a" },
-    "escolhido": { "m": "escolhido", "f": "escolhida" },
-    "pronto": { "m": "pronto", "f": "pronta" },
-    "seu": { "m": "seu", "f": "sua" },
-    "Seu": { "m": "Seu", "f": "Sua" },
-    "do": { "m": "do", "f": "da" }
+    "heroi": {
+      "m": "herói",
+      "f": "heroína"
+    },
+    "Heroi": {
+      "m": "Herói",
+      "f": "Heroína"
+    },
+    "o": {
+      "m": "o",
+      "f": "a"
+    },
+    "escolhido": {
+      "m": "escolhido",
+      "f": "escolhida"
+    },
+    "pronto": {
+      "m": "pronto",
+      "f": "pronta"
+    },
+    "seu": {
+      "m": "seu",
+      "f": "sua"
+    },
+    "Seu": {
+      "m": "Seu",
+      "f": "Sua"
+    },
+    "do": {
+      "m": "do",
+      "f": "da"
+    }
   },
   "loading": {
     "carregando": "Carregando",
@@ -43,7 +67,15 @@
   },
   "criacao": {
     "titulo": "Forje {o} {seu} {heroi}",
-    "passos": ["Gênero", "Raça", "Origem", "Nome", "Atributos", "Revisão"],
+    "passos": [
+      "Gênero",
+      "Raça",
+      "Origem",
+      "Classe",
+      "Nome",
+      "Atributos",
+      "Revisão"
+    ],
     "voltar": "Voltar",
     "avancar": "Avançar",
     "menu": "Menu",
@@ -81,18 +113,32 @@
       "bonusArake": "Bônus de Araké: escolha três atributos diferentes para receber +1.",
       "escolha": "Bônus {n}",
       "gasteTudo": "Gaste todos os pontos para avançar.",
-      "escolhaBonus": "Escolha os três bônus de Araké para avançar."
+      "escolhaBonus": "Escolha os três bônus de Araké para avançar.",
+      "vivo": "No 1º nível",
+      "escolhaClasse": "Escolha a classe para ver o atributo-chave."
     },
     "revisao": {
       "titulo": "{Seu} {heroi} está {pronto}",
-      "confirmar": "Confirmar {heroi}"
+      "confirmar": "Confirmar {heroi}",
+      "reliquia": "Relíquia"
     },
     "resumo": {
       "genero": "Gênero",
       "raca": "Raça",
       "origem": "Origem",
       "nome": "Nome",
-      "vazio": "—"
+      "vazio": "—",
+      "classe": "Classe"
+    },
+    "classe": {
+      "titulo": "Que caminho você vai seguir?",
+      "texto": "A classe define como você luta e o que carrega. O retrato mostra o seu herói com o equipamento dela.",
+      "indisponivel": "Indisponível na versão DEMO",
+      "reliquia": "Relíquia",
+      "naPratica": "Na prática",
+      "pv": "PV no 1º nível",
+      "pm": "PM no 1º nível",
+      "pericias": "Perícias obrigatórias"
     }
   },
   "atributos": {

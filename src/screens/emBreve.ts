@@ -1,5 +1,12 @@
 import { ASSETS, src } from '../core/assets';
+import { classePorId, nomeDaClasse } from '../core/classes';
 import { getEstado } from '../core/estado';
+import type { Genero } from '../core/assets';
+
+const classeDe = (id: string | null, g: Genero) => {
+  const c = classePorId(id);
+  return c ? nomeDaClasse(c, g) : null;
+};
 import { racaPorId } from '../core/regras';
 import { irPara, type Tela } from '../core/telas';
 import { textos } from '../core/textos';
@@ -11,8 +18,9 @@ export function telaEmBreve(): Tela {
   const p = getEstado().personagem;
   const heroi = p
     ? h('figure', { class: 'embreve-heroi' },
-        h('img', { src: src(ASSETS.retrato(p.raca, p.genero)), alt: p.nome, draggable: 'false' }),
-        h('figcaption', {}, h('span', { class: 'embreve-nome' }, p.nome), h('span', { class: 'embreve-raca' }, racaPorId(p.raca)?.nome ?? '')))
+        h('img', { src: src(ASSETS.retrato(p.raca, p.genero, p.classe ?? 'comum')), alt: p.nome, draggable: 'false' }),
+        h('figcaption', {}, h('span', { class: 'embreve-nome' }, p.nome),
+          h('span', { class: 'embreve-raca' }, [racaPorId(p.raca)?.nome, classeDe(p.classe, p.genero)].filter(Boolean).join(' · '))))
     : null;
   const voltar = botao(t.voltar, () => void irPara('menu'), { classe: 'btn-principal' });
   const el = h('div', { class: 'tela-embreve' },

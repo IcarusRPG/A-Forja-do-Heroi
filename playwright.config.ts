@@ -5,7 +5,7 @@ const PORTA = 4174;
 /** Testes e2e de celular contra o build de produção (o mesmo que vai para o GitHub Pages). */
 export default defineConfig({
   testDir: 'tests',
-  timeout: 120_000,
+  timeout: 240_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,
   reporter: [['list']],

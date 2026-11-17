@@ -5,6 +5,7 @@ import {
   CUSTO, MAX, RACAS, atributosFinais, bonusAEscolher, modificadoresRaciais, podeAumentar, podeDiminuir,
   racaPorId, saldo, sinal, zerados,
 } from '../core/regras';
+import { CLASSES, classePorId, formulaPm, formulaPv, nomeDaClasse, pedrasIniciais, pmPrimeiroNivel, pvPrimeiroNivel } from '../core/classes';
 import { irPara, type Tela } from '../core/telas';
 import { ehToque, fmt, textos } from '../core/textos';
 import { botao, h, somHover } from '../core/ui';
@@ -21,17 +22,33 @@ interface Rascunho {
   raca: string | null;
   variante: string | null;
   origem: string | null;
+  classe: string | null;
   nome: string;
   comprados: MapaAtributos;
   bonusArake: Atributo[];
 }
 
+/** Ordem dos passos (os rótulos ficam em textos.criacao.passos, na mesma ordem). */
+const IDS = ['genero', 'raca', 'origem', 'classe', 'nome', 'atributos', 'revisao'] as const;
+type IdPasso = (typeof IDS)[number];
+
+/** Parâmetros da tela: `retomar` reabre um herói salvo sem classe direto no passo Classe. */
+export interface ParamsCriacao {
+  retomar?: Personagem;
+}
+
 const ICONE_CADEADO =
   '<svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18"><path fill="currentColor" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Z"/></svg>';
 
-export function telaCriacao(): Tela {
-  const r: Rascunho = { genero: null, raca: null, variante: null, origem: null, nome: '', comprados: zerados(), bonusArake: [] };
-  let passo = 0;
+export function telaCriacao(params?: unknown): Tela {
+  const salvo = (params as ParamsCriacao | undefined)?.retomar;
+  const r: Rascunho = salvo
+    ? {
+        genero: salvo.genero, raca: salvo.raca, variante: salvo.variante, origem: salvo.origem, classe: salvo.classe,
+        nome: salvo.nome, comprados: { ...salvo.atributosComprados }, bonusArake: [...(salvo.bonusArake ?? [])],
+      }
+    : { genero: null, raca: null, variante: null, origem: null, classe: null, nome: '', comprados: zerados(), bonusArake: [] };
+  let passo = salvo ? IDS.indexOf('classe') : 0;
   let confirmando = false;
   const ULTIMO = T.passos.length - 1; // Revisão
 
@@ -45,15 +62,17 @@ export function telaCriacao(): Tela {
 
   /** Mensagem do que falta no passo (ou null se pode avançar). */
   function pendencia(p: number): string | null {
-    switch (p) {
-      case 0: return r.genero ? null : '';
-      case 1:
+    const id: IdPasso = IDS[p];
+    switch (id) {
+      case 'genero': return r.genero ? null : '';
+      case 'raca':
         if (!r.raca) return '';
         if (racaPorId(r.raca)?.variantes && !r.variante) return T.raca.varianteObrigatoria;
         return null;
-      case 2: return r.origem ? null : '';
-      case 3: return nomeValido() ? null : '';
-      case 4:
+      case 'origem': return r.origem ? null : '';
+      case 'classe': return classePorId(r.classe)?.jogavelDemo ? null : '';
+      case 'nome': return nomeValido() ? null : '';
+      case 'atributos':
         if (saldo(r.comprados) !== 0) return T.atributos.gasteTudo;
         if (!bonusCompleto()) return T.atributos.escolhaBonus;
         return null;
@@ -120,8 +139,10 @@ export function telaCriacao(): Tela {
   }
 
   function confirmar() {
-    if (confirmando || !r.genero || !r.raca || !r.origem) return;
+    const classe = classePorId(r.classe);
+    if (confirmando || !r.genero || !r.raca || !r.origem || !classe) return;
     confirmando = true;
+    const finais = atributosFinais(r.comprados, r.raca, r.bonusArake);
     const personagem: Personagem = {
       nome: r.nome.trim(),
       genero: r.genero,
@@ -130,8 +151,11 @@ export function telaCriacao(): Tela {
       origem: r.origem,
       atributosComprados: { ...r.comprados },
       bonusArake: [...r.bonusArake],
-      atributosFinais: atributosFinais(r.comprados, r.raca, r.bonusArake),
-      classe: null,
+      atributosFinais: finais,
+      classe: classe.id,
+      pvMax: pvPrimeiroNivel(classe, finais),
+      pmMax: pmPrimeiroNivel(classe, finais),
+      pedras: pedrasIniciais(),
       criadoEm: new Date().toISOString(),
     };
     salvarPersonagem(personagem);
@@ -149,7 +173,7 @@ export function telaCriacao(): Tela {
     titulo.textContent = fmt(T.titulo, r.genero);
     renderPassos();
     if (trocarConteudo) {
-      const secao = PASSOS[passo]() as HTMLElement;
+      const secao = PASSOS[IDS[passo]]() as HTMLElement;
       // Só anima a entrada quando o passo muda (não a cada card escolhido).
       if (conteudo.dataset.passo !== String(passo)) secao.classList.add('entrando');
       const quem = rolador();
@@ -190,11 +214,13 @@ export function telaCriacao(): Tela {
   function renderPainel() {
     const genero = r.genero ?? 'm';
     const raca = r.raca ?? 'arake';
-    const novoSrc = src(ASSETS.retrato(raca, genero));
+    // Antes da classe, a roupa comum; depois, o retrato com o equipamento da classe.
+    const novoSrc = src(ASSETS.retrato(raca, genero, r.classe ?? 'comum'));
     if (retrato.getAttribute('src') !== novoSrc) {
       retrato.classList.remove('trocou');
       void retrato.offsetWidth;
       retrato.src = novoSrc;
+      retrato.dataset.retrato = ASSETS.retrato(raca, genero, r.classe ?? 'comum');
       retrato.classList.add('trocou');
     }
     retrato.classList.toggle('previa', !r.raca);
@@ -205,6 +231,7 @@ export function telaCriacao(): Tela {
     const variante = racaD?.variantes?.find((v) => v.id === r.variante);
     const origem = ORIGENS.find((o) => o.id === r.origem);
     const finais = atributosFinais(r.comprados, r.raca, r.bonusArake);
+    const classeSel = classePorId(r.classe);
     const linha = (rotulo: string, valor: string | null) =>
       h('div', { class: 'resumo-linha' }, h('dt', {}, rotulo), h('dd', {}, valor || T.resumo.vazio));
     resumo.replaceChildren(
@@ -212,6 +239,7 @@ export function telaCriacao(): Tela {
         linha(T.resumo.genero, r.genero ? T.genero[r.genero] : null),
         linha(T.resumo.raca, racaD ? `${racaD.nome}${variante ? ` · ${variante.nome}` : ''}` : null),
         linha(T.resumo.origem, origem?.nome ?? null),
+        linha(T.resumo.classe, classeSel ? nomeDaClasse(classeSel, r.genero) : null),
       ),
       h('div', { class: 'resumo-atributos' },
         ...ATRIBUTOS.map((a) => h('div', { class: `mini-atributo ${finais[a] > 0 ? 'pos' : finais[a] < 0 ? 'neg' : ''}` },
@@ -234,6 +262,23 @@ export function telaCriacao(): Tela {
       aoEscolher();
     });
     return somHover(c);
+  }
+
+  /** Card indisponível na demo: esmaecido; o aviso aparece no hover (desktop) ou no toque, e some em 2 s. */
+  function cardBloqueado(classe: string, nome: string, ...filhos: (Node | string | null)[]) {
+    const aviso = h('span', { class: 'card-aviso', role: 'tooltip' }, T.raca.indisponivel);
+    const cadeado = h('span', { class: 'card-cadeado' });
+    cadeado.innerHTML = ICONE_CADEADO;
+    const c = h('button', { type: 'button', class: `card ${classe} bloqueado`, 'aria-disabled': 'true', 'aria-label': `${nome}: ${T.raca.indisponivel}` },
+      cadeado, ...filhos, aviso);
+    let timer = 0;
+    c.addEventListener('click', () => {
+      audio.sfx('ui-locked');
+      c.classList.add('mostrar-aviso');
+      clearTimeout(timer);
+      timer = window.setTimeout(() => c.classList.remove('mostrar-aviso'), 2000);
+    });
+    return c;
   }
 
   function passoGenero(): Node {
@@ -270,18 +315,7 @@ export function telaCriacao(): Tela {
           conteudo.querySelector('.detalhe-raca')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, ...conteudoCard));
       } else {
-        const aviso = h('span', { class: 'card-aviso', role: 'tooltip' }, T.raca.indisponivel);
-        const c = h('button', { type: 'button', class: 'card card-raca bloqueado', 'aria-disabled': 'true', 'aria-label': `${raca.nome}: ${T.raca.indisponivel}` },
-          h('span', { class: 'card-cadeado' }), ...conteudoCard, aviso);
-        (c.querySelector('.card-cadeado') as HTMLElement).innerHTML = ICONE_CADEADO;
-        let timer = 0;
-        c.addEventListener('click', () => {
-          audio.sfx('ui-locked');
-          c.classList.add('mostrar-aviso');
-          clearTimeout(timer);
-          timer = window.setTimeout(() => c.classList.remove('mostrar-aviso'), 2000);
-        });
-        grade.append(c);
+        grade.append(cardBloqueado('card-raca', raca.nome, ...conteudoCard));
       }
     }
 
@@ -322,6 +356,51 @@ export function telaCriacao(): Tela {
           h('span', { class: 'card-linha' }, h('strong', {}, `${T.origem.poder}: `), h('em', {}, o.poder.nome), ` — ${o.poder.descricao}`),
           h('span', { class: 'card-linha' }, h('strong', {}, `${T.origem.itens}: `), o.itens.join('; '))))),
     );
+  }
+
+  function passoClasse(): Node {
+    const genero = r.genero ?? 'm';
+    const raca = r.raca ?? 'arake';
+    const TC = T.classe;
+    const grade = h('div', { class: 'grade-classes' });
+    for (const c of CLASSES) {
+      const nome = nomeDaClasse(c, genero);
+      if (c.jogavelDemo) {
+        grade.append(card('card-classe', r.classe === c.id, () => {
+          r.classe = c.id;
+          renderizar(true);
+          conteudo.querySelector('.detalhe-classe')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        },
+        h('img', { class: 'card-classe-img', src: src(ASSETS.retrato(raca, genero, c.id)), 'data-retrato': ASSETS.retrato(raca, genero, c.id), alt: '', draggable: 'false' }),
+        h('span', { class: 'card-titulo' }, nome),
+        h('span', { class: 'card-meta' }, c.papel)));
+      } else {
+        grade.append(cardBloqueado('card-classe', nome,
+          h('span', { class: 'card-classe-img card-classe-vazio', 'aria-hidden': 'true' }),
+          h('span', { class: 'card-titulo' }, nome),
+          h('span', { class: 'card-meta' }, c.papel)));
+      }
+    }
+    const sel = classePorId(r.classe);
+    const linha = (rotulo: string, valor: string) => h('p', { class: 'detalhe-linha' }, h('strong', {}, `${rotulo}: `), valor);
+    const detalhe = sel
+      ? h('div', { class: 'detalhe-raca detalhe-classe' },
+          h('h3', {}, nomeDaClasse(sel, genero), h('span', { class: 'detalhe-sub' }, ` · ${sel.papel}`)),
+          h('p', {}, sel.texto),
+          linha(TC.reliquia, sel.reliquia ?? '—'),
+          linha(TC.naPratica, sel.naPratica ?? '—'),
+          linha(TC.pericias, sel.periciasObrigatorias ?? '—'),
+          blocoPvPm(formulaPv(sel), formulaPm(sel), 'formula'),
+        )
+      : null;
+    return h('section', { class: 'passo-classe' }, cabecalho(TC.titulo, TC.texto), grade, detalhe);
+  }
+
+  /** PV e PM do 1º nível (fórmula antes dos atributos; valor depois). */
+  function blocoPvPm(pv: string | number, pm: string | number, tipo: 'formula' | 'valor'): HTMLElement {
+    const item = (rotulo: string, valor: string | number, qual: string) =>
+      h('span', { class: 'pv-pm-item' }, h('span', { class: 'pv-pm-rotulo' }, rotulo), h('span', { class: `pv-pm-valor ${qual}-${tipo}` }, String(valor)));
+    return h('div', { class: 'pv-pm' }, item(T.classe.pv, pv, 'pv'), item(T.classe.pm, pm, 'pm'));
   }
 
   function passoNome(): Node {
@@ -375,12 +454,22 @@ export function telaCriacao(): Tela {
     const lista = h('div', { class: 'lista-atributos', role: 'list' });
     const qtdBonus = bonusAEscolher(r.raca);
     const notaBonus = qtdBonus ? h('p', { class: 'nota-bonus' }) : null;
+    const classe = classePorId(r.classe);
+    const chave = classe?.atributoChave ?? null;
+    const selo = classe?.selo && chave
+      ? h('p', { class: 'selo-chave' }, `${classe.selo[r.genero ?? 'm']}: `, h('strong', {}, chave))
+      : h('p', { class: 'selo-chave' }, T.atributos.escolhaClasse);
+    const vivo = h('div', { class: 'pv-pm-vivo', 'aria-live': 'polite' });
 
     const desenhar = () => {
       const s = saldo(r.comprados);
       pontos.replaceChildren(h('span', { class: 'pontos-rotulo' }, T.atributos.pontos), h('span', { class: `pontos-valor ${s === 0 ? 'zerado' : ''}` }, String(s)));
       if (notaBonus) notaBonus.textContent = `${T.atributos.bonusArake} (${r.bonusArake.length}/${qtdBonus})`;
       const mods = modificadoresRaciais(r.raca, r.bonusArake);
+      if (classe) {
+        const finais = atributosFinais(r.comprados, r.raca, r.bonusArake);
+        vivo.replaceChildren(blocoPvPm(pvPrimeiroNivel(classe, finais), pmPrimeiroNivel(classe, finais), 'valor'));
+      }
       lista.replaceChildren(...ATRIBUTOS.map((a) => {
         const v = r.comprados[a];
         const menos = h('button', { type: 'button', class: 'btn-ponto', 'aria-label': `Diminuir ${textos.atributos[a]}`, disabled: !podeDiminuir(r.comprados, a) }, '−');
@@ -419,7 +508,7 @@ export function telaCriacao(): Tela {
         }
         const mod = mods[a];
         const final = v + mod;
-        return h('div', { class: 'atributo', role: 'listitem' },
+        return h('div', { class: `atributo ${a === chave ? 'chave' : ''}`, role: 'listitem', 'data-atributo': a },
           h('div', { class: 'atributo-nome' }, h('span', { class: 'atributo-sigla' }, a), h('span', { class: 'atributo-extenso' }, textos.atributos[a])),
           h('div', { class: 'atributo-compra' }, menos, h('span', { class: 'atributo-comprado', 'aria-label': T.atributos.comprado }, sinal(v)), mais),
           h('div', { class: 'atributo-custo' }, proximo !== null ? `+${proximo}` : '—'),
@@ -434,6 +523,8 @@ export function telaCriacao(): Tela {
     desenhar();
     return h('section', { class: 'passo-atributos' },
       h('div', { class: 'atributos-topo' }, cabecalho(T.atributos.titulo, T.atributos.custo), pontos),
+      selo,
+      classe ? vivo : null,
       notaBonus,
       h('div', { class: 'atributos-cabecalho', 'aria-hidden': 'true' },
         h('span', {}, ''), h('span', {}, T.atributos.comprado), h('span', {}, 'Próx.'), h('span', {}, qtdBonus ? 'Araké' : 'Raça'), h('span', {}, T.atributos.final)),
@@ -446,17 +537,25 @@ export function telaCriacao(): Tela {
     const variante = racaD.variantes?.find((v) => v.id === r.variante);
     const origem = ORIGENS.find((o) => o.id === r.origem)!;
     const finais = atributosFinais(r.comprados, r.raca, r.bonusArake);
+    const classe = classePorId(r.classe)!;
     const item = (rotulo: string, ...valor: (Node | string)[]) => h('div', { class: 'revisao-item' }, h('dt', {}, rotulo), h('dd', {}, ...valor));
     return h('section', { class: 'passo-revisao' },
       cabecalho(fmt(T.revisao.titulo, r.genero)),
       h('div', { class: 'revisao-ficha' },
-        h('h3', { class: 'revisao-nome' }, r.nome.trim()),
+        h('div', { class: 'revisao-topo' },
+          h('img', { class: 'revisao-retrato', src: src(ASSETS.retrato(r.raca!, r.genero!, classe.id)), 'data-retrato': ASSETS.retrato(r.raca!, r.genero!, classe.id), alt: `Retrato: ${nomeDaClasse(classe, r.genero)}`, draggable: 'false' }),
+          h('div', { class: 'revisao-identidade' },
+            h('h3', { class: 'revisao-nome' }, r.nome.trim()),
+            h('p', { class: 'revisao-classe' }, nomeDaClasse(classe, r.genero)),
+            blocoPvPm(pvPrimeiroNivel(classe, finais), pmPrimeiroNivel(classe, finais), 'valor'))),
         h('dl', { class: 'revisao-lista' },
           item(T.resumo.genero, T.genero[r.genero!]),
           item(T.resumo.raca, `${racaD.nome} (${racaD.classico})${variante ? ` · ${variante.nome}` : ''}`),
           item(T.resumo.origem, `${origem.nome} — ${origem.pericia} +${origem.bonusPericia}`),
           item(T.origem.poder, h('em', {}, origem.poder.nome), ` — ${origem.poder.descricao}`),
           item(T.origem.itens, origem.itens.join('; ')),
+          item(T.resumo.classe, `${nomeDaClasse(classe, r.genero)} — ${classe.papel}`),
+          item(T.revisao.reliquia, classe.reliquia ?? '—'),
         ),
         h('div', { class: 'revisao-atributos' },
           ...ATRIBUTOS.map((a) => h('div', { class: `atributo-grande ${finais[a] > 0 ? 'pos' : finais[a] < 0 ? 'neg' : ''}` },
@@ -465,7 +564,10 @@ export function telaCriacao(): Tela {
     );
   }
 
-  const PASSOS = [passoGenero, passoRaca, passoOrigem, passoNome, passoAtributos, passoRevisao];
+  const PASSOS: Record<IdPasso, () => Node> = {
+    genero: passoGenero, raca: passoRaca, origem: passoOrigem, classe: passoClasse,
+    nome: passoNome, atributos: passoAtributos, revisao: passoRevisao,
+  };
 
   renderizar(true);
 

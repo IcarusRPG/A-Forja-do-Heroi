@@ -1,6 +1,6 @@
 import { ASSETS, src } from '../core/assets';
 import { audio } from '../core/audio';
-import { temSave } from '../core/estado';
+import { getEstado, temSave } from '../core/estado';
 import { irPara, type Tela } from '../core/telas';
 import { ehToque, textos } from '../core/textos';
 import { botao, h } from '../core/ui';
@@ -9,7 +9,12 @@ import { abrirOpcoes } from './opcoes';
 
 export function telaMenu(): Tela {
   const t = textos.menu;
-  const continuar = botao(t.continuar, () => void irPara('emBreve'), { desabilitado: !temSave() });
+  const continuar = botao(t.continuar, () => {
+    const p = getEstado().personagem;
+    // Heróis salvos antes da escolha de classe retomam a criação no passo Classe.
+    if (p && !p.classe) void irPara('criacao', { retomar: p });
+    else void irPara('emBreve');
+  }, { desabilitado: !temSave() });
   const botoes = h('nav', { class: 'menu-botoes', 'aria-label': 'Menu principal' },
     botao(t.novoJogo, () => void irPara('criacao'), { classe: 'btn-principal', som: 'ui-confirm' }),
     continuar,

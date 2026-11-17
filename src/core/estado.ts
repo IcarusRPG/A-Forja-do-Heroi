@@ -15,8 +15,12 @@ export interface Personagem {
   atributosComprados: MapaAtributos;
   bonusArake: Atributo[];
   atributosFinais: MapaAtributos;
-  /** A classe é escolhida na Forja, ao fim do prólogo (fase futura). */
+  /** Id da classe. Saves de antes da escolha de classe têm null e retomam no passo Classe. */
   classe: string | null;
+  pvMax?: number;
+  pmMax?: number;
+  /** Pedras da Forja (fase futura). */
+  pedras?: { tolerancia: boolean; egide: boolean; verdade: boolean; preco: boolean };
   criadoEm: string;
 }
 
