@@ -154,6 +154,62 @@ const efeitos = {
     ruido(b, { dur: 0.7, amp: 0.8, ataque: 0.3, decai: 0.15, corte: 300, corteFim: 2500, passaAlta: 150 });
     return normalizar(b, 0.4);
   },
+
+  /* ----- Sonho dos deuses ----- */
+
+  // Passo no mármore: toque leve e limpo (a variação de tom é feita no jogo, pela velocidade)
+  'step-marble': () => {
+    const b = buffer(0.12);
+    ruido(b, { dur: 0.05, amp: 0.7, ataque: 0.001, decai: 0.008, corte: 6000, passaAlta: 1200 });
+    tom(b, { freq: 1050, freqFim: 980, dur: 0.1, amp: 0.35, ataque: 0.001, decai: 0.018, forma: 'tri' });
+    tom(b, { freq: 2600, dur: 0.12, amp: 0.08, ataque: 0.001, decai: 0.03, parciais: sinos });
+    return normalizar(b, 0.4);
+  },
+  // Shimmer suave e curto ao se aproximar de uma estátua
+  'statue-glow': () => {
+    const b = buffer(1.1);
+    [1760, 2217.46, 2637.02, 3520].forEach((f, i) =>
+      tom(b, { inicio: i * 0.06, freq: f, freqFim: f * 1.01, dur: 1.0, amp: 0.18, ataque: 0.12, decai: 0.22, parciais: [[1, 1], [2.01, 0.25]] }));
+    ruido(b, { dur: 0.9, amp: 0.06, ataque: 0.2, decai: 0.25, corte: 9000, passaAlta: 5000 });
+    return normalizar(b, 0.45);
+  },
+  // Acorde de sino cristalino, com cauda longa
+  'statue-awaken': () => {
+    const b = buffer(4);
+    [880, 1108.73, 1318.51, 1760, 2217.46].forEach((f, i) =>
+      tom(b, { inicio: i * 0.035, freq: f, dur: 3.9 - i * 0.035, amp: 0.28, ataque: 0.002, decai: 1.1 - i * 0.12, parciais: [[1, 1], [2.76, 0.35], [5.4, 0.15], [8.93, 0.06]] }));
+    tom(b, { freq: 220, dur: 4, amp: 0.2, ataque: 0.3, decai: 1.2, parciais: [[1, 1], [1.5, 0.4], [2, 0.3]] });
+    ruido(b, { dur: 0.3, amp: 0.12, ataque: 0.002, decai: 0.05, corte: 10000, passaAlta: 6000 });
+    return normalizar(b, 0.7);
+  },
+  // Acorde coral sintetizado, crescendo (~4 s)
+  'divine-chord': () => {
+    const b = buffer(4.4);
+    const coro = [[1, 1], [2, 0.45], [3, 0.25], [4, 0.12], [5, 0.08], [6, 0.04]];
+    for (const f of [146.83, 220, 293.66, 369.99, 440, 587.33]) {
+      for (const desafino of [0.996, 1, 1.004]) {
+        tom(b, { freq: f * desafino, freqFim: f * desafino * 1.002, dur: 4.4, amp: 0.07, ataque: 3.1, decai: 0.7, parciais: coro });
+      }
+    }
+    // Respiração do coro
+    ruido(b, { dur: 4.2, amp: 0.05, ataque: 3.0, decai: 0.6, corte: 2500, passaAlta: 600 });
+    return normalizar(b, 0.75);
+  },
+  // Estrondo grave com estalo inicial (~2,5 s)
+  'thunder': () => {
+    const b = buffer(2.6);
+    ruido(b, { dur: 0.12, amp: 1, ataque: 0.001, decai: 0.025, corte: 9000, passaAlta: 800 });
+    ruido(b, { inicio: 0.02, dur: 2.5, amp: 1.4, ataque: 0.04, decai: 0.75, corte: 260, corteFim: 120 });
+    ruido(b, { inicio: 0.35, dur: 2.1, amp: 0.9, ataque: 0.1, decai: 0.6, corte: 180, corteFim: 90 });
+    tom(b, { freq: 52, freqFim: 38, dur: 2.4, amp: 0.6, ataque: 0.03, decai: 0.7 });
+    return normalizar(b, 0.9);
+  },
+  // Blip muito curto e baixo, para as letras na caixa de fala
+  'text-blip': () => {
+    const b = buffer(0.045);
+    tom(b, { freq: 1250, dur: 0.045, amp: 0.4, ataque: 0.001, decai: 0.009, forma: 'tri' });
+    return normalizar(b, 0.22);
+  },
 };
 
 await mkdir(OUT, { recursive: true });
