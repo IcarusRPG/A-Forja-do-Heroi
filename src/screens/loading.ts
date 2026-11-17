@@ -52,9 +52,11 @@ export function telaLoading(): Tela {
     // acontece aqui, dentro do gesto, para funcionar também no iOS.
     audio.desbloquear();
     audio.sfx('start');
+    window.removeEventListener('keydown', tecla);
+    // Para conferir telas soltas: ?tela=gameover.
+    if (new URLSearchParams(location.search).get('tela') === 'gameover') return void irPara('gameOver', undefined, { som: false, duracao: 700 });
     const video = criarElementoVideo(src(ASSETS.videoIntro));
     video.play().catch(() => {});
-    window.removeEventListener('keydown', tecla);
     void irPara('intro', { video }, { som: false, duracao: 700 });
   };
   const tecla = (e: KeyboardEvent) => {

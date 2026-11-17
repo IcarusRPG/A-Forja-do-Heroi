@@ -21,6 +21,7 @@ import { telaDespertar } from './screens/despertar';
 import { telaCapitulo } from './screens/capitulo';
 import { telaBatalha } from './screens/batalha';
 import { telaFimCapitulo } from './screens/fimCapitulo';
+import { telaGameOver } from './screens/gameOver';
 
 registrarTela('loading', telaLoading);
 registrarTela('intro', telaIntro);
@@ -32,6 +33,7 @@ registrarTela('despertar', telaDespertar);
 registrarTela('capitulo', telaCapitulo);
 registrarTela('batalha', telaBatalha);
 registrarTela('fimCapitulo', telaFimCapitulo);
+registrarTela('gameOver', telaGameOver);
 registrarTela('emBreve', telaEmBreve);
 
 void irPara('loading', undefined, { som: false, duracao: 0 });
