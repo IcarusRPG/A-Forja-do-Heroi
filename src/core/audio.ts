@@ -1,4 +1,5 @@
 import { ASSETS, SFX, src, type NomeSfx } from './assets';
+import { criarAmbiente, type Ambiente } from './ambiente';
 import { getEstado } from './estado';
 
 /**
@@ -41,12 +42,12 @@ class GerenciadorAudio {
     return this.ctx;
   }
 
-  /** Decodifica os efeitos (chamado durante o pré-carregamento). */
-  async carregarEfeitos(): Promise<void> {
+  /** Decodifica os efeitos (os da interface no pré-carregamento; os do sonho ao entrar nele). */
+  async carregarEfeitos(nomes: readonly NomeSfx[] = SFX): Promise<void> {
     const ctx = this.contexto();
     if (!ctx) return;
     await Promise.all(
-      SFX.map(async (nome) => {
+      nomes.filter((n) => !this.buffers.has(n)).map(async (nome) => {
         try {
           const dados = await (await fetch(src(ASSETS.sfx(nome)))).arrayBuffer();
           this.buffers.set(nome, await ctx.decodeAudioData(dados));
@@ -75,7 +76,8 @@ class GerenciadorAudio {
     }
   }
 
-  sfx(nome: NomeSfx): void {
+  /** `taxa` muda a velocidade/tom (passos com variação); `ganho` é relativo ao volume dos efeitos. */
+  sfx(nome: NomeSfx, opcoes: { taxa?: number; ganho?: number } = {}): void {
     const { config } = getEstado();
     if (config.mudo || config.efeitos <= 0) return;
     const ctx = this.ctx;
@@ -88,8 +90,37 @@ class GerenciadorAudio {
     }
     const fonte = ctx.createBufferSource();
     fonte.buffer = buffer;
-    fonte.connect(this.ganhoSfx);
+    if (opcoes.taxa) fonte.playbackRate.value = opcoes.taxa;
+    if (opcoes.ganho !== undefined && opcoes.ganho !== 1) {
+      const g = ctx.createGain();
+      g.gain.value = opcoes.ganho;
+      fonte.connect(g).connect(this.ganhoSfx);
+    } else {
+      fonte.connect(this.ganhoSfx);
+    }
     fonte.start();
+  }
+
+  /** Ambiente sintetizado (drone suave), usado quando a cena não tem música própria. */
+  private ambiente: Ambiente | null = null;
+
+  tocarAmbiente(fadeMs = 2000): void {
+    const ctx = this.contexto();
+    if (!ctx || this.ambiente) return;
+    ctx.resume().catch(() => {});
+    this.ambiente = criarAmbiente(ctx, () => this.volumeMusica());
+    this.ambiente.iniciar(fadeMs);
+  }
+
+  pararAmbiente(fadeMs = 1500): void {
+    this.ambiente?.parar(fadeMs);
+    this.ambiente = null;
+  }
+
+  /** Volume efetivo da música pelas Opções (0 se mudo). */
+  private volumeMusica(): number {
+    const { config } = getEstado();
+    return config.mudo ? 0 : config.musica;
   }
 
   /** Toca a faixa em loop com fade-in. Se ela já estiver tocando, não reinicia. */
@@ -142,6 +173,7 @@ class GerenciadorAudio {
     this.musica.muted = config.mudo;
     this.musica.volume = Math.max(0, Math.min(1, config.musica * this.fator));
     if (this.ganhoSfx) this.ganhoSfx.gain.value = config.mudo ? 0 : config.efeitos;
+    this.ambiente?.atualizarVolume();
     for (const v of this.videos) {
       v.muted = config.mudo;
       v.volume = config.musica;

@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@fontsource/cinzel": "^5.0.0",
-    "@fontsource/inter": "^5.0.0"
+    "@fontsource/inter": "^5.0.0",
+    "phaser": "^3.90.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",

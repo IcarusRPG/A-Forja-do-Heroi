@@ -6,6 +6,8 @@ export default defineConfig({
   build: {
     target: 'es2020',
     assetsInlineLimit: 0,
+    // O Phaser (~1,5 MB) fica num pedaço próprio, baixado só ao entrar na exploração.
+    chunkSizeWarningLimit: 1600,
   },
   server: { port: 5174 },
   preview: { port: 4174 },
