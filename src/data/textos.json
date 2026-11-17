@@ -141,7 +141,12 @@
       "pm": "PM no 1º nível",
       "pericias": "Perícias obrigatórias",
       "pmRaca": "Sangue dos Primevos",
-      "pmRacaNota": "+{n} PM do Sangue dos Primevos"
+      "pmRacaNota": "+{n} PM do Sangue dos Primevos",
+      "agora": "Agora",
+      "aposForja": "Após a Forja",
+      "pvCurto": "PV",
+      "pmCurto": "PM",
+      "notaForja": "A classe só desperta quando você jura na Forja."
     }
   },
   "atributos": {

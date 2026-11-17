@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { avancar, cartaoComConteudo, dentroDoCartao, foto, irAteMenu, rodapeAlcancavel } from './ajudantes';
+import { avancar, cartaoComConteudo, dentroDoCartao, fimDoPassoVisivel, foto, irAteMenu, quadrosPvPmNaoVazam, rodapeAlcancavel, telaEstreita } from './ajudantes';
 import NOMES from '../src/data/nomes.json' with { type: 'json' };
 
 const titulo = (page: Page, texto: string) => page.getByRole('heading', { name: texto });
@@ -13,6 +13,7 @@ async function inicioDoPasso(page: Page, tituloPasso: string) {
   await expect(titulo(page, tituloPasso)).toBeVisible();
   await cartaoComConteudo(page);
   await rodapeAlcancavel(page);
+  await fimDoPassoVisivel(page);
 }
 
 async function comprar(page: Page, compras: Record<string, number>) {
@@ -79,8 +80,16 @@ test('criação completa: Azakar mulher, Sombra, Curandeiro, Paladina', async ({
   await expect(retratoResumo(page)).toHaveAttribute('data-retrato', 'img/herois/azakar-f-paladino.webp');
   await expect(page.locator('.detalhe-classe')).toContainText('Paladina');
   await expect(page.locator('.detalhe-classe')).toContainText('Espada e escudo');
-  await expect(page.locator('.pv-formula')).toHaveText('18 + Constituição');
+  await expect(page.locator('.pv-formula')).toHaveText(telaEstreita(page) ? '18 + CON' : '18 + Constituição', { useInnerText: true });
   await expect(page.locator('.pm-formula')).toHaveText('4');
+  // Duas fases: agora (sem classe) e após a Forja
+  await expect(page.locator('.pv-agora')).toHaveText(telaEstreita(page) ? '10 + CON' : '10 + Constituição', { useInnerText: true });
+  await expect(page.locator('.pm-agora')).toHaveText('0');
+  await expect(page.locator('.nota-forja')).toHaveText('A classe só desperta quando você jura na Forja.');
+  await quadrosPvPmNaoVazam(page);
+  await fimDoPassoVisivel(page);
+  await page.locator('.pv-pm').scrollIntoViewIfNeeded();
+  await foto(page, info, '4-classe-pv-pm');
   await expect(avancar(page)).toBeEnabled();
   await page.locator('.passo-classe .passo-cabecalho').scrollIntoViewIfNeeded();
   await foto(page, info, '4-classe');
@@ -114,6 +123,10 @@ test('criação completa: Azakar mulher, Sombra, Curandeiro, Paladina', async ({
   await expect(page.locator('.pontos-valor')).toHaveText('0');
   await expect(page.getByRole('button', { name: 'Aumentar Inteligência' })).toBeDisabled();
   await expect(page.locator('.pv-valor')).toHaveText('19'); // 18 + (2 − 1)
+  await expect(page.locator('.pv-agora')).toHaveText('11'); // 10 + CON 1, antes da Forja
+  await expect(page.locator('.pm-agora')).toHaveText('0');
+  await quadrosPvPmNaoVazam(page);
+  await fimDoPassoVisivel(page);
   await expect(avancar(page)).toBeEnabled();
   await foto(page, info, '6-atributos');
   await avancar(page).click();
@@ -125,6 +138,9 @@ test('criação completa: Azakar mulher, Sombra, Curandeiro, Paladina', async ({
   await expect(page.locator('.revisao-retrato')).toHaveAttribute('data-retrato', 'img/herois/azakar-f-paladino.webp');
   await expect(page.locator('.passo-revisao .pv-valor')).toHaveText('19');
   await expect(page.locator('.passo-revisao .pm-valor')).toHaveText('4');
+  await expect(page.locator('.passo-revisao .pv-agora')).toHaveText('11');
+  await quadrosPvPmNaoVazam(page);
+  await fimDoPassoVisivel(page);
   await expect(avancar(page)).toHaveText('Confirmar heroína');
   await foto(page, info, '7-revisao');
   await avancar(page).click();
@@ -149,7 +165,8 @@ test('Araké homem Mago: o +1 de Araké em INT entra no PM', async ({ page }, in
   await expect(cardClasse(page, 'Arcanista (Mago)').locator('img')).toHaveAttribute('data-retrato', /arake-m-arcanista/);
   await expect(cardClasse(page, 'Guerreiro')).toBeVisible();
   await cardClasse(page, 'Arcanista (Mago)').click();
-  await expect(page.locator('.pm-formula')).toHaveText('5 + Inteligência');
+  await expect(page.locator('.pm-formula')).toHaveText(telaEstreita(page) ? '5 + INT' : '5 + Inteligência', { useInnerText: true });
+  await quadrosPvPmNaoVazam(page);
   await avancar(page).click();
   await page.locator('.campo-nome').fill('Aldren');
   await avancar(page).click();
@@ -304,7 +321,10 @@ test('criação: Ayoran homem Arcanista recebe +1 PM (Sangue dos Primevos)', asy
   await expect(cardClasse(page, 'Arcanista (Mago)').locator('img')).toHaveAttribute('data-retrato', 'img/herois/ayoran-m-arcanista.webp');
   await cardClasse(page, 'Arcanista (Mago)').click();
   await expect(retratoResumo(page)).toHaveAttribute('data-retrato', 'img/herois/ayoran-m-arcanista.webp');
-  await expect(page.locator('.pm-formula')).toHaveText('5 + Inteligência + 1 (Sangue dos Primevos)');
+  await expect(page.locator('.pm-formula'))
+    .toHaveText(telaEstreita(page) ? '5 + INT + 1' : '5 + Inteligência + 1 (Sangue dos Primevos)', { useInnerText: true });
+  await quadrosPvPmNaoVazam(page);
+  await fimDoPassoVisivel(page);
   await page.locator('.detalhe-classe').scrollIntoViewIfNeeded();
   await foto(page, info, 'ayoran-classe');
   await avancar(page).click();
@@ -322,6 +342,7 @@ test('criação: Ayoran homem Arcanista recebe +1 PM (Sangue dos Primevos)', asy
   await expect(page.locator('.pontos-valor')).toHaveText('0');
   await expect(page.locator('.pm-valor')).toHaveText('10'); // 5 + INT 4 + 1 (Sangue dos Primevos)
   await expect(page.locator('.pm-raca')).toHaveText('+1 PM do Sangue dos Primevos');
+  await quadrosPvPmNaoVazam(page);
   await expect(page.locator('.pv-valor')).toHaveText('14'); // 12 + CON 2
   await foto(page, info, 'ayoran-atributos');
   await avancar(page).click();

@@ -5,7 +5,10 @@ import {
   CUSTO, MAX, RACAS, atributosFinais, bonusAEscolher, modificadoresRaciais, podeAumentar, podeDiminuir,
   pmExtraDaRaca, racaPorId, saldo, sinal, zerados,
 } from '../core/regras';
-import { CLASSES, classePorId, formulaPm, formulaPv, nomeDaClasse, pedrasIniciais, pmPrimeiroNivel, pvPrimeiroNivel } from '../core/classes';
+import {
+  CLASSES, PM_ANTES_DA_FORJA, classePorId, formulaPm, formulaPv, formulaPvAntesDaForja, nomeDaClasse, pedrasIniciais,
+  pmPrimeiroNivel, pvAntesDaForja, pvPrimeiroNivel, type ClasseDados,
+} from '../core/classes';
 import { irPara, type Tela } from '../core/telas';
 import { ehToque, fmt, textos } from '../core/textos';
 import { botao, h, somHover } from '../core/ui';
@@ -101,6 +104,7 @@ export function telaCriacao(params?: unknown): Tela {
   const btnAvancar = botao(T.avancar, () => avancar(), { classe: 'btn-principal', som: null });
 
   const corpo = h('div', { class: 'criacao-corpo' }, conteudo, painel);
+  const rodape = h('footer', { class: 'criacao-rodape' }, btnVoltar, aviso, btnAvancar);
   const el = h('div', { class: 'tela-criacao' },
     h('img', { class: 'criacao-fundo', src: src(ASSETS.wallpaperMenu), alt: '', draggable: 'false' }),
     h('div', { class: 'criacao-veu' }),
@@ -110,9 +114,15 @@ export function telaCriacao(params?: unknown): Tela {
       h('nav', { class: 'passos-nav', 'aria-label': 'Passos da criação' }, listaPassos),
     ),
     corpo,
-    h('footer', { class: 'criacao-rodape' }, btnVoltar, aviso, btnAvancar),
+    rodape,
     h('div', { class: 'criacao-cortina' }),
   );
+  // A barra de Voltar/Avançar fica fixa por cima do fim da tela no celular: o container rolável ganha no
+  // fim um espaço do tamanho dela (a altura medida já inclui a área segura de baixo, que é o padding dela).
+  const medirRodape = new ResizeObserver(() => {
+    el.style.setProperty('--altura-rodape', `${Math.ceil(rodape.getBoundingClientRect().height)}px`);
+  });
+  medirRodape.observe(rodape);
 
   /* ---------------------------- navegação ---------------------------- */
 
@@ -390,20 +400,39 @@ export function telaCriacao(params?: unknown): Tela {
           linha(TC.reliquia, sel.reliquia ?? '—'),
           linha(TC.naPratica, sel.naPratica ?? '—'),
           linha(TC.pericias, sel.periciasObrigatorias ?? '—'),
-          blocoPvPm(formulaPv(sel), formulaPm(sel, r.raca), 'formula'),
+          blocoPvPm(sel, null),
         )
       : null;
     return h('section', { class: 'passo-classe' }, cabecalho(TC.titulo, TC.texto), grade, detalhe);
   }
 
-  /** PV e PM do 1º nível (fórmula antes dos atributos; valor depois). */
-  function blocoPvPm(pv: string | number, pm: string | number, tipo: 'formula' | 'valor'): HTMLElement {
-    const item = (rotulo: string, valor: string | number, qual: string) =>
-      h('span', { class: 'pv-pm-item' }, h('span', { class: 'pv-pm-rotulo' }, rotulo), h('span', { class: `pv-pm-valor ${qual}-${tipo}` }, String(valor)));
+  /**
+   * PV e PM em duas fases: "Agora" (sem classe: 10 + CON PV e 0 PM) e "Após a Forja" (os da classe, que só
+   * desperta ao jurar na Forja). Sem atributos ainda (passo Classe), mostra as fórmulas; depois, os valores.
+   * Fórmulas têm a versão por extenso e a abreviada ("12 + CON"); o CSS escolhe pela largura da tela.
+   */
+  function blocoPvPm(classe: ClasseDados, finais: MapaAtributos | null): HTMLElement {
+    const TC = T.classe;
+    const tipo = finais ? 'valor' : 'formula';
+    const texto = (longo: string | number, curto: string | number = longo) => longo === curto
+      ? String(longo)
+      : [h('span', { class: 'extenso' }, String(longo)), h('span', { class: 'sigla' }, String(curto))];
+    const linha = (rotulo: string, classeValor: string, valor: Node | string | (Node | string)[]) =>
+      h('div', { class: 'pv-pm-linha' }, h('span', { class: 'pv-pm-rotulo' }, rotulo),
+        h('span', { class: `pv-pm-valor ${classeValor}` }, ...(Array.isArray(valor) ? valor : [valor])));
+    const fase = (qual: string, titulo: string, ...linhas: HTMLElement[]) =>
+      h('div', { class: `pv-pm-item pv-pm-fase fase-${qual}` }, h('span', { class: 'pv-pm-fase-titulo' }, titulo), ...linhas);
+    const agora = fase('agora', TC.agora,
+      linha(TC.pvCurto, `pv-agora`, finais ? String(pvAntesDaForja(finais)) : texto(formulaPvAntesDaForja(), formulaPvAntesDaForja(true))),
+      linha(TC.pmCurto, `pm-agora`, String(PM_ANTES_DA_FORJA)));
+    const forja = fase('forja', TC.aposForja,
+      linha(TC.pvCurto, `pv-${tipo}`, finais ? String(pvPrimeiroNivel(classe, finais)) : texto(formulaPv(classe), formulaPv(classe, true))),
+      linha(TC.pmCurto, `pm-${tipo}`, finais ? String(pmPrimeiroNivel(classe, finais, r.raca)) : texto(formulaPm(classe, r.raca), formulaPm(classe, r.raca, true))));
     const extra = pmExtraDaRaca(r.raca);
-    // Ayoran: o +1 do Sangue dos Primevos aparece junto do valor (na fórmula, já está escrito).
-    const nota = extra && tipo === 'valor' ? h('span', { class: 'pv-pm-nota pm-raca' }, fmt(T.classe.pmRacaNota, r.genero, { n: extra })) : null;
-    return h('div', { class: 'pv-pm' }, item(T.classe.pv, pv, 'pv'), item(T.classe.pm, pm, 'pm'), nota);
+    // Ayoran: o +1 do Sangue dos Primevos aparece junto do valor (na fórmula por extenso, já está escrito).
+    const notaRaca = extra && finais ? h('p', { class: 'pv-pm-nota pm-raca' }, fmt(TC.pmRacaNota, r.genero, { n: extra })) : null;
+    return h('div', { class: 'pv-pm' }, agora, forja,
+      h('p', { class: 'pv-pm-nota nota-forja' }, fmt(TC.notaForja, r.genero)), notaRaca);
   }
 
   function passoNome(): Node {
@@ -471,7 +500,7 @@ export function telaCriacao(params?: unknown): Tela {
       const mods = modificadoresRaciais(r.raca, r.bonusArake);
       if (classe) {
         const finais = atributosFinais(r.comprados, r.raca, r.bonusArake);
-        vivo.replaceChildren(blocoPvPm(pvPrimeiroNivel(classe, finais), pmPrimeiroNivel(classe, finais, r.raca), 'valor'));
+        vivo.replaceChildren(blocoPvPm(classe, finais));
       }
       lista.replaceChildren(...ATRIBUTOS.map((a) => {
         const v = r.comprados[a];
@@ -550,7 +579,7 @@ export function telaCriacao(params?: unknown): Tela {
           h('div', { class: 'revisao-identidade' },
             h('h3', { class: 'revisao-nome' }, r.nome.trim()),
             h('p', { class: 'revisao-classe' }, nomeDaClasse(classe, r.genero)),
-            blocoPvPm(pvPrimeiroNivel(classe, finais), pmPrimeiroNivel(classe, finais, r.raca), 'valor'))),
+            blocoPvPm(classe, finais))),
         h('dl', { class: 'revisao-lista' },
           item(T.resumo.genero, T.genero[r.genero!]),
           item(T.resumo.raca, `${racaD.nome} (${racaD.classico})${variante ? ` · ${variante.nome}` : ''}`),
@@ -579,6 +608,9 @@ export function telaCriacao(params?: unknown): Tela {
     aoEntrar() {
       // A mesma faixa do menu: se já estiver tocando, continua sem reiniciar.
       audio.tocarMusica(ASSETS.musicaMenu, 2000);
+    },
+    aoSair() {
+      medirRodape.disconnect();
     },
   };
 }

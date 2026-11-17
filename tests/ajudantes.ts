@@ -51,3 +51,54 @@ export async function foto(page: Page, info: TestInfo, nome: string): Promise<vo
   await page.waitForTimeout(450); // termina a animação de entrada do passo
   await page.screenshot({ path: `tests/screenshots/${info.project.name}-${nome}.png` });
 }
+
+/** Tela estreita (abaixo de 480 px): as fórmulas de PV/PM usam abreviações ("12 + CON"). */
+export const telaEstreita = (page: Page): boolean => page.viewportSize()!.width < 480;
+
+/**
+ * Rola até o fim do passo e confere que o último elemento (o fim do cartão e, no celular em pé, o painel de
+ * resumo) fica visível e acima da barra fixa de Voltar e Avançar.
+ */
+export async function fimDoPassoVisivel(page: Page): Promise<void> {
+  // Espera alguma rolagem suave em andamento (ao escolher a classe, o detalhe rola para a vista) e vai ao fim.
+  await page.waitForTimeout(700);
+  for (let i = 0; i < 2; i++) {
+    await page.evaluate(() => {
+      for (const s of ['.criacao-corpo', '.criacao-conteudo']) {
+        const el = document.querySelector(s);
+        if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'instant' });
+      }
+    });
+    await page.waitForTimeout(250);
+  }
+  const rodape = (await page.locator('.criacao-rodape').boundingBox())!;
+  const ultimos = [page.locator('.criacao-conteudo > section > :last-child')];
+  const empilhado = await page.evaluate(() => getComputedStyle(document.querySelector('.criacao-corpo')!).display === 'flex');
+  if (empilhado) ultimos.push(page.locator('.criacao-painel'));
+  for (const u of ultimos) {
+    await expect(u).toBeInViewport();
+    const c = (await u.boundingBox())!;
+    expect(c.y + c.height, 'último elemento acima da barra fixa').toBeLessThanOrEqual(rodape.y + 1);
+  }
+}
+
+/** Os quadros de PV e PM não vazam: texto dentro do quadro, fonte de texto corrido (não a de títulos). */
+export async function quadrosPvPmNaoVazam(page: Page): Promise<void> {
+  const quadros = page.locator('.pv-pm-item');
+  await expect(quadros.first()).toBeVisible();
+  for (const q of await quadros.all()) {
+    await q.scrollIntoViewIfNeeded();
+    const medidas = await q.evaluate((el) => ({
+      sobra: el.scrollWidth - el.clientWidth,
+      fonte: getComputedStyle(el.querySelector('.pv-pm-valor')!).fontFamily,
+    }));
+    expect(medidas.sobra, 'texto vazando do quadro').toBeLessThanOrEqual(1);
+    expect(medidas.fonte).not.toContain('Cinzel');
+    const caixa = (await q.boundingBox())!;
+    for (const v of await q.locator('.pv-pm-valor, .pv-pm-fase-titulo').all()) {
+      const b = (await v.boundingBox())!;
+      expect(b.x).toBeGreaterThanOrEqual(caixa.x - 1);
+      expect(b.x + b.width).toBeLessThanOrEqual(caixa.x + caixa.width + 1);
+    }
+  }
+}

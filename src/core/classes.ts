@@ -34,14 +34,25 @@ export const pvPrimeiroNivel = (c: ClasseDados, finais: MapaAtributos) => (c.pvB
 export const pmPrimeiroNivel = (c: ClasseDados, finais: MapaAtributos, racaId: string | null = null) =>
   (c.pm?.base ?? 0) + (c.pm?.atributo ? finais[c.pm.atributo] : 0) + pmExtraDaRaca(racaId);
 
-const extenso = (a: Atributo) => (textos.atributos as Record<Atributo, string>)[a];
+/** Nome do atributo por extenso ("Constituição") ou a sigla ("CON"), para telas estreitas. */
+const nomeAtributo = (a: Atributo, curto: boolean) => (curto ? a : (textos.atributos as Record<Atributo, string>)[a]);
 
-/** Fórmula antes dos atributos: "20 + Constituição". */
-export const formulaPv = (c: ClasseDados) => `${c.pvBase} + ${extenso('CON')}`;
-export function formulaPm(c: ClasseDados, racaId: string | null = null): string {
-  const base = c.pm?.atributo ? `${c.pm.base} + ${extenso(c.pm.atributo)}` : `${c.pm?.base ?? 0}`;
+/**
+ * Antes da Forja, o herói ainda não tem classe: PV = 10 + CON e nenhum PM.
+ * A classe só desperta quando ele jura na Forja.
+ */
+export const PV_ANTES_DA_FORJA = 10;
+export const PM_ANTES_DA_FORJA = 0;
+export const pvAntesDaForja = (finais: MapaAtributos) => PV_ANTES_DA_FORJA + finais.CON;
+export const formulaPvAntesDaForja = (curto = false) => `${PV_ANTES_DA_FORJA} + ${nomeAtributo('CON', curto)}`;
+
+/** Fórmula antes dos atributos: "20 + Constituição" (ou "20 + CON"). */
+export const formulaPv = (c: ClasseDados, curto = false) => `${c.pvBase} + ${nomeAtributo('CON', curto)}`;
+export function formulaPm(c: ClasseDados, racaId: string | null = null, curto = false): string {
+  const base = c.pm?.atributo ? `${c.pm.base} + ${nomeAtributo(c.pm.atributo, curto)}` : `${c.pm?.base ?? 0}`;
   const extra = pmExtraDaRaca(racaId);
-  return extra ? `${base} + ${extra} (${textos.criacao.classe.pmRaca})` : base;
+  if (!extra) return base;
+  return curto ? `${base} + ${extra}` : `${base} + ${extra} (${textos.criacao.classe.pmRaca})`;
 }
 
 /** As quatro pedras da Forja (fase futura). */
