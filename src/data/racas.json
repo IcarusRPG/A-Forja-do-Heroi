@@ -8,7 +8,11 @@
       "jogavelDemo": true,
       "texto": "Os Araké estão em toda parte: nos campos, nas cidades, nos exércitos e nos templos. Não têm a longevidade dos Ayoran nem a força dos Ogbari, mas têm o que nenhum outro povo tem na mesma medida: aprendem qualquer coisa e se reinventam a cada geração.",
       "naPratica": "+1 em três atributos à escolha; especialista em uma perícia; Improviso, para testar como treinado por 2 PM.",
-      "atributos": { "tipo": "escolha", "quantidade": 3, "valor": 1 }
+      "atributos": {
+        "tipo": "escolha",
+        "quantidade": 3,
+        "valor": 1
+      }
     },
     {
       "id": "azakar",
@@ -18,23 +22,71 @@
       "jogavelDemo": true,
       "texto": "Nascem com chifres, cauda e olhos que brilham no escuro, e com uma marca que ninguém escolheu. Uns carregam a centelha da Luz; outros, a das Sombras. Muitas vilas os recebem com desconfiança, mas quem convive com um Azakar descobre que a marca diz de onde ele veio, não quem ele é.",
       "naPratica": "CAR +2, INT +1, CON −1; variante Luz (eletricidade, +2 em Diplomacia e Intuição) ou Sombra (ácido, +2 em Enganação e Furtividade).",
-      "atributos": { "tipo": "fixo", "valores": { "CAR": 2, "INT": 1, "CON": -1 } },
+      "atributos": {
+        "tipo": "fixo",
+        "valores": {
+          "CAR": 2,
+          "INT": 1,
+          "CON": -1
+        }
+      },
       "variantes": [
         {
           "id": "luz",
           "nome": "Luz",
           "texto": "A centelha da Luz corre em você. Resistência e afinidade com eletricidade; +2 em Diplomacia e Intuição.",
           "elemento": "eletricidade",
-          "pericias": { "Diplomacia": 2, "Intuição": 2 }
+          "pericias": {
+            "Diplomacia": 2,
+            "Intuição": 2
+          }
         },
         {
           "id": "sombra",
           "nome": "Sombra",
           "texto": "A centelha das Sombras corre em você. Resistência e afinidade com ácido; +2 em Enganação e Furtividade.",
           "elemento": "ácido",
-          "pericias": { "Enganação": 2, "Furtividade": 2 }
+          "pericias": {
+            "Enganação": 2,
+            "Furtividade": 2
+          }
         }
       ]
+    },
+    {
+      "id": "nyashi",
+      "nome": "Nyashi",
+      "classico": "Tabaxi",
+      "significado": "Os Caçadores da Lua",
+      "jogavelDemo": true,
+      "texto": "Passos leves, olhos que enxergam na penumbra e uma curiosidade que não deixa nenhum segredo em paz. Uns têm a juba dourada dos grandes felinos das planícies; outros, o pelo negro das panteras da noite. Todos seguem a lua como outros povos seguem estradas.",
+      "naPratica": "DES +2, SAB +1, CAR −1; garras como arma natural (2d4); Ataque Duplo com as garras; deslocamento 12 m.",
+      "atributos": {
+        "tipo": "fixo",
+        "valores": {
+          "DES": 2,
+          "SAB": 1,
+          "CAR": -1
+        }
+      }
+    },
+    {
+      "id": "ayoran",
+      "nome": "Ayoran",
+      "classico": "Elfo",
+      "significado": "Os Primevos",
+      "jogavelDemo": true,
+      "texto": "O povo mais antigo de Icarus guarda nas veias uma mana que os outros precisam buscar. Movem-se como quem dança e lutam como quem escreve: com precisão e sem pressa.",
+      "naPratica": "DES +1, INT +1, CAR +1; Sangue dos Primevos: +1 PM no 1º nível e por nível; deslocamento 12 m; +2 no ataque e no dano com arcos, cimitarras e floretes.",
+      "atributos": {
+        "tipo": "fixo",
+        "valores": {
+          "DES": 1,
+          "INT": 1,
+          "CAR": 1
+        }
+      },
+      "pmExtra": 1
     },
     {
       "id": "dorun",
@@ -43,14 +95,6 @@
       "significado": "Os Guardiões da Pedra",
       "jogavelDemo": false,
       "texto": "Teimosos como a montanha onde nascem, os Dorun medem a vida pelo que constroem e pelo que protegem. Para eles, um martelo serve tanto para erguer uma casa quanto para defendê-la."
-    },
-    {
-      "id": "ayoran",
-      "nome": "Ayoran",
-      "classico": "Elfo",
-      "significado": "Os Primevos",
-      "jogavelDemo": false,
-      "texto": "O povo mais antigo de Icarus guarda nas veias uma mana que os outros precisam buscar. Movem-se como quem dança e lutam como quem escreve: com precisão e sem pressa."
     },
     {
       "id": "ogbari",

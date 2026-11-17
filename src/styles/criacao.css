@@ -549,6 +549,7 @@
 }
 .pv-pm-rotulo { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ouro); }
 .pv-pm-valor { font-family: var(--fonte-titulo); font-weight: 700; font-size: 1.25rem; color: var(--marmore); }
+.pv-pm-nota { flex-basis: 100%; font-size: 0.8rem; color: var(--ouro-claro, #f0d58a); }
 
 /* Atributos: atributo-chave da classe */
 .selo-chave {

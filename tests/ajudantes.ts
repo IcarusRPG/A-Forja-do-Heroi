@@ -1,8 +1,8 @@
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
 
 /** Do carregamento até o menu: toca em "começar" e pula a abertura assim que der. */
-export async function irAteMenu(page: Page): Promise<void> {
-  await page.goto('./');
+export async function irAteMenu(page: Page, caminho = './'): Promise<void> {
+  await page.goto(caminho);
   const comecar = page.locator('.loading-comecar');
   await expect(comecar).toBeVisible({ timeout: 90_000 });
   await comecar.click();

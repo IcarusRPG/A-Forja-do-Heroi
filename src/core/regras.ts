@@ -41,11 +41,16 @@ export interface RacaDados {
   texto: string;
   naPratica?: string;
   atributos?: { tipo: 'escolha'; quantidade: number; valor: number } | { tipo: 'fixo'; valores: Partial<MapaAtributos> };
+  /** PM extra no 1º nível e por nível (Ayoran: Sangue dos Primevos). */
+  pmExtra?: number;
   variantes?: { id: string; nome: string; texto: string; elemento: string; pericias: Record<string, number> }[];
 }
 
 export const RACAS = RACAS_JSON.racas as RacaDados[];
 export const racaPorId = (id: string | null) => RACAS.find((r) => r.id === id) ?? null;
+
+/** PM extra da raça no 1º nível (Ayoran: +1). */
+export const pmExtraDaRaca = (id: string | null): number => racaPorId(id)?.pmExtra ?? 0;
 
 /** Modificadores raciais por atributo. */
 export function modificadoresRaciais(racaId: string | null, bonusEscolhidos: Atributo[]): MapaAtributos {

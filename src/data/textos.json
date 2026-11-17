@@ -138,7 +138,9 @@
       "naPratica": "Na prática",
       "pv": "PV no 1º nível",
       "pm": "PM no 1º nível",
-      "pericias": "Perícias obrigatórias"
+      "pericias": "Perícias obrigatórias",
+      "pmRaca": "Sangue dos Primevos",
+      "pmRacaNota": "+{n} PM do Sangue dos Primevos"
     }
   },
   "atributos": {
@@ -166,5 +168,56 @@
     "titulo": "Amanhecer Tardio",
     "emBreve": "Em breve",
     "voltar": "Voltar ao menu"
+  },
+  "sonho": {
+    "carregando": "Você adormece…",
+    "contador": "Vozes ouvidas: {n} / {total}",
+    "interagir": "Interagir",
+    "pausa": "Pausa",
+    "continuar": "Continuar",
+    "opcoes": "Opções",
+    "voltarMenu": "Voltar ao menu",
+    "dicaTeclado": "Setas ou WASD para andar · E ou Espaço para interagir · Esc para pausar",
+    "dicaToque": "Use o joystick para andar · toque em ✦ perto de algo",
+    "altarIncompleto": "Ainda há vozes a ouvir…",
+    "escolhido": "O escolhido…",
+    "pularClimax": "Clique para pular",
+    "pularClimaxToque": "Toque para pular",
+    "vozes": {
+      "solem": {
+        "titulo": "Uma voz dourada",
+        "mensagem": "Não feche os olhos diante da injustiça. Uma muralha não escolhe quem protege."
+      },
+      "justar": {
+        "titulo": "Uma voz prateada",
+        "mensagem": "Toda mentira pesa na balança. Um dia, ela pende."
+      },
+      "ardor": {
+        "titulo": "Uma voz rubra",
+        "mensagem": "Correntes só prendem quem aceita carregá-las."
+      },
+      "expiria": {
+        "titulo": "Uma voz azul como o mar",
+        "mensagem": "Todo mar tem um último instante. Não o roube de ninguém."
+      },
+      "eternus": {
+        "titulo": "Uma voz branca como estrelas",
+        "mensagem": "Os sinais já estão diante de você. Aprenda a lê-los."
+      },
+      "mentis": {
+        "titulo": "Uma voz cor de âmbar",
+        "mensagem": "O tempo gira. O que você esquece, ele devolve."
+      },
+      "irae": {
+        "titulo": "Uma voz violeta de tempestade",
+        "mensagem": "Quem teme a tempestade nunca aprende a ser trovão."
+      }
+    },
+    "despertar": [
+      "Você acorda num sobressalto.",
+      "Os ouvidos ainda zunem. A cabeça lateja.",
+      "Pelas frestas da janela, o sol já vai alto.",
+      "Você está atrasad{o}. De novo."
+    ]
   }
 }

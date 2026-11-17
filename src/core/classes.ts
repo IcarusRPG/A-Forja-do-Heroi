@@ -1,6 +1,7 @@
 import CLASSES_JSON from '../data/classes.json';
 import type { Genero } from './assets';
 import type { Atributo, MapaAtributos } from './estado';
+import { pmExtraDaRaca } from './regras';
 import { textos } from './textos';
 
 /** Classes do sistema Icarus e o cálculo de PV/PM do 1º nível. */
@@ -29,15 +30,19 @@ export const nomeDaClasse = (c: ClasseDados, genero: Genero | null) => c.nome[ge
 /** PV no 1º nível = PV base + CON final. */
 export const pvPrimeiroNivel = (c: ClasseDados, finais: MapaAtributos) => (c.pvBase ?? 0) + finais.CON;
 
-/** PM no 1º nível = base + atributo (Mago: INT, Monge: SAB; os outros, fixo). */
-export const pmPrimeiroNivel = (c: ClasseDados, finais: MapaAtributos) =>
-  (c.pm?.base ?? 0) + (c.pm?.atributo ? finais[c.pm.atributo] : 0);
+/** PM no 1º nível = base + atributo (Mago: INT, Monge: SAB; os outros, fixo) + extra da raça (Ayoran: +1). */
+export const pmPrimeiroNivel = (c: ClasseDados, finais: MapaAtributos, racaId: string | null = null) =>
+  (c.pm?.base ?? 0) + (c.pm?.atributo ? finais[c.pm.atributo] : 0) + pmExtraDaRaca(racaId);
 
 const extenso = (a: Atributo) => (textos.atributos as Record<Atributo, string>)[a];
 
 /** Fórmula antes dos atributos: "20 + Constituição". */
 export const formulaPv = (c: ClasseDados) => `${c.pvBase} + ${extenso('CON')}`;
-export const formulaPm = (c: ClasseDados) => (c.pm?.atributo ? `${c.pm.base} + ${extenso(c.pm.atributo)}` : `${c.pm?.base ?? 0}`);
+export function formulaPm(c: ClasseDados, racaId: string | null = null): string {
+  const base = c.pm?.atributo ? `${c.pm.base} + ${extenso(c.pm.atributo)}` : `${c.pm?.base ?? 0}`;
+  const extra = pmExtraDaRaca(racaId);
+  return extra ? `${base} + ${extra} (${textos.criacao.classe.pmRaca})` : base;
+}
 
 /** As quatro pedras da Forja (fase futura). */
 export const pedrasIniciais = () => ({ tolerancia: false, egide: false, verdade: false, preco: false });

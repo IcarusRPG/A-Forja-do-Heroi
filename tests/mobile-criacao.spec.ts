@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { avancar, cartaoComConteudo, dentroDoCartao, foto, irAteMenu, rodapeAlcancavel } from './ajudantes';
+import NOMES from '../src/data/nomes.json' with { type: 'json' };
 
 const titulo = (page: Page, texto: string) => page.getByRole('heading', { name: texto });
 const retratoResumo = (page: Page) => page.locator('.painel-retrato');
@@ -66,11 +67,12 @@ test('criação completa: Azakar mulher, Sombra, Curandeiro, Paladina', async ({
   const caixa = (await pistoleira.boundingBox())!;
   await page.touchscreen.tap(caixa.x + caixa.width / 2, caixa.y + caixa.height / 2);
   await expect(pistoleira.locator('.card-aviso')).toHaveText('Indisponível na versão DEMO');
-  await expect(pistoleira.locator('.card-aviso')).toHaveCSS('opacity', '1');
+  await expect(pistoleira).toHaveClass(/mostrar-aviso/);
   await expect(avancar(page)).toBeDisabled();
   await expect(page.locator('.card-classe.selecionado')).toHaveCount(0);
   // O aviso some sozinho em 2 s.
-  await expect(pistoleira.locator('.card-aviso')).toHaveCSS('opacity', '0', { timeout: 4000 });
+  await expect(pistoleira).not.toHaveClass(/mostrar-aviso/, { timeout: 4000 });
+  await expect(pistoleira.locator('.card-aviso')).toHaveCSS('opacity', '0');
   // Escolhe Paladina: o retrato do resumo vira o da classe.
   await expect(retratoResumo(page)).toHaveAttribute('data-retrato', 'img/herois/azakar-f-comum.webp');
   await cardClasse(page, 'Paladina').click();
@@ -203,4 +205,133 @@ test('save antigo sem classe: Continuar retoma no passo Classe', async ({ page }
   await expect(page.locator('.tela-prologo')).toBeVisible({ timeout: 10_000 });
   const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado') ?? '{}').personagem);
   expect(salvo).toMatchObject({ classe: 'guerreiro', pvMax: 21, pmMax: 3 });
+});
+
+const NOMES_SUGERIDOS = NOMES as Record<string, Record<string, string[]>>;
+
+/** Pula o prólogo em texto (o "pular" só vale depois de 5 s) e espera o sonho começar. */
+async function pularPrologoAteOSonho(page: Page) {
+  await expect(page.locator('.tela-prologo')).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('.tela-prologo .dica-pular.visivel')).toBeVisible({ timeout: 15_000 });
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.tela-sonho.pronto canvas')).toBeVisible({ timeout: 30_000 });
+}
+
+test('raças: Nyashi e Ayoran jogáveis; as outras quatro continuam indisponíveis', async ({ page }) => {
+  await irAteMenu(page);
+  await page.getByRole('button', { name: 'Novo Jogo' }).click();
+  await page.locator('.card-genero', { hasText: 'Homem' }).click();
+  await avancar(page).click();
+  expect(await page.locator('.card-raca .card-titulo').allTextContents())
+    .toEqual(['Araké', 'Azakar', 'Nyashi', 'Ayoran', 'Dorun', 'Ogbari', "Ara'Maku", 'Kirai']);
+  expect(await page.locator('.card-raca.bloqueado .card-titulo').allTextContents())
+    .toEqual(['Dorun', 'Ogbari', "Ara'Maku", 'Kirai']);
+});
+
+test('criação: Nyashi mulher Ladina e, depois do prólogo, o sonho', async ({ page }, info) => {
+  await irAteMenu(page);
+  await page.getByRole('button', { name: 'Novo Jogo' }).click();
+  await page.locator('.card-genero', { hasText: 'Mulher' }).click();
+  await avancar(page).click();
+
+  await page.locator('.card-raca', { hasText: 'Nyashi' }).click();
+  await expect(page.locator('.detalhe-raca')).toContainText('Os Caçadores da Lua');
+  await expect(page.locator('.detalhe-raca')).toContainText('Todos seguem a lua como outros povos seguem estradas.');
+  await expect(page.locator('.detalhe-raca')).toContainText('DES +2, SAB +1, CAR −1');
+  await expect(retratoResumo(page)).toHaveAttribute('data-retrato', 'img/herois/nyashi-f-comum.webp');
+  await expect(avancar(page)).toBeEnabled(); // Nyashi não tem variante
+  await foto(page, info, 'nyashi-raca');
+  await avancar(page).click();
+
+  await page.locator('.card-origem', { hasText: 'Camponês' }).click();
+  await avancar(page).click();
+
+  await expect(cardClasse(page, 'Ladina').locator('img')).toHaveAttribute('data-retrato', 'img/herois/nyashi-f-ladino.webp');
+  await cardClasse(page, 'Ladina').click();
+  await expect(retratoResumo(page)).toHaveAttribute('data-retrato', 'img/herois/nyashi-f-ladino.webp');
+  await expect(page.locator('.pm-formula')).toHaveText('4'); // sem bônus racial de PM
+  await page.locator('.passo-classe .passo-cabecalho').scrollIntoViewIfNeeded();
+  await foto(page, info, 'nyashi-classe');
+  await avancar(page).click();
+
+  await page.getByRole('button', { name: 'Sugerir nome' }).click();
+  expect(NOMES_SUGERIDOS.nyashi.f).toContain(await page.locator('.campo-nome').inputValue());
+  await page.locator('.campo-nome').fill('Shirra');
+  await avancar(page).click();
+
+  await expect(page.locator('[data-atributo="DES"] .mod')).toHaveText('+2');
+  await expect(page.locator('[data-atributo="SAB"] .mod')).toHaveText('+1');
+  await expect(page.locator('[data-atributo="CAR"] .mod')).toHaveText('−1');
+  await comprar(page, { Destreza: 3, Constituição: 2, Sabedoria: 2, Força: 2 });
+  await expect(page.locator('.pontos-valor')).toHaveText('0');
+  await expect(page.locator('[data-atributo="DES"] .atributo-final')).toHaveText('+5');
+  await expect(page.locator('[data-atributo="CAR"] .atributo-final')).toHaveText('−1');
+  await expect(page.locator('.pv-valor')).toHaveText('18'); // 16 + CON 2
+  await expect(page.locator('.pm-valor')).toHaveText('4');
+  await expect(page.locator('.pm-raca')).toHaveCount(0);
+  await foto(page, info, 'nyashi-atributos');
+  await avancar(page).click();
+
+  await expect(page.locator('.revisao-classe')).toHaveText('Ladina');
+  await expect(page.locator('.revisao-retrato')).toHaveAttribute('data-retrato', 'img/herois/nyashi-f-ladino.webp');
+  await expect(page.locator('.passo-revisao')).toContainText('Nyashi (Tabaxi)');
+  await foto(page, info, 'nyashi-revisao');
+  await avancar(page).click();
+
+  await pularPrologoAteOSonho(page);
+  const estado = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado') ?? '{}'));
+  expect(estado.personagem).toMatchObject({ raca: 'nyashi', genero: 'f', classe: 'ladino', pvMax: 18, pmMax: 4 });
+  expect(estado.sonho).toEqual({ concluido: false, ouvidas: [] });
+});
+
+test('criação: Ayoran homem Arcanista recebe +1 PM (Sangue dos Primevos)', async ({ page }, info) => {
+  await irAteMenu(page);
+  await page.getByRole('button', { name: 'Novo Jogo' }).click();
+  await page.locator('.card-genero', { hasText: 'Homem' }).click();
+  await avancar(page).click();
+
+  await page.locator('.card-raca', { hasText: 'Ayoran' }).click();
+  await expect(page.locator('.detalhe-raca')).toContainText('Os Primevos');
+  await expect(page.locator('.detalhe-raca')).toContainText('Movem-se como quem dança');
+  await expect(page.locator('.detalhe-raca')).toContainText('+1 PM no 1º nível e por nível');
+  await expect(retratoResumo(page)).toHaveAttribute('data-retrato', 'img/herois/ayoran-m-comum.webp');
+  await foto(page, info, 'ayoran-raca');
+  await avancar(page).click();
+
+  await page.locator('.card-origem', { hasText: 'Estudioso' }).click();
+  await avancar(page).click();
+
+  await expect(cardClasse(page, 'Arcanista (Mago)').locator('img')).toHaveAttribute('data-retrato', 'img/herois/ayoran-m-arcanista.webp');
+  await cardClasse(page, 'Arcanista (Mago)').click();
+  await expect(retratoResumo(page)).toHaveAttribute('data-retrato', 'img/herois/ayoran-m-arcanista.webp');
+  await expect(page.locator('.pm-formula')).toHaveText('5 + Inteligência + 1 (Sangue dos Primevos)');
+  await page.locator('.detalhe-classe').scrollIntoViewIfNeeded();
+  await foto(page, info, 'ayoran-classe');
+  await avancar(page).click();
+
+  await page.getByRole('button', { name: 'Sugerir nome' }).click();
+  expect(NOMES_SUGERIDOS.ayoran.m).toContain(await page.locator('.campo-nome').inputValue());
+  await page.locator('.campo-nome').fill('Thaelion');
+  await avancar(page).click();
+
+  await expect(page.locator('[data-atributo="DES"] .mod')).toHaveText('+1');
+  await expect(page.locator('[data-atributo="INT"] .mod')).toHaveText('+1');
+  await expect(page.locator('[data-atributo="CAR"] .mod')).toHaveText('+1');
+  await expect(page.locator('.pm-valor')).toHaveText('7'); // 5 + INT 1 + 1
+  await comprar(page, { Inteligência: 3, Constituição: 2, Destreza: 2, Sabedoria: 1, Carisma: 1 });
+  await expect(page.locator('.pontos-valor')).toHaveText('0');
+  await expect(page.locator('.pm-valor')).toHaveText('10'); // 5 + INT 4 + 1 (Sangue dos Primevos)
+  await expect(page.locator('.pm-raca')).toHaveText('+1 PM do Sangue dos Primevos');
+  await expect(page.locator('.pv-valor')).toHaveText('14'); // 12 + CON 2
+  await foto(page, info, 'ayoran-atributos');
+  await avancar(page).click();
+
+  await expect(page.locator('.revisao-classe')).toHaveText('Arcanista (Mago)');
+  await expect(page.locator('.passo-revisao .pm-valor')).toHaveText('10');
+  await expect(page.locator('.revisao-retrato')).toHaveAttribute('data-retrato', 'img/herois/ayoran-m-arcanista.webp');
+  await foto(page, info, 'ayoran-revisao');
+  await avancar(page).click();
+  await expect(page.locator('.tela-prologo')).toBeVisible({ timeout: 10_000 });
+  const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado') ?? '{}').personagem);
+  expect(salvo).toMatchObject({ raca: 'ayoran', classe: 'arcanista', pvMax: 14, pmMax: 10 });
 });

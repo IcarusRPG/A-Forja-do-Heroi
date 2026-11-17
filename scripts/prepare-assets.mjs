@@ -23,7 +23,8 @@ const SRC = process.argv[2] || process.env.FDG_DIR || 'C:\\Users\\AdamPauloCarri
 const OUT = path.join(ROOT, 'public', 'assets');
 const MB = 1024 * 1024;
 
-const RACAS = { 'araké': 'arake', 'arake': 'arake', 'azakar': 'azakar' };
+const RACAS = { 'araké': 'arake', 'arake': 'arake', 'azakar': 'azakar', 'nyashi': 'nyashi', 'ayoran': 'ayoran' };
+const RACAS_SAIDA = ['arake', 'azakar', 'nyashi', 'ayoran'];
 const GENEROS = { male: 'm', female: 'f' };
 const CLASSES = {
   comun: 'comum', comum: 'comum',
@@ -65,10 +66,10 @@ async function retratos() {
     console.log(`  retrato ${f} → ${nome}.webp (${fmt(await sizeOf(dest))})`);
   }
   const esperados = [];
-  for (const r of ['arake', 'azakar']) for (const g of ['m', 'f'])
+  for (const r of RACAS_SAIDA) for (const g of ['m', 'f'])
     for (const c of ['comum', 'guerreiro', 'paladino', 'ladino', 'arcanista', 'monge']) esperados.push(`${r}-${g}-${c}`);
   for (const e of esperados) if (!vistos.has(e)) problemas.push(`faltando: ${e}`);
-  console.log(`  ${vistos.size}/24 retratos.`);
+  console.log(`  ${vistos.size}/${esperados.length} retratos.`);
   if (problemas.length) {
     console.error('  PROBLEMAS NOS RETRATOS:\n   - ' + problemas.join('\n   - '));
     process.exitCode = 1;
@@ -123,7 +124,16 @@ async function wallpaper() {
 
 async function musica() {
   const dir = path.join(SRC, (await readdir(SRC)).find((n) => nfc(n).toLowerCase().startsWith('m') && nfc(n).toLowerCase().includes('sica')));
-  const audios = (await readdir(dir)).filter((n) => /\.(mp3|ogg|wav|m4a|flac)$/i.test(n));
+  const todos = (await readdir(dir)).filter((n) => /\.(mp3|ogg|wav|m4a|flac)$/i.test(n));
+  // Faixa opcional do sonho dos deuses: qualquer arquivo cujo nome comece com "sonho".
+  const sonho = todos.find((n) => nfc(n).toLowerCase().startsWith('sonho'));
+  const audios = todos.filter((n) => n !== sonho);
+  if (sonho) {
+    const out = path.join(OUT, 'music', `sonho${path.extname(sonho).toLowerCase()}`);
+    await ensureDir(path.dirname(out));
+    await copyFile(path.join(dir, sonho), out);
+    console.log(`  música do sonho "${sonho}" → ${path.basename(out)}`);
+  }
   if (audios.length !== 1) console.warn(`  atenção: ${audios.length} arquivos de áudio em ${dir}; usando o primeiro.`);
   const orig = audios[0];
   const outDir = path.join(OUT, 'music');
@@ -131,6 +141,21 @@ async function musica() {
   const out = path.join(outDir, `the-first-choice${path.extname(orig).toLowerCase()}`);
   await copyFile(path.join(dir, orig), out);
   console.log(`  música "${orig}" → ${path.basename(out)} (${fmt(await sizeOf(out))})`);
+}
+
+/** Mapas navegáveis: PNG → WebP na resolução original. Aceita nomes com extensão dupla (.png.png). */
+async function mapas() {
+  const dir = path.join(SRC, 'img', 'mapas navegaveis');
+  if (!existsSync(dir)) { console.warn('  pasta de mapas não encontrada.'); return; }
+  const outDir = path.join(OUT, 'img', 'mapas');
+  await ensureDir(outDir);
+  for (const f of (await readdir(dir)).filter((n) => /\.png$/i.test(n))) {
+    const nome = nfc(f).toLowerCase().replace(/(\.png)+$/, '').replace(/^mapa-/, '');
+    const out = path.join(outDir, `${nome}.webp`);
+    await sharp(path.join(dir, f)).webp({ quality: 88 }).toFile(out);
+    const { width, height } = await sharp(out).metadata();
+    console.log(`  mapa "${f}" → ${nome}.webp (${width}×${height}, ${fmt(await sizeOf(out))})`);
+  }
 }
 
 function acharFfmpeg() {
@@ -193,6 +218,7 @@ console.log('Retratos…'); await retratos();
 console.log('Logos…'); await logos();
 console.log('Favicon…'); await favicon();
 console.log('Wallpaper…'); await wallpaper();
+console.log('Mapas…'); await mapas();
 console.log('Música…'); await musica();
 console.log('Vídeo…'); await video();
 await conferirLimite();

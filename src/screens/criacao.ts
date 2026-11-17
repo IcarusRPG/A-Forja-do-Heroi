@@ -3,7 +3,7 @@ import { audio } from '../core/audio';
 import { ATRIBUTOS, salvarPersonagem, type Atributo, type MapaAtributos, type Personagem } from '../core/estado';
 import {
   CUSTO, MAX, RACAS, atributosFinais, bonusAEscolher, modificadoresRaciais, podeAumentar, podeDiminuir,
-  racaPorId, saldo, sinal, zerados,
+  pmExtraDaRaca, racaPorId, saldo, sinal, zerados,
 } from '../core/regras';
 import { CLASSES, classePorId, formulaPm, formulaPv, nomeDaClasse, pedrasIniciais, pmPrimeiroNivel, pvPrimeiroNivel } from '../core/classes';
 import { irPara, type Tela } from '../core/telas';
@@ -154,7 +154,7 @@ export function telaCriacao(params?: unknown): Tela {
       atributosFinais: finais,
       classe: classe.id,
       pvMax: pvPrimeiroNivel(classe, finais),
-      pmMax: pmPrimeiroNivel(classe, finais),
+      pmMax: pmPrimeiroNivel(classe, finais, r.raca),
       pedras: pedrasIniciais(),
       criadoEm: new Date().toISOString(),
     };
@@ -390,7 +390,7 @@ export function telaCriacao(params?: unknown): Tela {
           linha(TC.reliquia, sel.reliquia ?? '—'),
           linha(TC.naPratica, sel.naPratica ?? '—'),
           linha(TC.pericias, sel.periciasObrigatorias ?? '—'),
-          blocoPvPm(formulaPv(sel), formulaPm(sel), 'formula'),
+          blocoPvPm(formulaPv(sel), formulaPm(sel, r.raca), 'formula'),
         )
       : null;
     return h('section', { class: 'passo-classe' }, cabecalho(TC.titulo, TC.texto), grade, detalhe);
@@ -400,7 +400,10 @@ export function telaCriacao(params?: unknown): Tela {
   function blocoPvPm(pv: string | number, pm: string | number, tipo: 'formula' | 'valor'): HTMLElement {
     const item = (rotulo: string, valor: string | number, qual: string) =>
       h('span', { class: 'pv-pm-item' }, h('span', { class: 'pv-pm-rotulo' }, rotulo), h('span', { class: `pv-pm-valor ${qual}-${tipo}` }, String(valor)));
-    return h('div', { class: 'pv-pm' }, item(T.classe.pv, pv, 'pv'), item(T.classe.pm, pm, 'pm'));
+    const extra = pmExtraDaRaca(r.raca);
+    // Ayoran: o +1 do Sangue dos Primevos aparece junto do valor (na fórmula, já está escrito).
+    const nota = extra && tipo === 'valor' ? h('span', { class: 'pv-pm-nota pm-raca' }, fmt(T.classe.pmRacaNota, r.genero, { n: extra })) : null;
+    return h('div', { class: 'pv-pm' }, item(T.classe.pv, pv, 'pv'), item(T.classe.pm, pm, 'pm'), nota);
   }
 
   function passoNome(): Node {
@@ -468,7 +471,7 @@ export function telaCriacao(params?: unknown): Tela {
       const mods = modificadoresRaciais(r.raca, r.bonusArake);
       if (classe) {
         const finais = atributosFinais(r.comprados, r.raca, r.bonusArake);
-        vivo.replaceChildren(blocoPvPm(pvPrimeiroNivel(classe, finais), pmPrimeiroNivel(classe, finais), 'valor'));
+        vivo.replaceChildren(blocoPvPm(pvPrimeiroNivel(classe, finais), pmPrimeiroNivel(classe, finais, r.raca), 'valor'));
       }
       lista.replaceChildren(...ATRIBUTOS.map((a) => {
         const v = r.comprados[a];
@@ -547,7 +550,7 @@ export function telaCriacao(params?: unknown): Tela {
           h('div', { class: 'revisao-identidade' },
             h('h3', { class: 'revisao-nome' }, r.nome.trim()),
             h('p', { class: 'revisao-classe' }, nomeDaClasse(classe, r.genero)),
-            blocoPvPm(pvPrimeiroNivel(classe, finais), pmPrimeiroNivel(classe, finais), 'valor'))),
+            blocoPvPm(pvPrimeiroNivel(classe, finais), pmPrimeiroNivel(classe, finais, r.raca), 'valor'))),
         h('dl', { class: 'revisao-lista' },
           item(T.resumo.genero, T.genero[r.genero!]),
           item(T.resumo.raca, `${racaD.nome} (${racaD.classico})${variante ? ` · ${variante.nome}` : ''}`),
