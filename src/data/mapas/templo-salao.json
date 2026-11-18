@@ -1,0 +1,479 @@
+{
+ "id": "templo-salao",
+ "imagem": "img/mapas/templo-salao.png",
+ "largura": 1430,
+ "altura": 1100,
+ "inicio": {
+  "x": 586,
+  "y": 812,
+  "direcao": "cima"
+ },
+ "alturasDeTela": 1.35,
+ "musica": "templo",
+ "hud": {
+  "contador": "manchas",
+  "rotulo": "Manchas",
+  "total": [
+   {
+    "requer": {
+     "atrasoFinal": [4, 4]
+    },
+    "n": 10
+   },
+   {
+    "requer": {
+     "atrasoFinal": [2, 3]
+    },
+    "n": 6
+   }
+  ]
+ },
+ "colisoes": [
+  {
+   "id": "piso",
+   "tipo": "andavel",
+   "pontos": [
+    [92, 440],
+    [420, 440],
+    [420, 400],
+    [760, 400],
+    [760, 440],
+    [1066, 440],
+    [1066, 836],
+    [92, 836]
+   ]
+  },
+  {
+   "id": "altar",
+   "tipo": "bloqueado",
+   "pontos": [
+    [429, 257],
+    [743, 257],
+    [743, 446],
+    [429, 446]
+   ]
+  },
+  {
+   "id": "vela-esq",
+   "tipo": "bloqueado",
+   "pontos": [
+    [243, 329],
+    [300, 329],
+    [300, 432],
+    [243, 432]
+   ]
+  },
+  {
+   "id": "vela-dir",
+   "tipo": "bloqueado",
+   "pontos": [
+    [871, 329],
+    [929, 329],
+    [929, 432],
+    [871, 432]
+   ]
+  },
+  {
+   "id": "planta-1",
+   "tipo": "bloqueado",
+   "pontos": [
+    [86, 457],
+    [160, 457],
+    [160, 571],
+    [86, 571]
+   ]
+  },
+  {
+   "id": "planta-2",
+   "tipo": "bloqueado",
+   "pontos": [
+    [86, 714],
+    [171, 714],
+    [171, 829],
+    [86, 829]
+   ]
+  },
+  {
+   "id": "planta-3",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1000, 457],
+    [1071, 457],
+    [1071, 571],
+    [1000, 571]
+   ]
+  },
+  {
+   "id": "planta-4",
+   "tipo": "bloqueado",
+   "pontos": [
+    [986, 714],
+    [1066, 714],
+    [1066, 829],
+    [986, 829]
+   ]
+  },
+  {
+   "id": "banco-1",
+   "tipo": "bloqueado",
+   "pontos": [
+    [250, 532],
+    [479, 532],
+    [479, 586],
+    [250, 586]
+   ]
+  },
+  {
+   "id": "banco-2",
+   "tipo": "bloqueado",
+   "pontos": [
+    [693, 532],
+    [914, 532],
+    [914, 586],
+    [693, 586]
+   ]
+  },
+  {
+   "id": "banco-3",
+   "tipo": "bloqueado",
+   "pontos": [
+    [250, 625],
+    [479, 625],
+    [479, 679],
+    [250, 679]
+   ]
+  },
+  {
+   "id": "banco-4",
+   "tipo": "bloqueado",
+   "pontos": [
+    [693, 625],
+    [914, 625],
+    [914, 679],
+    [693, 679]
+   ]
+  },
+  {
+   "id": "banco-5",
+   "tipo": "bloqueado",
+   "pontos": [
+    [250, 721],
+    [479, 721],
+    [479, 771],
+    [250, 771]
+   ]
+  },
+  {
+   "id": "banco-6",
+   "tipo": "bloqueado",
+   "pontos": [
+    [693, 721],
+    [914, 721],
+    [914, 771],
+    [693, 771]
+   ]
+  }
+ ],
+ "interacoes": [],
+ "gatilhos": [],
+ "oclusores": [
+  {
+   "id": "banco-1",
+   "base": 586,
+   "contorno": [
+    [250, 514],
+    [479, 514],
+    [479, 576],
+    [250, 576]
+   ],
+   "sementes": [],
+   "fixo": [
+    [250, 514],
+    [479, 514],
+    [479, 576],
+    [250, 576]
+   ]
+  },
+  {
+   "id": "banco-2",
+   "base": 586,
+   "contorno": [
+    [693, 514],
+    [914, 514],
+    [914, 576],
+    [693, 576]
+   ],
+   "sementes": [],
+   "fixo": [
+    [693, 514],
+    [914, 514],
+    [914, 576],
+    [693, 576]
+   ]
+  },
+  {
+   "id": "banco-3",
+   "base": 679,
+   "contorno": [
+    [250, 607],
+    [479, 607],
+    [479, 669],
+    [250, 669]
+   ],
+   "sementes": [],
+   "fixo": [
+    [250, 607],
+    [479, 607],
+    [479, 669],
+    [250, 669]
+   ]
+  },
+  {
+   "id": "banco-4",
+   "base": 679,
+   "contorno": [
+    [693, 607],
+    [914, 607],
+    [914, 669],
+    [693, 669]
+   ],
+   "sementes": [],
+   "fixo": [
+    [693, 607],
+    [914, 607],
+    [914, 669],
+    [693, 669]
+   ]
+  },
+  {
+   "id": "banco-5",
+   "base": 771,
+   "contorno": [
+    [250, 703],
+    [479, 703],
+    [479, 761],
+    [250, 761]
+   ],
+   "sementes": [],
+   "fixo": [
+    [250, 703],
+    [479, 703],
+    [479, 761],
+    [250, 761]
+   ]
+  },
+  {
+   "id": "banco-6",
+   "base": 771,
+   "contorno": [
+    [693, 703],
+    [914, 703],
+    [914, 761],
+    [693, 761]
+   ],
+   "sementes": [],
+   "fixo": [
+    [693, 703],
+    [914, 703],
+    [914, 761],
+    [693, 761]
+   ]
+  }
+ ],
+ "npcs": [
+  {
+   "id": "artho",
+   "x": 470,
+   "y": 476,
+   "direcao": "baixo"
+  }
+ ],
+ "objetos": [
+  {
+   "id": "mancha-1",
+   "item": "mancha",
+   "x": 200,
+   "y": 520,
+   "acao": "esfregar",
+   "contador": "manchas",
+   "requer": {
+    "atrasoFinal": [2, 4]
+   }
+  },
+  {
+   "id": "mancha-2",
+   "item": "mancha",
+   "x": 200,
+   "y": 700,
+   "acao": "esfregar",
+   "contador": "manchas",
+   "requer": {
+    "atrasoFinal": [2, 4]
+   }
+  },
+  {
+   "id": "mancha-3",
+   "item": "mancha",
+   "x": 560,
+   "y": 525,
+   "acao": "esfregar",
+   "contador": "manchas",
+   "requer": {
+    "atrasoFinal": [2, 4]
+   }
+  },
+  {
+   "id": "mancha-4",
+   "item": "mancha",
+   "x": 620,
+   "y": 640,
+   "acao": "esfregar",
+   "contador": "manchas",
+   "requer": {
+    "atrasoFinal": [2, 4]
+   }
+  },
+  {
+   "id": "mancha-5",
+   "item": "mancha",
+   "x": 560,
+   "y": 760,
+   "acao": "esfregar",
+   "contador": "manchas",
+   "requer": {
+    "atrasoFinal": [2, 4]
+   }
+  },
+  {
+   "id": "mancha-6",
+   "item": "mancha",
+   "x": 960,
+   "y": 520,
+   "acao": "esfregar",
+   "contador": "manchas",
+   "requer": {
+    "atrasoFinal": [2, 4]
+   }
+  },
+  {
+   "id": "mancha-7",
+   "item": "mancha",
+   "x": 330,
+   "y": 470,
+   "acao": "esfregar",
+   "contador": "manchas",
+   "requer": {
+    "atrasoFinal": [4, 4]
+   }
+  },
+  {
+   "id": "mancha-8",
+   "item": "mancha",
+   "x": 960,
+   "y": 690,
+   "acao": "esfregar",
+   "contador": "manchas",
+   "requer": {
+    "atrasoFinal": [4, 4]
+   }
+  },
+  {
+   "id": "mancha-9",
+   "item": "mancha",
+   "x": 840,
+   "y": 470,
+   "acao": "esfregar",
+   "contador": "manchas",
+   "requer": {
+    "atrasoFinal": [4, 4]
+   }
+  },
+  {
+   "id": "mancha-10",
+   "item": "mancha",
+   "x": 700,
+   "y": 805,
+   "acao": "esfregar",
+   "contador": "manchas",
+   "requer": {
+    "atrasoFinal": [4, 4]
+   }
+  },
+  {
+   "id": "altar",
+   "item": "livro",
+   "x": 586,
+   "y": 452,
+   "semIcone": true,
+   "acao": "polir",
+   "contador": "altar_polido",
+   "requer": {
+    "atrasoFinal": [4, 4],
+    "contadorMin": {
+     "manchas": 10
+    }
+   },
+   "marcador": [
+    {
+     "tipo": "!"
+    }
+   ],
+   "coletar": {
+    "flag": "polir_altar"
+   }
+  },
+  {
+   "id": "porta-biblioteca",
+   "item": "livro",
+   "x": 1050,
+   "y": 730,
+   "semIcone": true,
+   "fica": true,
+   "cena": "t-porta-biblioteca"
+  }
+ ],
+ "seguidores": [
+  {
+   "id": "nyme",
+   "requer": {
+    "flag": "nyme_seguindo",
+    "semFlag": "nyme_saiu"
+   }
+  }
+ ],
+ "aoEntrar": [
+  {
+   "cena": "t-salao-machucado",
+   "requer": {
+    "flag": "machucado"
+   },
+   "umaVez": "salao-machucado"
+  }
+ ],
+ "baloes": [
+  {
+   "quem": "nyme",
+   "umaVez": "nyme-metade",
+   "texto": "Você esfrega igual luta: com muita vontade e pouca técnica.",
+   "contador": {
+    "id": "manchas",
+    "valor": 3
+   },
+   "requer": {
+    "atrasoFinal": [2, 3]
+   }
+  },
+  {
+   "quem": "nyme",
+   "umaVez": "nyme-metade",
+   "texto": "Você esfrega igual luta: com muita vontade e pouca técnica.",
+   "contador": {
+    "id": "manchas",
+    "valor": 5
+   },
+   "requer": {
+    "atrasoFinal": [4, 4]
+   }
+  }
+ ]
+}

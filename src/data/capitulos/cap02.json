@@ -1,0 +1,1066 @@
+{
+  "id": "cap02",
+  "numero": 2,
+  "titulo": "O Templo de Sólem",
+  "inicio": "c02-lamina",
+  "proximoCapitulo": {
+    "numero": 3,
+    "titulo": "Provação Sob a Luz"
+  },
+  "fundoFim": "cena-nyme-porta",
+  "musicaFim": null,
+  "resumo": [
+    {
+      "flag": "venceu_treino_rasteira",
+      "texto": "Você derrubou a Nyme com uma rasteira."
+    },
+    {
+      "flag": "venceu_treino",
+      "texto": "Você venceu a Nyme no treino."
+    },
+    {
+      "flag": "perdeu_treino",
+      "texto": "A Nyme venceu o treino."
+    },
+    {
+      "flag": "cesto_entregue",
+      "semFlag": "comeu_pao",
+      "texto": "Artho agradeceu pelo pão."
+    },
+    {
+      "flag": "comeu_pao",
+      "texto": "Faltou um pão no cesto."
+    },
+    {
+      "flag": "limpou_tudo",
+      "texto": "Você limpou o salão principal e a biblioteca."
+    },
+    {
+      "flag": "leu_tres_livros",
+      "texto": "Você leu os três livros da biblioteca."
+    },
+    {
+      "flag": "perguntou_alcapao",
+      "texto": "Você perguntou sobre o alçapão."
+    },
+    {
+      "flag": "nyme_caiu",
+      "texto": "A Nyme deu a vida pela vila."
+    }
+  ],
+  "cenas": [
+    {
+      "id": "c02-lamina",
+      "falas": [
+        {
+          "texto": "As portas imponentes do Templo de Sólem se erguem à sua frente. Por um instante, você pensa nos sete olhares do sonho, todos apontados para você."
+        },
+        {
+          "texto": "Então, a ponta fria de uma espada encosta nas suas costas."
+        },
+        {
+          "texto": "Ladrões? Invasores em Füllmun? Isso nunca aconteceu…",
+          "quem": "pensamento"
+        }
+      ],
+      "fundo": "cena-templo-porta",
+      "musica": "fullmun",
+      "escolhas": [
+        {
+          "texto": "Ficar parado e levantar as mãos",
+          "vai_para": "c02-maos"
+        },
+        {
+          "rotulo": "GIRAR",
+          "texto": "Girar e contra-atacar",
+          "teste": {
+            "pericia": "reflexos",
+            "cd": 12
+          },
+          "sucesso": "c02-girou",
+          "falha": "c02-girar-falhou"
+        }
+      ]
+    },
+    {
+      "id": "c02-maos",
+      "falas": [
+        {
+          "texto": "Você ergue as mãos devagar. A lâmina se afasta um pouco das suas costas."
+        }
+      ],
+      "fundo": "cena-templo-porta",
+      "musica": "fullmun",
+      "seguir": {
+        "vai_para": "c02-nyme"
+      }
+    },
+    {
+      "id": "c02-girou",
+      "falas": [
+        {
+          "texto": "Você gira num movimento só e afasta a lâmina com o antebraço… e dá de cara com um sorriso conhecido."
+        }
+      ],
+      "fundo": "cena-templo-porta",
+      "musica": "fullmun",
+      "aoEntrar": {
+        "flag": "girou"
+      },
+      "seguir": {
+        "vai_para": "c02-nyme"
+      }
+    },
+    {
+      "id": "c02-girar-falhou",
+      "falas": [
+        {
+          "texto": "Você tenta girar, mas a lâmina acompanha o movimento e pressiona um pouco mais. Atrás de você, alguém ri."
+        }
+      ],
+      "fundo": "cena-templo-porta",
+      "musica": "fullmun",
+      "seguir": {
+        "vai_para": "c02-nyme"
+      }
+    },
+    {
+      "id": "c02-nyme",
+      "falas": [
+        {
+          "texto": "Você está {atrasado|atrasada} mais uma vez, {nome}. {Atrasado|Atrasada} e {desligado|desligada}. Se eu não te conhecesse, diria que você está {perdido|perdida}.",
+          "quem": "nyme"
+        },
+        {
+          "texto": "Nyme. Sua amiga de longa data, um pouco mais alta que você, os cabelos entre o loiro e o castanho balançando ao vento. Ela aprendeu a lutar ao seu lado, com Bran e Liessa. Hoje é guarda de Füllmun; você escolheu os livros."
+        },
+        {
+          "texto": "Hm. Pelo menos esse giro foi rápido.",
+          "quem": "nyme",
+          "requer": {
+            "flag": "girou"
+          }
+        },
+        {
+          "texto": "Nyme embainha a espada com um sorriso."
+        },
+        {
+          "texto": "Treino rápido? Como nos velhos tempos.",
+          "quem": "nyme"
+        }
+      ],
+      "fundo": "cena-templo-porta",
+      "musica": "fullmun",
+      "aoEntrar": {
+        "conhecer": "nyme"
+      },
+      "escolhas": [
+        {
+          "texto": "“Eu sempre {atrasado|atrasada} e você sempre confiante. Vamos lá.”",
+          "batalha": "treino-nyme",
+          "vitoria": "c02-depois-treino",
+          "derrota": "c02-depois-treino"
+        },
+        {
+          "texto": "“Agora? Artho vai me matar.”",
+          "vai_para": "c02-morra"
+        }
+      ]
+    },
+    {
+      "id": "c02-morra",
+      "falas": [
+        {
+          "texto": "Então morra lutando.",
+          "quem": "nyme"
+        }
+      ],
+      "fundo": "cena-templo-porta",
+      "musica": "fullmun",
+      "seguir": {
+        "batalha": "treino-nyme",
+        "vitoria": "c02-depois-treino",
+        "derrota": "c02-depois-treino",
+        "texto": "Lutar"
+      }
+    },
+    {
+      "id": "c02-depois-treino",
+      "falas": [
+        {
+          "texto": "Num gesto rápido, você prende a Nyme no chão.",
+          "requer": {
+            "algumaFlag": [
+              "venceu_treino_rasteira",
+              "venceu_treino"
+            ]
+          }
+        },
+        {
+          "texto": "Nem só de força se vencem as batalhas.",
+          "quem": "heroi",
+          "requer": {
+            "algumaFlag": [
+              "venceu_treino_rasteira",
+              "venceu_treino"
+            ]
+          }
+        },
+        {
+          "texto": "Por um instante, você fica olhando para ela. Os olhos claros arregalados de surpresa, cada traço como se tivesse sido desenhado com cuidado. O tempo parece parar.",
+          "requer": {
+            "algumaFlag": [
+              "venceu_treino_rasteira",
+              "venceu_treino"
+            ]
+          }
+        },
+        {
+          "texto": "Então a voz da Aylin ecoa na sua cabeça: “Mas mesmo assim, não vou deixar a Nyme ficar muito perto de você!”",
+          "requer": {
+            "algumaFlag": [
+              "venceu_treino_rasteira",
+              "venceu_treino"
+            ]
+          }
+        },
+        {
+          "texto": "Seu rosto esquenta. É o que basta: a Nyme gira o corpo e inverte as posições.",
+          "requer": {
+            "algumaFlag": [
+              "venceu_treino_rasteira",
+              "venceu_treino"
+            ]
+          }
+        },
+        {
+          "texto": "A Nyme passa a perna por trás da sua e você vai ao chão, com ela por cima, sorrindo.",
+          "requer": {
+            "flag": "perdeu_treino"
+          }
+        },
+        {
+          "texto": "E agora, quem está com cara de bobo?",
+          "quem": "nyme"
+        }
+      ],
+      "fundo": "cena-templo-porta",
+      "musica": "fullmun",
+      "seguir": {
+        "vai_para": "c02-artho"
+      }
+    },
+    {
+      "id": "c02-artho",
+      "falas": [
+        {
+          "texto": "Um pigarro severo corta o ar. Vocês sabem quem é antes mesmo de virar."
+        },
+        {
+          "texto": "O velho Artho está ali, a barba grisalha descendo pelo peito, apoiado no cajado."
+        },
+        {
+          "texto": "Além de {atrasado|atrasada}, fazendo bagunça na frente do Templo de Sólem?",
+          "quem": "artho"
+        },
+        {
+          "texto": "Vocês se levantam depressa, tentando parecer sérios."
+        },
+        {
+          "texto": "Pelo menos você trouxe o pão. O Tobias mandou, não foi? Intacto, ainda.",
+          "quem": "artho",
+          "requer": {
+            "cesto": "intacto"
+          },
+          "efeitos": {
+            "uma_vez": "sermao-cesto",
+            "relacao": {
+              "artho": 1,
+              "tobias": 1
+            },
+            "flag": "cesto_entregue"
+          }
+        },
+        {
+          "texto": "E está faltando um pão neste cesto. Curioso.",
+          "quem": "artho",
+          "requer": {
+            "cesto": "faltando"
+          },
+          "efeitos": {
+            "flag": "cesto_entregue"
+          }
+        },
+        {
+          "texto": "E o pão do templo? O Tobias não te viu?",
+          "quem": "artho",
+          "requer": {
+            "cesto": "sem"
+          }
+        },
+        {
+          "texto": "Soube que a Vó Hulda está com o varal completo de novo.",
+          "quem": "artho",
+          "requer": {
+            "flag": "missao_hulda"
+          },
+          "grupo": "boas",
+          "limite": 3
+        },
+        {
+          "texto": "O Gerulf disse que você acalmou o Mirtilo. Nem ele consegue isso.",
+          "quem": "artho",
+          "requer": {
+            "flag": "acalmou"
+          },
+          "grupo": "boas",
+          "limite": 3
+        },
+        {
+          "texto": "O Kobanu prometeu me trazer uma abóbora. Disse que foi graças a você.",
+          "quem": "artho",
+          "requer": {
+            "flag": "abobora_artho"
+          },
+          "grupo": "boas",
+          "limite": 3
+        },
+        {
+          "texto": "O Osric mandou dizer que você não cobrou nada dele. Bom.",
+          "quem": "artho",
+          "requer": {
+            "flag": "gentileza_osric"
+          },
+          "grupo": "boas",
+          "limite": 3
+        },
+        {
+          "texto": "E salvou a pequena Aylin, ouvi dizer.",
+          "quem": "artho",
+          "grupo": "boas",
+          "limite": 3
+        },
+        {
+          "texto": "Nyme arregala os olhos: “A Aylin? O que aconteceu com a Aylin?” A explicação fica para a biblioteca."
+        },
+        {
+          "texto": "Pouco atraso, para os seus padrões. Quase um milagre de Sólem.",
+          "quem": "artho",
+          "requer": {
+            "atrasoFinal": [
+              0,
+              1
+            ]
+          },
+          "efeitos": {
+            "uma_vez": "sermao-atraso",
+            "relacao": {
+              "artho": 1
+            }
+          }
+        },
+        {
+          "texto": "O sol andou demais no céu, {nome}. Demais.",
+          "quem": "artho",
+          "requer": {
+            "atrasoFinal": [
+              2,
+              2
+            ]
+          }
+        },
+        {
+          "texto": "O sol já passou do meio do céu. Eu estava quase mandando a guarda atrás de você.",
+          "quem": "artho",
+          "requer": {
+            "atrasoFinal": [
+              3,
+              3
+            ]
+          },
+          "efeitos": {
+            "uma_vez": "sermao-atraso",
+            "relacao": {
+              "artho": -1
+            }
+          }
+        },
+        {
+          "texto": "Eu já ia mandar a guarda inteira atrás de você.",
+          "quem": "artho",
+          "requer": {
+            "atrasoFinal": [
+              4,
+              4
+            ]
+          },
+          "efeitos": {
+            "uma_vez": "sermao-atraso",
+            "relacao": {
+              "artho": -1
+            }
+          }
+        },
+        {
+          "texto": "Mas atraso é atraso. Ainda assim, tenho uma boa notícia para você.",
+          "quem": "artho"
+        },
+        {
+          "texto": "Por um segundo, você pensa em Bran e Liessa voltando de Vön Bicken."
+        },
+        {
+          "texto": "E qual é a notícia, Artho?",
+          "quem": "heroi"
+        },
+        {
+          "texto": "Hoje você vai limpar a biblioteca. Mas não estará {sozinho|sozinha}. Nyme vai com você.",
+          "quem": "artho",
+          "requer": {
+            "atrasoFinal": [
+              0,
+              1
+            ]
+          }
+        },
+        {
+          "texto": "Hoje você vai esfregar o piso do salão principal. Depois, a biblioteca. Mas não estará {sozinho|sozinha}. Nyme vai com você.",
+          "quem": "artho",
+          "requer": {
+            "atrasoFinal": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "texto": "Hoje você vai esfregar o salão principal, polir o altar de Sólem e, depois, limpar a biblioteca. Mas não estará {sozinho|sozinha}. Nyme vai com você.",
+          "quem": "artho",
+          "requer": {
+            "atrasoFinal": [
+              4,
+              4
+            ]
+          }
+        },
+        {
+          "texto": "Eu? O que eu fiz?",
+          "quem": "nyme"
+        },
+        {
+          "texto": "Bagunça na frente do templo.",
+          "quem": "artho"
+        }
+      ],
+      "fundo": "cena-templo-porta",
+      "musica": "fullmun",
+      "aoEntrar": {
+        "flag": "sermao_ouvido",
+        "conhecer": "artho"
+      },
+      "escolhas": [
+        {
+          "texto": "“Sim, senhor.” (pegar o balde sem reclamar)",
+          "efeitos": {
+            "flag": [
+              "sem_reclamar",
+              "nyme_seguindo"
+            ]
+          },
+          "mapa": "templo-salao"
+        },
+        {
+          "texto": "“Justo hoje, Artho?”",
+          "efeitos": {
+            "flag": "nyme_seguindo"
+          },
+          "mapa": "templo-salao"
+        },
+        {
+          "texto": "“Isso é injusto! Eu salvei a Aylin!”",
+          "efeitos": {
+            "flag": [
+              "reclamou",
+              "nyme_seguindo"
+            ],
+            "relacao": {
+              "nyme": -1
+            }
+          },
+          "vai_para": "c02-reclamou"
+        }
+      ]
+    },
+    {
+      "id": "c02-reclamou",
+      "falas": [
+        {
+          "texto": "Lá vem…",
+          "quem": "nyme"
+        }
+      ],
+      "fundo": "cena-templo-porta",
+      "musica": "fullmun",
+      "seguir": {
+        "mapa": "templo-salao",
+        "texto": "Pegar o balde"
+      }
+    },
+    {
+      "id": "t-salao-machucado",
+      "falas": [
+        {
+          "texto": "E essa lama? Isso é sangue, {nome}? O que você aprontou?",
+          "quem": "nyme"
+        }
+      ],
+      "seguir": {
+        "voltar": true,
+        "texto": "Continuar"
+      }
+    },
+    {
+      "id": "t-porta-biblioteca",
+      "falas": [],
+      "rotas": [
+        {
+          "requer": {
+            "atrasoFinal": [
+              0,
+              1
+            ]
+          },
+          "vai_para": "t-ir-biblioteca"
+        },
+        {
+          "requer": {
+            "atrasoFinal": [
+              2,
+              3
+            ],
+            "contadorMin": {
+              "manchas": 6
+            }
+          },
+          "vai_para": "t-ir-biblioteca"
+        },
+        {
+          "requer": {
+            "atrasoFinal": [
+              4,
+              4
+            ],
+            "contadorMin": {
+              "manchas": 10,
+              "altar_polido": 1
+            }
+          },
+          "vai_para": "t-ir-biblioteca"
+        },
+        {
+          "vai_para": "t-porta-trancada"
+        }
+      ]
+    },
+    {
+      "id": "t-ir-biblioteca",
+      "falas": [],
+      "seguir": {
+        "mapa": "templo-biblioteca"
+      }
+    },
+    {
+      "id": "t-porta-trancada",
+      "falas": [
+        {
+          "texto": "O piso primeiro, {nome}.",
+          "quem": "artho"
+        }
+      ],
+      "seguir": {
+        "voltar": true,
+        "texto": "Continuar"
+      }
+    },
+    {
+      "id": "t-artho-retorno",
+      "falas": [
+        {
+          "texto": "Sólem vê o trabalho bem-feito.",
+          "quem": "artho"
+        }
+      ],
+      "seguir": {
+        "voltar": true,
+        "texto": "Continuar"
+      }
+    },
+    {
+      "id": "t-nyme-retorno",
+      "falas": [
+        {
+          "texto": "Anda, {nome}. Esse chão não se limpa sozinho.",
+          "quem": "nyme"
+        }
+      ],
+      "seguir": {
+        "voltar": true,
+        "texto": "Continuar"
+      }
+    },
+    {
+      "id": "t-alcapao",
+      "falas": [],
+      "rotas": [
+        {
+          "requer": {
+            "flag": "alcapao_liberado"
+          },
+          "vai_para": "t-alcapao-frame"
+        },
+        {
+          "vai_para": "t-alcapao-trancado"
+        }
+      ]
+    },
+    {
+      "id": "t-alcapao-trancado",
+      "falas": [
+        {
+          "texto": "Trancado, como sempre. Só o Artho tem a chave.",
+          "quem": "pensamento"
+        }
+      ],
+      "seguir": {
+        "voltar": true,
+        "texto": "Continuar"
+      }
+    },
+    {
+      "id": "t-estante-1",
+      "falas": [
+        {
+          "texto": "Viu? Eu disse que você ainda não estava {pronto|pronta} pra mim.",
+          "quem": "nyme",
+          "requer": {
+            "flag": "perdeu_treino"
+          }
+        },
+        {
+          "texto": "Você ainda acha que venceu a luta de hoje? Eu só caí porque deixei!",
+          "quem": "nyme",
+          "requer": {
+            "semFlag": "perdeu_treino"
+          }
+        }
+      ],
+      "escolhas": [
+        {
+          "texto": "“Claro. E eu sou o Artho.” (rindo)",
+          "voltar": true
+        },
+        {
+          "texto": "“Na próxima eu ganho de verdade.”",
+          "voltar": true
+        }
+      ]
+    },
+    {
+      "id": "t-estante-2",
+      "falas": [
+        {
+          "texto": "Eu socorri a Aylin hoje de manhã. Por isso me atrasei.",
+          "quem": "heroi"
+        },
+        {
+          "texto": "O quê? O que aconteceu com ela?",
+          "quem": "nyme"
+        },
+        {
+          "texto": "Um porco azul fugiu do chiqueiro do Gerulf. Ela estava encurralada.",
+          "quem": "heroi"
+        },
+        {
+          "texto": "E o que ela disse depois que você a salvou?",
+          "quem": "nyme"
+        }
+      ],
+      "escolhas": [
+        {
+          "texto": "Imitar a Aylin, mãos na cintura: “Mesmo sendo salva por você, não vou deixar a Nyme ficar muito perto de você!”",
+          "efeitos": {
+            "relacao": {
+              "nyme": 1
+            }
+          },
+          "vai_para": "t-estante-2-riso"
+        },
+        {
+          "texto": "“Nada demais. Agradeceu e foi pra casa.”",
+          "vai_para": "t-estante-2b"
+        }
+      ]
+    },
+    {
+      "id": "t-estante-2-riso",
+      "falas": [
+        {
+          "texto": "Vocês dois riem alto, e o eco corre pelas estantes."
+        }
+      ],
+      "seguir": {
+        "vai_para": "t-estante-2b"
+      }
+    },
+    {
+      "id": "t-estante-2b",
+      "falas": [
+        {
+          "texto": "Mal ela sabe que foi por causa dela que a gente ganhou mais um tempinho junto…",
+          "quem": "nyme"
+        },
+        {
+          "texto": "Sabe, {nome}… eu gosto da sua presença perto de mim. Eu me sinto… querida e segura.",
+          "quem": "nyme"
+        }
+      ],
+      "escolhas": [
+        {
+          "texto": "“Eu… eu também gosto de você… quer dizer, de estar com você. É sempre bom, sabe?”",
+          "efeitos": {
+            "relacao": {
+              "nyme": 1
+            },
+            "flag": "carinho_nyme"
+          },
+          "vai_para": "t-estante-2c"
+        },
+        {
+          "texto": "Ficar {vermelho|vermelha} e mudar de assunto",
+          "vai_para": "t-estante-2c"
+        }
+      ]
+    },
+    {
+      "id": "t-estante-2c",
+      "falas": [
+        {
+          "texto": "O silêncio cai entre vocês, pesado, mas não desagradável."
+        }
+      ],
+      "seguir": {
+        "voltar": true,
+        "texto": "Continuar"
+      }
+    },
+    {
+      "id": "t-estante-3",
+      "falas": [
+        {
+          "texto": "A Nyme puxa um livro grosso da prateleira, ainda envergonhada."
+        },
+        {
+          "texto": "Olha isso. Fala da primeira guerra divina em Icarus. Os devotos de Béllica, Odíncia e Nocturna marchavam para aniquilar qualquer seguidor dos Baldurs. Será que isso realmente aconteceu?",
+          "quem": "nyme"
+        }
+      ],
+      "aoEntrar": {
+        "uma_vez": "livro-primeira-guerra",
+        "contador": {
+          "livros_lidos": 1
+        }
+      },
+      "escolhas": [
+        {
+          "texto": "“Às vezes acho que sim… mas olhando a paz de Füllmun, como imaginar algo tão sangrento?”",
+          "voltar": true
+        },
+        {
+          "texto": "“Os livros não mentem. Só esquecem partes.”",
+          "voltar": true
+        },
+        {
+          "texto": "“Em todos os relatos, a guerra começa com alguém tendo um sonho…”",
+          "requer": {
+            "flag": "pista_sonho"
+          },
+          "vai_para": "t-estante-3-sonho"
+        }
+      ]
+    },
+    {
+      "id": "t-estante-3-sonho",
+      "falas": [
+        {
+          "texto": "A Nyme te olha de um jeito estranho."
+        },
+        {
+          "texto": "Você anda lendo demais, {nome}.",
+          "quem": "nyme"
+        }
+      ],
+      "seguir": {
+        "voltar": true,
+        "texto": "Continuar"
+      }
+    },
+    {
+      "id": "t-tres-livros",
+      "falas": [],
+      "aoEntrar": {
+        "uma_vez": "tres-livros",
+        "relacao": {
+          "artho": 1
+        },
+        "flag": "leu_tres_livros"
+      },
+      "seguir": {
+        "voltar": true
+      }
+    },
+    {
+      "id": "t-estantes-fim",
+      "falas": [
+        {
+          "texto": "Você não percebe quando Artho entrou. Ele observa vocês dois, com um meio sorriso."
+        },
+        {
+          "texto": "Vocês dois trabalham bem juntos.",
+          "quem": "artho"
+        },
+        {
+          "texto": "Os dois ficam vermelhos e fingem espanar o mesmo livro."
+        },
+        {
+          "texto": "E nem reclamou. Tô impressionada.",
+          "quem": "nyme",
+          "requer": {
+            "flag": "sem_reclamar"
+          },
+          "efeitos": {
+            "uma_vez": "nyme-sem-reclamar",
+            "relacao": {
+              "nyme": 1
+            }
+          }
+        },
+        {
+          "texto": "Artho… todas essas histórias nos livros. São verdadeiras?",
+          "quem": "heroi"
+        },
+        {
+          "texto": "Muitas histórias verdadeiras tornam-se lendas, {nome}. E muitos mitos tornam-se realidade… depende de quem os conta.",
+          "quem": "artho"
+        },
+        {
+          "texto": "Mas uma coisa é certa: conflitos sempre existirão enquanto houver seres vivos em Icarus. Animais buscam comida e defendem território. Nações guerreiam pelo poder. Esse ciclo não acaba.",
+          "quem": "artho"
+        },
+        {
+          "texto": "Você olha para o chão, {pensativo|pensativa}. Os dedos do sonho apontados para você. O porco azul. A coragem de hoje cedo."
+        },
+        {
+          "texto": "E o alçapão, ali no fundo da biblioteca."
+        },
+        {
+          "texto": "Agora. Pergunte agora.",
+          "quem": "pensamento"
+        }
+      ],
+      "aoEntrar": {
+        "flag": [
+          "alcapao_liberado",
+          "artho_na_biblioteca",
+          "limpou_tudo"
+        ]
+      },
+      "seguir": {
+        "voltar": true,
+        "texto": "Continuar"
+      }
+    },
+    {
+      "id": "t-alcapao-frame",
+      "falas": [
+        {
+          "texto": "O alçapão. A luz dourada escapa pelas frestas da madeira, como se algo lá embaixo respirasse."
+        }
+      ],
+      "fundo": "cena-alcapao",
+      "visual": "alcapao",
+      "aoEntrar": {
+        "flag": "perguntou_alcapao"
+      },
+      "escolhas": [
+        {
+          "texto": "Perguntar com respeito",
+          "fala": "Artho, eu conheço este templo inteiro. Estudo aqui todos os dias. Quando é que você vai me mostrar o que tem embaixo do alçapão?",
+          "efeitos": {
+            "relacao": {
+              "artho": 1
+            }
+          },
+          "vai_para": "t-alcapao-nyme"
+        },
+        {
+          "texto": "Exigir saber",
+          "fala": "Eu tenho o direito de saber o que tem aí embaixo, Artho!",
+          "efeitos": {
+            "relacao": {
+              "artho": -1
+            }
+          },
+          "vai_para": "t-alcapao-nyme"
+        }
+      ]
+    },
+    {
+      "id": "t-alcapao-nyme",
+      "falas": [
+        {
+          "texto": "A Nyme sorri, orgulhosa da sua coragem. Mas algo no ar fica mais denso. Ela decide deixar vocês dois a sós."
+        },
+        {
+          "texto": "Ela te abraça e te dá um beijo no rosto."
+        },
+        {
+          "texto": "Nos vemos mais tarde, {nome}.",
+          "quem": "nyme"
+        },
+        {
+          "texto": "Ela sai pela porta."
+        }
+      ],
+      "fundo": "cena-alcapao",
+      "visual": "alcapao",
+      "aoEntrar": {
+        "flag": "nyme_saiu"
+      },
+      "seguir": {
+        "vai_para": "t-alcapao-artho"
+      }
+    },
+    {
+      "id": "t-alcapao-artho",
+      "falas": [
+        {
+          "texto": "Artho observa a Nyme sair, em silêncio, como se esperasse exatamente por isso. Quando volta a olhar para você, o olhar é sério, quase pesaroso."
+        },
+        {
+          "texto": "Então…? Eu estou {pronto|pronta}.",
+          "quem": "heroi"
+        },
+        {
+          "texto": "Artho respira fundo e cruza os braços."
+        },
+        {
+          "texto": "Quando você estiver {pronto|pronta}, {nome}.",
+          "quem": "artho"
+        }
+      ],
+      "fundo": "cena-alcapao",
+      "visual": "alcapao",
+      "escolhas": [
+        {
+          "texto": "Fechar o punho, em silêncio",
+          "vai_para": "c02-gritos"
+        },
+        {
+          "texto": "“Eu ESTOU {pronto|pronta}!”",
+          "vai_para": "c02-gritos"
+        }
+      ]
+    },
+    {
+      "id": "c02-gritos",
+      "falas": [
+        {
+          "texto": "Gritos rasgam o ar lá fora, como trovões num céu sem nuvens.",
+          "som": "gritos-longe",
+          "tremor": true,
+          "musica": null,
+          "musicaCorte": true
+        },
+        {
+          "texto": "Você e Artho se olham. Nenhum dos dois diz nada. Vocês correm."
+        }
+      ],
+      "fundo": "cena-alcapao",
+      "visual": "alcapao-escuro",
+      "seguir": {
+        "vai_para": "c02-tragedia"
+      }
+    },
+    {
+      "id": "c02-tragedia",
+      "falas": [
+        {
+          "texto": "Vocês empurram a porta da biblioteca ao mesmo tempo, e o tempo parece desacelerar.",
+          "velocidade": 48,
+          "loop": "batida-coracao",
+          "abafar": true,
+          "musica": "tragedia?"
+        },
+        {
+          "texto": "No fim do salão, a Nyme já está na porta do templo, a espada firme na mão.",
+          "velocidade": 48
+        },
+        {
+          "texto": "Ela se vira para trás e olha para vocês, como quem diz: eu cuido disso.",
+          "velocidade": 48
+        },
+        {
+          "texto": "Você abre a boca para gritar. Nenhum som sai.",
+          "velocidade": 48
+        },
+        {
+          "texto": "O mundo volta de repente.",
+          "visual": "normal",
+          "loop": null,
+          "abafar": false,
+          "som": "flecha",
+          "flash": true,
+          "tremor": true
+        },
+        {
+          "texto": "Uma flecha. Depois outra."
+        },
+        {
+          "texto": "A espada da Nyme cai no chão de pedra com um som metálico."
+        },
+        {
+          "texto": "Ela se vira uma última vez para vocês, os lábios entreabertos, como se quisesse dizer alguma coisa. As palavras nunca saem."
+        },
+        {
+          "texto": "E então ela tomba."
+        },
+        {
+          "texto": "Eu me sinto querida e segura.",
+          "quem": "pensamento",
+          "requer": {
+            "flag": "carinho_nyme"
+          },
+          "visual": "preto",
+          "musica": null,
+          "efeitos": {
+            "flag": "nyme_caiu"
+          }
+        },
+        {
+          "texto": "O silêncio que vem depois é pior do que os gritos.",
+          "visual": "preto",
+          "musica": null,
+          "efeitos": {
+            "flag": "nyme_caiu"
+          },
+          "auto": 2000
+        }
+      ],
+      "fundo": "cena-nyme-porta",
+      "visual": "dessaturado",
+      "seguir": {
+        "fim": true,
+        "texto": "Continuar"
+      }
+    }
+  ]
+}

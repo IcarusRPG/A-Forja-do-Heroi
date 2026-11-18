@@ -1,0 +1,290 @@
+{
+ "id": "templo-biblioteca",
+ "imagem": "img/mapas/templo-biblioteca.png",
+ "largura": 1536,
+ "altura": 1024,
+ "inicio": {
+  "x": 236,
+  "y": 610,
+  "direcao": "direita"
+ },
+ "alturasDeTela": 1.35,
+ "musica": "templo",
+ "hud": {
+  "contador": "estantes",
+  "rotulo": "Estantes",
+  "total": 5
+ },
+ "espirros": true,
+ "colisoes": [
+  {
+   "id": "piso",
+   "tipo": "andavel",
+   "pontos": [
+    [190, 488],
+    [1384, 488],
+    [1384, 690],
+    [1392, 920],
+    [190, 920]
+   ]
+  },
+  {
+   "id": "balde",
+   "tipo": "bloqueado",
+   "pontos": [
+    [189, 500],
+    [252, 500],
+    [252, 586],
+    [189, 586]
+   ]
+  },
+  {
+   "id": "vassoura",
+   "tipo": "bloqueado",
+   "pontos": [
+    [252, 379],
+    [330, 379],
+    [330, 562],
+    [252, 562]
+   ]
+  },
+  {
+   "id": "caixote",
+   "tipo": "bloqueado",
+   "pontos": [
+    [280, 424],
+    [356, 424],
+    [356, 502],
+    [280, 502]
+   ]
+  },
+  {
+   "id": "mesa",
+   "tipo": "bloqueado",
+   "pontos": [
+    [591, 560],
+    [1000, 560],
+    [1000, 790],
+    [591, 790]
+   ]
+  },
+  {
+   "id": "estante-frente-esq",
+   "tipo": "bloqueado",
+   "pontos": [
+    [182, 692],
+    [434, 692],
+    [434, 932],
+    [182, 932]
+   ]
+  },
+  {
+   "id": "estante-frente-dir",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1174, 692],
+    [1402, 692],
+    [1402, 932],
+    [1174, 932]
+   ]
+  },
+  {
+   "id": "estante-direita",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1386, 197],
+    [1462, 197],
+    [1462, 712],
+    [1386, 712]
+   ]
+  }
+ ],
+ "interacoes": [],
+ "gatilhos": [],
+ "oclusores": [
+  {
+   "id": "estante-frente-esq",
+   "base": 780,
+   "contorno": [
+    [182, 640],
+    [434, 640],
+    [434, 760],
+    [182, 760]
+   ],
+   "sementes": [],
+   "fixo": [
+    [182, 640],
+    [434, 640],
+    [434, 760],
+    [182, 760]
+   ]
+  },
+  {
+   "id": "estante-frente-dir",
+   "base": 780,
+   "contorno": [
+    [1174, 640],
+    [1402, 640],
+    [1402, 760],
+    [1174, 760]
+   ],
+   "sementes": [],
+   "fixo": [
+    [1174, 640],
+    [1402, 640],
+    [1402, 760],
+    [1174, 760]
+   ]
+  },
+  {
+   "id": "mesa",
+   "base": 700,
+   "contorno": [
+    [591, 520],
+    [1000, 520],
+    [1000, 640],
+    [591, 640]
+   ],
+   "sementes": [],
+   "fixo": [
+    [591, 520],
+    [1000, 520],
+    [1000, 640],
+    [591, 640]
+   ]
+  }
+ ],
+ "npcs": [
+  {
+   "id": "artho",
+   "x": 300,
+   "y": 640,
+   "direcao": "direita",
+   "requer": {
+    "flag": "artho_na_biblioteca"
+   }
+  }
+ ],
+ "objetos": [
+  {
+   "id": "estante-1",
+   "item": "poeira",
+   "x": 360,
+   "y": 505,
+   "acao": "esfregar",
+   "contador": "estantes"
+  },
+  {
+   "id": "estante-2",
+   "item": "poeira",
+   "x": 520,
+   "y": 505,
+   "acao": "esfregar",
+   "contador": "estantes"
+  },
+  {
+   "id": "estante-3",
+   "item": "poeira",
+   "x": 1140,
+   "y": 505,
+   "acao": "esfregar",
+   "contador": "estantes"
+  },
+  {
+   "id": "estante-4",
+   "item": "poeira",
+   "x": 1300,
+   "y": 505,
+   "acao": "esfregar",
+   "contador": "estantes"
+  },
+  {
+   "id": "estante-5",
+   "item": "poeira",
+   "x": 1350,
+   "y": 640,
+   "acao": "esfregar",
+   "contador": "estantes"
+  },
+  {
+   "id": "livro-solem",
+   "item": "livro",
+   "x": 548,
+   "y": 640,
+   "acao": "ler",
+   "livro": "solem",
+   "fica": true
+  },
+  {
+   "id": "livro-alfars",
+   "item": "livro",
+   "x": 1060,
+   "y": 640,
+   "acao": "ler",
+   "livro": "alfars-baldurs",
+   "fica": true
+  },
+  {
+   "id": "livro-guerra",
+   "item": "livro",
+   "x": 470,
+   "y": 820,
+   "acao": "ler",
+   "livro": "primeira-guerra",
+   "fica": true
+  },
+  {
+   "id": "alcapao",
+   "item": "livro",
+   "x": 826,
+   "y": 500,
+   "semIcone": true,
+   "fica": true,
+   "cena": "t-alcapao",
+   "marcador": [
+    {
+     "requer": {
+      "flag": "alcapao_liberado"
+     },
+     "tipo": "!"
+    }
+   ]
+  }
+ ],
+ "seguidores": [
+  {
+   "id": "nyme",
+   "requer": {
+    "flag": "nyme_seguindo",
+    "semFlag": "nyme_saiu"
+   }
+  }
+ ],
+ "aoContador": [
+  {
+   "contador": "estantes",
+   "valor": 1,
+   "cena": "t-estante-1"
+  },
+  {
+   "contador": "estantes",
+   "valor": 2,
+   "cena": "t-estante-2"
+  },
+  {
+   "contador": "estantes",
+   "valor": 3,
+   "cena": "t-estante-3"
+  },
+  {
+   "contador": "estantes",
+   "valor": 5,
+   "cena": "t-estantes-fim"
+  },
+  {
+   "contador": "livros_lidos",
+   "valor": 3,
+   "cena": "t-tres-livros"
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+{
+  "_todo": "TODO(Adam): revisar lore — textos provisórios dos livros da biblioteca.",
+  "primeira-guerra": {
+    "titulo": "A Primeira Guerra Divina",
+    "paragrafos": [
+      "Antes das cidades de pedra, os deuses de Icarus já se dividiam em dois povos divinos: os Alfars e os Baldurs.",
+      "Os relatos dizem que os devotos de Béllica, Odíncia e Nocturna marcharam para apagar da terra qualquer seguidor dos Baldurs.",
+      "Os templos arderam dos dois lados. Os livros não concordam sobre quem começou, nem sobre quem venceu.",
+      "Concordam apenas que a paz que veio depois foi cara."
+    ]
+  },
+  "alfars-baldurs": {
+    "titulo": "Alfars e Baldurs",
+    "paragrafos": [
+      "Os Alfars são os deuses da ordem e da luz, como Sólem e Justar.",
+      "Os Baldurs são os deuses da força interior, das paixões e do tempo, como Ardor, Expiria, Eternus, Mentis e Irae.",
+      "Os sábios de Füllmun ensinam que nenhum dos dois povos é bom ou mau por natureza. O que pesa é o que os mortais fazem em nome deles."
+    ]
+  },
+  "solem": {
+    "titulo": "Sólem, o Sol que Vê",
+    "paragrafos": [
+      "Sólem é o deus do sol, da verdade e da vigilância. Seus clérigos acendem velas ao amanhecer e as apagam só quando a última pessoa da vila vai dormir.",
+      "Diz-se que nada feito sob a luz do dia escapa aos olhos dele, e que todo juramento feito diante do seu altar pesa como pedra."
+    ]
+  }
+}
