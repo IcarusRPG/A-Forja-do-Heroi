@@ -247,6 +247,12 @@ test('Kobanu: zombar dá −2 (Ressentido); ratazanas com 3 inimigos, alvo, dica
   s = await st(page);
   expect(s.inimigos).toHaveLength(3);
   expect(s.inimigos.map((i: { nome: string }) => i.nome)).toEqual(['Ratazana A', 'Ratazana B', 'Ratazana C']);
+  // As três ratazanas aparecem em pontos diferentes da arena (sem se sobrepor por inteiro)
+  const caixas = await page.locator('.batalha-lado.inimigos .sprite-batalha').evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width }; }));
+  expect(caixas).toHaveLength(3);
+  // e nenhuma fica atrás do cenário
+  expect(await page.locator('.batalha-lado.inimigos .sprite-batalha').evaluateAll((els) => els.every((e) => Number(getComputedStyle(e).zIndex) > 0))).toBe(true);
+  for (let a = 0; a < 3; a++) for (let b = a + 1; b < 3; b++) expect(Math.hypot(caixas[a].x - caixas[b].x, caixas[a].y - caixas[b].y)).toBeGreaterThan(caixas[a].w * 0.4);
   expect(s.compendio.bestiario.ratazana).toEqual({ sabe: false });
   // Seleção de alvo
   await page.locator('[data-comando="bicuda"]').click();

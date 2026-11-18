@@ -17,6 +17,8 @@
 }
 .batalha-lado { position: absolute; bottom: 9%; display: flex; align-items: flex-end; }
 .batalha-lado.inimigos { left: max(4%, env(safe-area-inset-left)); }
+/* Vários inimigos: a formação usa % deste quadro (sem tamanho, todos cairiam no mesmo ponto). */
+.batalha-lado.inimigos.varios { width: min(48%, 440px); height: 30%; }
 .batalha-lado.herois { right: max(8%, env(safe-area-inset-right)); bottom: 11%; }
 
 .sprite-batalha { position: relative; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); }

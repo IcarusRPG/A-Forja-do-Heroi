@@ -52,7 +52,7 @@ interface Inimigo {
 }
 
 const T = textos.batalha;
-const FORMACOES: [number, number][][] = [[], [[2, 8]], [[0, 18], [30, 4]], [[6, 24], [36, 12], [2, 0]]];
+const FORMACOES: [number, number][][] = [[], [[2, 8]], [[0, 18], [30, 4]], [[42, 4], [6, 58], [0, 0]]];
 
 export function telaBatalha(params?: unknown): Tela {
   const prm = params as ParamsBatalha;
@@ -740,7 +740,7 @@ export function telaBatalha(params?: unknown): Tela {
           const nome = repetidos(id) ? `${dados.nome} ${'ABC'[contagem[id] - 1]}` : dados.nome;
           const sprite = new SpriteBatalha(folhas[ids.indexOf(id)], 'inimigo', 'esquerda');
           const [x, y] = formacao[k];
-          Object.assign(sprite.el.style, { position: 'absolute', left: `${x}%`, bottom: `${y}%`, zIndex: String(10 - Math.round(y / 5)) });
+          Object.assign(sprite.el.style, { position: 'absolute', left: `${x}%`, bottom: `${y}%`, zIndex: String(20 - Math.round(y / 5)) });
           sprite.el.dataset.uid = k === 0 ? 'inimigo' : `inimigo-${k + 1}`;
           ladoInimigo.append(sprite.el);
           const pv = treino ? dados.pv : dados.pv;
