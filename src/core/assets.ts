@@ -27,6 +27,9 @@ export const ASSETS = {
   spriteBatalhaHeroi: (raca: string, genero: Genero) => `img/batalha/herois/${raca}-${genero}`,
   spriteBatalhaInimigo: (id: string) => `img/batalha/inimigos/${id}`,
   gameOver: 'img/telas/game-over.webp',
+  item: (id: string) => `img/itens/${id}.png`,
+  mapa: (id: string) => `img/mapas/${id}.png`,
+  chibi: (id: string) => `sprites/chibi-${id}.png`,
 } as const;
 
 export const SFX = [
@@ -41,7 +44,12 @@ export const SFX_SONHO = [
 export const SFX_CAPITULO = [
   'text-blip', 'dice-roll', 'grito-crianca', 'kick', 'miss', 'crit', 'pig-squeal', 'pig-charge', 'fall', 'tremor',
 ] as const;
-export type NomeSfx = (typeof SFX)[number] | (typeof SFX_SONHO)[number] | (typeof SFX_CAPITULO)[number];
+/** Efeitos da Fase 4 (Füllmun, templo, tragédia). */
+export const SFX_FASE4 = [
+  'rato-guincho', 'abobora-splat', 'pegar-item', 'esfregar', 'espirro', 'espada-treino', 'rasteira',
+  'coracao-mais', 'coracao-menos', 'compendio', 'gritos-longe', 'batida-coracao', 'flecha',
+] as const;
+export type NomeSfx = (typeof SFX)[number] | (typeof SFX_SONHO)[number] | (typeof SFX_CAPITULO)[number] | (typeof SFX_FASE4)[number];
 
 /** O arquivo existe e é do tipo esperado? (No dev server do Vite, um arquivo ausente pode voltar como HTML.) */
 export async function existeAsset(caminho: string, tipo: 'image' | 'audio' | 'video'): Promise<boolean> {

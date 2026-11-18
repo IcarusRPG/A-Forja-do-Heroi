@@ -29,7 +29,27 @@ const POSES = {
   heroi: ['parado', 'ataque', 'atingido', 'ferido', 'caido', 'vitoria'],
   mirtilo: ['parado', 'ataque', 'atingido', 'recuando', 'fugindo', 'tonto'],
   'mirtilo-enfurecido': ['parado', 'mordida', 'investida', 'atingido', 'exausto', 'fugindo'],
+  ratazana: ['parado', 'ataque', 'atingido', 'assustada', 'fugindo', 'tonta'],
+  nyme: ['parado', 'ataque', 'atingido', 'defendendo', 'caida', 'rindo'],
 };
+
+/**
+ * Tamanho de cada inimigo na folha final: `medida` é a altura da pose parada (humanoides) ou a maior
+ * dimensão (bichos compridos). Padrão: 1,6 vez a altura do herói, no comprimento.
+ */
+const TAMANHOS = {
+  ratazana: { alvo: 62, medida: 'maior' },
+  nyme: { alvo: 76, medida: 'altura' },
+};
+/** Poses que vêm viradas para o lado errado e são espelhadas (a ratazana foge pela esquerda). */
+const ESPELHAR = { ratazana: ['fugindo'] };
+
+function espelhar(img) {
+  const r = nova(img.w, img.h);
+  for (let y = 0; y < img.h; y++) for (let x = 0; x < img.w; x++)
+    for (let c = 0; c < 4; c++) r.d[(y * img.w + img.w - 1 - x) * 4 + c] = img.d[(y * img.w + x) * 4 + c];
+  return r;
+}
 
 /**
  * Borrões: manchas quase transparentes e grandes, soltas da arte (aparecem como sombras borradas nas
@@ -129,8 +149,8 @@ function separarCelulas(img, avisos, nome) {
   });
 }
 
-/** `alvo`: tamanho da pose "parado" — a altura (heróis) ou a maior dimensão (inimigos, que são compridos). */
-async function processar(tipo, arquivo, alvo, suave) {
+/** `alvo`: tamanho da pose "parado" — a altura (heróis e humanoides) ou a maior dimensão (bichos compridos). */
+async function processar(tipo, arquivo, alvo, suave, medida = tipo === 'herois' ? 'altura' : 'maior') {
   const nome = path.parse(arquivo).name;
   const avisos = [];
   const img = await ler(path.join(ENTRADA, tipo, arquivo));
@@ -138,7 +158,12 @@ async function processar(tipo, arquivo, alvo, suave) {
   if (!suave) removerBorroes(img, avisos, nome);
   limparFundo(img, suave ? 20 : 128);
   const poses = separarCelulas(img, avisos, nome);
-  const fator = alvo / (tipo === 'herois' ? poses[0].h : Math.max(poses[0].w, poses[0].h));
+  const fator = alvo / (medida === 'altura' ? poses[0].h : Math.max(poses[0].w, poses[0].h));
+  const listaPoses = POSES[tipo === 'herois' ? 'heroi' : nome] ?? [];
+  for (const nomePose of ESPELHAR[nome] ?? []) {
+    const i = listaPoses.indexOf(nomePose);
+    if (i >= 0) poses[i] = espelhar(poses[i]);
+  }
   const reduzidas = await reduzirPaleta(await Promise.all(poses.map((p) => reduzir(p, fator, suave ? null : 110))), suave ? 64 : 40, suave);
   // Quadro comum: largura e altura da maior pose; todas apoiadas na mesma base (pés), centradas.
   const qw = Math.max(...reduzidas.map((p) => p.w)) + MARGEM * 2;
@@ -181,7 +206,8 @@ if (herois.length !== 8) console.warn(`  Atenção: esperava 8 folhas de herói,
 for (const f of herois) avisos.push(...(await processar('herois', f, ALTURA_HEROI, false)));
 for (const f of (await readdir(path.join(ENTRADA, 'inimigos'))).filter((f) => f.endsWith('.png')).sort()) {
   const suave = f.includes('enfurecido');
-  avisos.push(...(await processar('inimigos', f, Math.round(ALTURA_HEROI * ESCALA_INIMIGO), suave)));
+  const t = TAMANHOS[path.parse(f).name];
+  avisos.push(...(await processar('inimigos', f, t?.alvo ?? Math.round(ALTURA_HEROI * ESCALA_INIMIGO), suave, t?.medida)));
 }
 if (avisos.length) console.warn('  AVISOS:\n   - ' + avisos.join('\n   - '));
 console.log('Pronto: folhas de batalha em public/assets/img/batalha/.');

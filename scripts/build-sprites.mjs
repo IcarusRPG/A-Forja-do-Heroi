@@ -161,7 +161,7 @@ async function processar(arquivo) {
 await mkdir(SAIDA, { recursive: true });
 await mkdir(PREVIAS, { recursive: true });
 // Heróis: <raca>-<m|f>.png; NPCs: <id>.png (artho, nyme…). Saída: chibi-<nome>.png.
-const arquivos = (await readdir(ENTRADA)).filter((f) => /^[a-z]+(-[mf])?\.png$/.test(f)).sort();
+const arquivos = (await readdir(ENTRADA)).filter((f) => /^[a-z]+(-[a-z]+)*\.png$/.test(f)).sort();
 const herois = arquivos.filter((f) => /-[mf]\.png$/.test(f));
 if (herois.length !== 8) console.warn(`  Atenção: esperava 8 folhas de herói, achei ${herois.length}.`);
 const avisos = [];

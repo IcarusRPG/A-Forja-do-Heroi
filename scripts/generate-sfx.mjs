@@ -307,6 +307,103 @@ const efeitos = {
     ruido(b, { inicio: 0.12, dur: 0.3, amp: 0.25, ataque: 0.01, decai: 0.08, corte: 1500, passaAlta: 400 });
     return normalizar(b, 0.85);
   },
+
+  // ---------- Fase 4 ----------
+  // Guincho curtinho de ratazana
+  'rato-guincho': () => {
+    const b = buffer(0.32);
+    tom(b, { freq: 2200, freqFim: 3100, dur: 0.12, amp: 0.6, ataque: 0.004, decai: 0.05, forma: 'tri' });
+    tom(b, { inicio: 0.13, freq: 2600, freqFim: 1900, dur: 0.16, amp: 0.5, ataque: 0.004, decai: 0.06, forma: 'tri' });
+    ruido(b, { dur: 0.3, amp: 0.12, ataque: 0.01, decai: 0.08, corte: 7000, passaAlta: 2500 });
+    return normalizar(b, 0.6);
+  },
+  // Abóbora espatifando: baque úmido
+  'abobora-splat': () => {
+    const b = buffer(0.5);
+    tom(b, { freq: 140, freqFim: 60, dur: 0.25, amp: 0.8, ataque: 0.002, decai: 0.06 });
+    ruido(b, { dur: 0.45, amp: 0.9, ataque: 0.002, decai: 0.09, corte: 2200, corteFim: 500 });
+    return normalizar(b, 0.75);
+  },
+  // Pegar item: dois toques subindo
+  'pegar-item': () => {
+    const b = buffer(0.35);
+    tom(b, { freq: 880, dur: 0.15, amp: 0.5, ataque: 0.003, decai: 0.06, parciais: [[1, 1], [2, 0.3]] });
+    tom(b, { inicio: 0.08, freq: 1320, dur: 0.25, amp: 0.5, ataque: 0.003, decai: 0.09, parciais: [[1, 1], [2, 0.3]] });
+    return normalizar(b, 0.6);
+  },
+  // Esfregar: ruído raspando em vaivém
+  'esfregar': () => {
+    const b = buffer(0.9);
+    for (let k = 0; k < 4; k++) ruido(b, { inicio: k * 0.22, dur: 0.2, amp: 0.7, ataque: 0.05, decai: 0.06, corte: 3500, corteFim: 1800, passaAlta: 900 });
+    return normalizar(b, 0.55);
+  },
+  // Espirro: inspiração curta + "atchim"
+  'espirro': () => {
+    const b = buffer(0.7);
+    ruido(b, { dur: 0.25, amp: 0.25, ataque: 0.15, decai: 0.05, corte: 2500, passaAlta: 800 });
+    ruido(b, { inicio: 0.3, dur: 0.35, amp: 1, ataque: 0.004, decai: 0.07, corte: 6000, corteFim: 2500, passaAlta: 600 });
+    tom(b, { inicio: 0.3, freq: 420, freqFim: 260, dur: 0.2, amp: 0.3, ataque: 0.004, decai: 0.05, forma: 'tri' });
+    return normalizar(b, 0.7);
+  },
+  // Espada de treino: madeira batendo
+  'espada-treino': () => {
+    const b = buffer(0.3);
+    tom(b, { freq: 520, freqFim: 380, dur: 0.12, amp: 0.8, ataque: 0.001, decai: 0.03, parciais: [[1, 1], [2.3, 0.5], [3.7, 0.25]] });
+    ruido(b, { dur: 0.06, amp: 0.6, ataque: 0.001, decai: 0.012, corte: 5000, passaAlta: 900 });
+    return normalizar(b, 0.75);
+  },
+  // Rasteira: deslize no chão e a queda
+  'rasteira': () => {
+    const b = buffer(0.8);
+    ruido(b, { dur: 0.35, amp: 0.6, ataque: 0.03, decai: 0.15, corte: 1800, corteFim: 900, passaAlta: 300 });
+    tom(b, { inicio: 0.38, freq: 100, freqFim: 45, dur: 0.35, amp: 1, ataque: 0.003, decai: 0.1 });
+    ruido(b, { inicio: 0.38, dur: 0.25, amp: 0.6, ataque: 0.002, decai: 0.06, corte: 900 });
+    return normalizar(b, 0.85);
+  },
+  // Relação sobe: sininho subindo
+  'coracao-mais': () => {
+    const b = buffer(0.45);
+    tom(b, { freq: 988, dur: 0.18, amp: 0.4, ataque: 0.004, decai: 0.08, parciais: sinos });
+    tom(b, { inicio: 0.1, freq: 1319, dur: 0.3, amp: 0.4, ataque: 0.004, decai: 0.12, parciais: sinos });
+    return normalizar(b, 0.45);
+  },
+  // Relação desce: dois toques graves descendo
+  'coracao-menos': () => {
+    const b = buffer(0.45);
+    tom(b, { freq: 440, dur: 0.18, amp: 0.4, ataque: 0.004, decai: 0.08, forma: 'tri' });
+    tom(b, { inicio: 0.12, freq: 330, dur: 0.3, amp: 0.4, ataque: 0.004, decai: 0.12, forma: 'tri' });
+    return normalizar(b, 0.45);
+  },
+  // Compêndio: página virando
+  'compendio': () => {
+    const b = buffer(0.45);
+    ruido(b, { dur: 0.4, amp: 0.8, ataque: 0.08, decai: 0.12, corte: 5000, corteFim: 2000, passaAlta: 1200 });
+    return normalizar(b, 0.4);
+  },
+  // Gritos abafados ao longe
+  'gritos-longe': () => {
+    const b = buffer(2.4);
+    for (const [ini, f0] of [[0, 620], [0.35, 760], [0.9, 540], [1.3, 700]]) {
+      tom(b, { inicio: ini, freq: f0, freqFim: f0 * 0.75, dur: 0.9, amp: 0.5, ataque: 0.06, decai: 0.4, parciais: [[1, 1], [2, 0.5], [3, 0.25]] });
+    }
+    ruido(b, { dur: 2.3, amp: 0.4, ataque: 0.2, decai: 1.2, corte: 600 });
+    return normalizar(b, 0.55);
+  },
+  // Batida de coração lenta (um ciclo de ~1,4 s, para tocar em loop)
+  'batida-coracao': () => {
+    const b = buffer(1.4);
+    tom(b, { freq: 60, freqFim: 40, dur: 0.18, amp: 1, ataque: 0.004, decai: 0.05 });
+    tom(b, { inicio: 0.24, freq: 55, freqFim: 38, dur: 0.18, amp: 0.7, ataque: 0.004, decai: 0.05 });
+    return normalizar(b, 0.8);
+  },
+  // Flecha: assobio curto e o impacto seco
+  'flecha': () => {
+    const b = buffer(0.45);
+    ruido(b, { dur: 0.2, amp: 0.6, ataque: 0.02, decai: 0.06, corte: 2000, corteFim: 6000, passaAlta: 1500 });
+    tom(b, { inicio: 0.2, freq: 260, freqFim: 140, dur: 0.12, amp: 0.8, ataque: 0.001, decai: 0.03 });
+    ruido(b, { inicio: 0.2, dur: 0.08, amp: 0.7, ataque: 0.001, decai: 0.015, corte: 4000 });
+    return normalizar(b, 0.8);
+  },
 };
 
 await mkdir(OUT, { recursive: true });

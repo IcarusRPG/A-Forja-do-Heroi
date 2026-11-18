@@ -134,6 +134,11 @@ const MUSICAS = [
   ['porco azul de fullmun', 'tensao-porco'],
   ['vitoria', 'vitoria'],
   ['gameover', 'game-over'],
+  ['templo', 'templo'],
+  ['treino', 'treino'],
+  ['ratazana', 'batalha-ratazanas'],
+  // Opcional: a cena da tragédia usa silêncio se a faixa não existir.
+  ['tragedia', 'tragedia'],
 ];
 
 async function musica() {
@@ -143,7 +148,7 @@ async function musica() {
   await ensureDir(outDir);
   for (const [nome, destino] of MUSICAS) {
     const orig = todos.find((n) => chave(path.parse(n).name) === nome);
-    if (!orig) { console.warn(`  música não encontrada: "${nome}"`); continue; }
+    if (!orig) { console.warn(`  música não encontrada (opcional?): "${nome}"`); continue; }
     const out = path.join(outDir, `${destino}${path.extname(orig).toLowerCase()}`);
     await copyFile(path.join(dir, orig), out);
     console.log(`  música "${orig}" → ${path.basename(out)} (${fmt(await sizeOf(out))})`);
@@ -168,7 +173,10 @@ async function capitulo01() {
   for (const f of (await readdir(cenas)).filter((n) => /\.png$/i.test(n)))
     await converter(path.join(cenas, f), path.join(OUT, 'img', 'cenas', `${chave(path.parse(f).name).replace(/\s+/g, '-')}.webp`), { qualidade: 82 });
   // Bustos de NPC (fundo transparente)
-  const RETRATOS = { 'artho-portrait': 'artho', aylin: 'aylin', gerulf: 'gerulf', kobanu: 'kobanu', 'nyme-portrait': 'nyme', 'osric balanca': 'osric', 'vo hulda': 'vo-hulda' };
+  const RETRATOS = {
+    'artho-portrait': 'artho', aylin: 'aylin', gerulf: 'gerulf', kobanu: 'kobanu', 'nyme-portrait': 'nyme', 'osric balanca': 'osric', 'vo hulda': 'vo-hulda',
+    tobias: 'tobias', selene: 'selene', dagna: 'dagna',
+  };
   const retratos = await pasta('portraits');
   for (const f of (await readdir(retratos)).filter((n) => /\.png$/i.test(n))) {
     const id = RETRATOS[chave(path.parse(f).name)];
@@ -181,14 +189,15 @@ async function capitulo01() {
     await converter(path.join(ameacas, f), path.join(OUT, 'img', 'ameacas', `${chave(path.parse(f).name)}.webp`), { largura: 900 });
   // Fundo de batalha (pixel art: PNG sem perda)
   const batalha = await pasta('batalha');
-  await converter(path.join(batalha, 'fundo-chiqueiro.png'), path.join(OUT, 'img', 'batalha', 'fundos', 'chiqueiro.png'), { png: true });
+  for (const f of (await readdir(batalha)).filter((n) => /^fundo-.*\.png$/i.test(n)))
+    await converter(path.join(batalha, f), path.join(OUT, 'img', 'batalha', 'fundos', `${chave(f).replace(/^fundo-/, '')}`), { png: true });
   // Game over
   const wall = await pasta('wallpapers');
   const go = (await readdir(wall)).find((n) => chave(n).startsWith('game-over'));
   if (go) await converter(path.join(wall, go), path.join(OUT, 'img', 'telas', 'game-over.webp'));
 }
 
-/** Mapas navegáveis: PNG → WebP na resolução original. Aceita nomes com extensão dupla (.png.png). */
+/** Mapas navegáveis na resolução original. Aceita nomes com extensão dupla (.png.png). */
 async function mapas() {
   const dir = path.join(SRC, 'img', 'mapas navegaveis');
   if (!existsSync(dir)) { console.warn('  pasta de mapas não encontrada.'); return; }
@@ -196,10 +205,13 @@ async function mapas() {
   await ensureDir(outDir);
   for (const f of (await readdir(dir)).filter((n) => /\.png$/i.test(n))) {
     const nome = nfc(f).toLowerCase().replace(/(\.png)+$/, '').replace(/^mapa-/, '');
-    const out = path.join(outDir, `${nome}.webp`);
-    await sharp(path.join(dir, f)).webp({ quality: 88 }).toFile(out);
+    // O sonho é pintado (WebP); os mapas de pixel art da Fase 4 ficam em PNG sem perda.
+    const png = nome !== 'sonho-templo-branco';
+    const out = path.join(outDir, `${nome}.${png ? 'png' : 'webp'}`);
+    const s = sharp(path.join(dir, f));
+    await (png ? s.png({ compressionLevel: 9, palette: false }) : s.webp({ quality: 88 })).toFile(out);
     const { width, height } = await sharp(out).metadata();
-    console.log(`  mapa "${f}" → ${nome}.webp (${width}×${height}, ${fmt(await sizeOf(out))})`);
+    console.log(`  mapa "${f}" → ${path.basename(out)} (${width}×${height}, ${fmt(await sizeOf(out))})`);
   }
 }
 

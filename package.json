@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "assets": "node scripts/prepare-assets.mjs",
     "sfx": "node scripts/generate-sfx.mjs",
-    "sprites": "node scripts/build-sprites.mjs && node scripts/build-battle-sprites.mjs",
+    "sprites": "node scripts/build-sprites.mjs && node scripts/build-battle-sprites.mjs && node scripts/build-items.mjs",
     "test:mobile": "playwright test"
   },
   "dependencies": {
