@@ -1,0 +1,108 @@
+{
+  "personagens": [
+    {
+      "id": "artho", "nome": "Artho", "raca": "Araké", "papel": "Clérigo de Sólem, seu avô de consideração",
+      "paragrafos": [
+        { "texto": "Clérigo de Sólem e guardião do templo de Füllmun. Quando Bran e Liessa acolheram você, foi ele quem virou seu avô." },
+        { "gatilho": { "flag": "sermao_ouvido" }, "texto": "Severo no sermão, gentil em todo o resto. Guarda a única chave do alçapão da biblioteca." },
+        { "gatilho": { "nivel": "leal" }, "texto": "Às vezes, quando acha que ninguém está vendo, ele olha para você como quem mede o peso de uma promessa." }
+      ]
+    },
+    {
+      "id": "nyme", "nome": "Nyme", "raca": "Meia-elfa", "papel": "Guarda de Füllmun, amiga de infância",
+      "paragrafos": [
+        { "texto": "Guarda de Füllmun e sua amiga de infância. Aprendeu a lutar ao seu lado, com Bran e Liessa." },
+        { "gatilho": { "flag": "treino_feito" }, "texto": "Irmã mais velha da Aylin. Nunca admite uma derrota, nem caída de costas no chão." },
+        { "gatilho": { "flag": "carinho_nyme" }, "texto": "Disse que se sente querida e segura perto de você. Disse isso uma vez só." }
+      ]
+    },
+    {
+      "id": "aylin", "nome": "Aylin", "raca": "Meia-elfa", "papel": "Irmãzinha da Nyme",
+      "paragrafos": [
+        { "texto": "A meia-elfa mais teimosa de Füllmun. Irmãzinha da Nyme." },
+        { "gatilho": { "flag": "salvou_aylin" }, "texto": "Jura que não vai deixar a Nyme chegar perto de você. Ninguém sabe bem por quê." },
+        { "gatilho": { "nivel": "leal" }, "texto": "Conhece todos os atalhos entre as casas da vila. Todos." }
+      ]
+    },
+    {
+      "id": "gerulf", "nome": "Gerulf", "raca": "Araké", "papel": "Criador de porcos azuis",
+      "paragrafos": [
+        { "texto": "Criador de porcos azuis. Forte como um boi, paciente como um monge." },
+        { "gatilho": { "flag": "evento_mirtilo" }, "variantes": [
+          { "requer": { "flag": "pista_trinco" }, "texto": "Achava que o portão do chiqueiro vivia aberto. Agora já não tem tanta certeza." },
+          { "texto": "Ama o Mirtilo mais do que admite." }
+        ] },
+        { "gatilho": { "nivel": "leal" }, "texto": "Diz que os porcos azuis sentem o perigo antes das pessoas." }
+      ]
+    },
+    {
+      "id": "kobanu", "nome": "Kobanu", "raca": "Ogbari", "papel": "Plantador de abóboras",
+      "paragrafos": [
+        { "texto": "Plantador de abóboras de Füllmun. Gentil, apesar das presas." },
+        { "gatilho": { "missao": "kobanu" }, "texto": "Veio das planícies dos Ogbari ainda jovem e nunca mais quis outra vida." },
+        { "gatilho": { "nivel": "leal" }, "texto": "Diz que guardou o machado de guerra do pai embaixo do assoalho, “só por garantia”." }
+      ]
+    },
+    {
+      "id": "osric", "nome": "Osric Balança", "raca": "Araké", "papel": "Vendedor de hortaliças",
+      "paragrafos": [
+        { "texto": "Dono da barraca de hortaliças. Pesa tudo, até o atraso dos outros." },
+        { "gatilho": { "missao": "osric" }, "texto": "Nunca deixa ninguém sair da barraca sem uma piada." },
+        { "gatilho": { "nivel": "leal" }, "texto": "Guarda uma reserva de moedas embaixo da barraca, “para o dia em que o mundo acabar”." }
+      ]
+    },
+    {
+      "id": "vo-hulda", "nome": "Vó Hulda", "raca": "Araké", "papel": "A avó de toda Füllmun",
+      "paragrafos": [
+        { "texto": "A avó de toda Füllmun. Ninguém lembra de quando ela não era velha." },
+        { "gatilho": { "missao": "hulda" }, "texto": "Ainda pendura a camisa do falecido marido no varal, todos os dias." },
+        { "gatilho": { "nivel": "leal" }, "texto": "O porão dela já abrigou metade da vila numa enchente, anos atrás." }
+      ]
+    },
+    {
+      "id": "tobias", "nome": "Tobias Miolo", "raca": "Araké", "papel": "Padeiro",
+      "paragrafos": [
+        { "texto": "Padeiro de Füllmun. Sempre com farinha no nariz." },
+        { "gatilho": { "flag": "cesto_entregue" }, "texto": "O pão do templo sai do forno dele há vinte anos, sem falhar um dia." },
+        { "gatilho": { "nivel": "leal" }, "texto": "Diz que o segredo do pão é paciência. E fumaça. Muita fumaça." }
+      ]
+    },
+    {
+      "id": "selene", "nome": "Selene Raiz", "raca": "Ayoran", "papel": "Curandeira",
+      "paragrafos": [
+        { "texto": "Curandeira Ayoran. Fala devagar e conhece cada erva das colinas." },
+        { "gatilho": { "relacaoMin": 1 }, "texto": "Chegou a Füllmun antes de a maioria dos moradores nascer." },
+        { "gatilho": { "nivel": "leal" }, "texto": "Já trouxe de volta gente que todos davam por perdida." }
+      ]
+    },
+    {
+      "id": "dagna", "nome": "Dagna Brasa", "raca": "Dorun", "papel": "Armeira",
+      "paragrafos": [
+        { "texto": "Armeira Dorun. Só o que é bem-feito sai da forja dela." },
+        { "gatilho": { "flag": "perguntou_forja" }, "texto": "Aprendeu o ofício com o pai, nas montanhas. Trabalha para lavradores e viajantes." },
+        { "gatilho": { "nivel": "leal" }, "texto": "Guarda uma lâmina pequena separada, na prateleira de cima. “Para quando você precisar.”" }
+      ]
+    }
+  ],
+  "bestiario": [
+    {
+      "id": "mirtilo", "nome": "Mirtilo", "tipo": "Fauna", "imagem": { "tipo": "ilustracao", "id": "mirtilo" },
+      "texto": "O porco azul de Gerulf. Territorial e agressivo, mas teme predadores maiores do que ele.",
+      "sabe": "Gritos e peito estufado o fazem recuar. Voz baixa e mão aberta o acalmam. Enfurecido, investe com tudo."
+    },
+    {
+      "id": "ratazana", "nome": "Ratazana", "tipo": "Fauna, Lacaio", "imagem": { "tipo": "sprite", "id": "ratazana" },
+      "texto": "Ratazanas do tamanho de um gato, que roem a colheita de Füllmun.",
+      "sabe": "Fracas e covardes. Fogem quando se machucam."
+    }
+  ],
+  "vozes": [
+    { "id": "solem", "nomeDivindade": null },
+    { "id": "justar", "nomeDivindade": null },
+    { "id": "ardor", "nomeDivindade": null },
+    { "id": "expiria", "nomeDivindade": null },
+    { "id": "eternus", "nomeDivindade": null },
+    { "id": "mentis", "nomeDivindade": null },
+    { "id": "irae", "nomeDivindade": null }
+  ]
+}
