@@ -1,0 +1,37 @@
+{
+  "id": "ratazana",
+  "nome": "Ratazana",
+  "regiao": "plantacao",
+  "sprite": "ratazana",
+  "pv": 3,
+  "defesa": 9,
+  "iniciativa": 2,
+  "fortitude": 0,
+  "fogeComPv": 1,
+  "fogeNoProprioTurno": true,
+  "aceitaConversa": false,
+  "semConversa": true,
+  "poses": {
+    "parado": "parado",
+    "ataque": "ataque",
+    "atingido": "atingido",
+    "fugindo": "fugindo",
+    "assustada": "assustada",
+    "tonto": "tonta"
+  },
+  "ataques": {
+    "mordida": {
+      "nome": "Mordida",
+      "bonus": 1,
+      "dano": "1d2",
+      "tipoDano": "perfuração",
+      "pose": "ataque",
+      "som": "rato-guincho",
+      "mensagem": "A {nome} morde!"
+    }
+  },
+  "ia": {
+    "tipo": "sempre",
+    "ataque": "mordida"
+  }
+}

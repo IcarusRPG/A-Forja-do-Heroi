@@ -1,0 +1,59 @@
+{
+  "id": "nyme",
+  "nome": "Nyme",
+  "regiao": "templo",
+  "sprite": "nyme",
+  "pv": 14,
+  "defesa": 13,
+  "iniciativa": 3,
+  "fortitude": 2,
+  "fogeComPv": -99,
+  "aceitaConversa": false,
+  "semConversa": true,
+  "poses": {
+    "parado": "parado",
+    "ataque": "ataque",
+    "atingido": "atingido",
+    "fugindo": "rindo",
+    "defendendo": "defendendo",
+    "caido": "caida",
+    "vitoria": "rindo"
+  },
+  "ataques": {
+    "espada": {
+      "nome": "Espada de treino",
+      "bonus": 3,
+      "dano": "1d4+1",
+      "tipoDano": "impacto",
+      "pose": "ataque",
+      "som": "espada-treino",
+      "mensagem": "A Nyme ataca com a espada de treino (de lado, sem fio)!"
+    },
+    "provocar": {
+      "nome": "Provocar",
+      "acao": "provocar",
+      "mensagem": "Vem! Eu deixo você tentar primeiro."
+    },
+    "defender": {
+      "nome": "Defender",
+      "acao": "defender",
+      "bonusDefesa": 2,
+      "pose": "defendendo",
+      "mensagem": "A Nyme se defende."
+    }
+  },
+  "ia": {
+    "tipo": "padrao",
+    "primeiro": "provocar",
+    "senao": [
+      [
+        "espada",
+        0.7
+      ],
+      [
+        "defender",
+        0.3
+      ]
+    ]
+  }
+}

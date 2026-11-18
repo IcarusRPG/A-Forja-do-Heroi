@@ -1,0 +1,8 @@
+{
+  "id": "mirtilo",
+  "inimigos": [
+    "mirtilo"
+  ],
+  "regiao": "chiqueiro",
+  "flagDano": "machucou_mirtilo"
+}

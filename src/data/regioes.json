@@ -1,3 +1,17 @@
 {
-  "chiqueiro": { "nome": "Chiqueiro de Gerulf", "fundo": "chiqueiro", "musica": "tensao-porco" }
+  "chiqueiro": {
+    "nome": "Chiqueiro de Gerulf",
+    "fundo": "chiqueiro",
+    "musica": "tensao-porco"
+  },
+  "plantacao": {
+    "nome": "Plantação do Kobanu",
+    "fundo": "plantacao",
+    "musica": "batalha-ratazanas"
+  },
+  "templo": {
+    "nome": "Frente do Templo de Sólem",
+    "fundo": "templo",
+    "musica": "treino"
+  }
 }

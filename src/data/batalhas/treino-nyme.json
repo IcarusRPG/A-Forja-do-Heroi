@@ -1,0 +1,46 @@
+{
+  "id": "treino-nyme",
+  "inimigos": [
+    "nyme"
+  ],
+  "regiao": "templo",
+  "musica": "treino",
+  "treino": true,
+  "semVinheta": true,
+  "comandosExtras": [
+    "rasteira"
+  ],
+  "fins": {
+    "rasteira": {
+      "flag": [
+        "venceu_treino_rasteira",
+        "treino_feito"
+      ],
+      "relacao": {
+        "nyme": 1
+      }
+    },
+    "vitoria": {
+      "flag": [
+        "venceu_treino",
+        "treino_feito"
+      ]
+    },
+    "derrota": {
+      "flag": [
+        "perdeu_treino",
+        "treino_feito"
+      ]
+    }
+  },
+  "dicas": [
+    {
+      "quando": "primeiroTurnoHeroi",
+      "texto": "Rasteira é uma manobra: você rola Luta, a Nyme rola Fortitude. Quem tirar mais vence. Se ela cair, o treino acaba."
+    },
+    {
+      "quando": "aposAcao:defender",
+      "texto": "Ela está se defendendo. A Rasteira não olha a Defesa…"
+    }
+  ]
+}

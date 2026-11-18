@@ -94,6 +94,22 @@ export class SpriteBatalha {
     await this.animar([{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0)' }], 200, 'ease-in-out');
   }
 
+  /** Rasteira: a pose de chute num deslize baixo, rente ao chão, com um rastro de poeira. */
+  async rasteira(aoBater?: () => void | Promise<void>) {
+    this.respirar(false);
+    this.mudarPose('ataque');
+    const k = Math.max(1, this.escala / 2);
+    const dx = this.frente * 44 * k;
+    const poeira = document.createElement('span');
+    poeira.className = 'poeira-rasteira';
+    this.el.append(poeira);
+    await this.animar([{ transform: 'translate(0, 0)' }, { transform: `translate(${dx}px, ${6 * k}px)` }], 260, 'ease-in');
+    await aoBater?.();
+    await esperar(260);
+    await this.animar([{ transform: `translate(${dx}px, ${6 * k}px)` }, { transform: 'translate(0, 0)' }], 260, 'ease-out');
+    poeira.remove();
+  }
+
   /** Dano: pisca em branco duas vezes e recua 4 px. */
   async levarDano(pose = 'atingido') {
     this.respirar(false);

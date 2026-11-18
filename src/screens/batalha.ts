@@ -1,56 +1,80 @@
 import REGIOES from '../data/regioes.json';
-import { ASSETS, SFX_CAPITULO, src, type NomeSfx } from '../core/assets';
+import { ASSETS, SFX_CAPITULO, SFX_FASE4, src, type NomeSfx } from '../core/assets';
 import { audio } from '../core/audio';
-import { forcarD20, lerDado, rolar, rolarD20 } from '../core/dados';
+import { lerDado, rolar, rolarD20 } from '../core/dados';
 import { atualizarCampanha, getEstado, marcarFlag } from '../core/estado';
+import { estadoProgresso, registrarGanchos } from '../core/ganchos';
 import { bonusPericia, defesaDe, pvAntesDaForjaDe, type IdPericia } from '../core/pericias';
+import { ITENS_DEF, curarCom, darItem, encontrarCriatura, mudarRelacao, qtdItem, somarContador } from '../core/progresso';
 import { irPara, type Tela } from '../core/telas';
 import { fmt, textos } from '../core/textos';
 import { botao, esperar, h } from '../core/ui';
 import { carregarFolha, SpriteBatalha } from '../batalha/sprite';
-import { INIMIGOS, type AtaqueInimigo, type DadosInimigo } from '../batalha/inimigos';
+import { INIMIGOS, batalhaPorId, type AtaqueDados, type DadosBatalha, type DadosInimigo } from '../batalha/inimigos';
 import { avaliar, mostrarRolagem } from '../narrativa/rolagem';
 
 /**
- * Batalha no estilo Final Fantasy VI: inimigos à esquerda (virados para a direita), heróis à direita,
- * janela de comandos embaixo, linha de mensagem no topo e a ordem dos turnos numa faixa.
+ * Batalha no estilo Final Fantasy VI: até 3 inimigos à esquerda (em formação escalonada, virados para a
+ * direita), o herói à direita, janela de comandos embaixo, mensagem no topo e a ordem dos turnos numa
+ * faixa. Tudo vem dos dados: src/data/batalhas/*.json e src/data/inimigos/*.json.
  *
- * Regras (sistema Icarus, antes da Forja): iniciativa d20 + DES rolada sozinha e fixa na luta; ataque
- * d20 + Luta (FOR) contra a Defesa (10 + DES); 20 natural acerta e dobra o dano; 1 natural erra.
- * Não existe comando de fugir. Um combate novo precisa só de dados (src/data/inimigos/*.json) e sprites.
+ * Regras (sistema Icarus, antes da Forja): iniciativa d20 + DES de cada um, ordem fixa; ataque d20 +
+ * Luta (FOR) contra a Defesa; 20 natural acerta e dobra o dano, 1 natural erra. Não existe fugir.
+ * Rasteira (manobra): teste oposto d20 + Luta contra d20 + Fortitude do alvo; empate fica com o alvo.
  */
 
 export interface ParamsBatalha {
-  inimigo: string;
+  /** Id de src/data/batalhas/ (ou de um inimigo, para uma luta de um contra um). */
+  batalha?: string;
+  /** Formato antigo (Fase 3). */
+  inimigo?: string;
   vitoria: string;
   derrota: string;
+  /** Para onde voltar depois: a tela de capítulo (padrão) ou o mapa. */
+  retorno?: 'capitulo' | 'mapa';
 }
 
-type Comando = 'bicuda' | 'intimidar' | 'acalmar' | 'aguardar';
-type Fim = 'vitoria' | 'derrota' | null;
+type Comando = 'bicuda' | 'intimidar' | 'acalmar' | 'aguardar' | 'item' | 'rasteira';
+type Fim = 'vitoria' | 'derrota' | 'rasteira' | null;
+
+interface Inimigo {
+  uid: string;
+  dados: DadosInimigo;
+  nome: string;
+  pv: number;
+  pvMax: number;
+  ativo: boolean;
+  assustado: boolean;
+  caido: boolean;
+  defesaExtra: number;
+  turnos: number;
+  sprite: SpriteBatalha;
+}
 
 const T = textos.batalha;
-const parametros = () => new URLSearchParams(location.search);
+const FORMACOES: [number, number][][] = [[], [[2, 8]], [[0, 18], [30, 4]], [[6, 24], [36, 12], [2, 0]]];
 
 export function telaBatalha(params?: unknown): Tela {
   const prm = params as ParamsBatalha;
-  const dados: DadosInimigo = INIMIGOS[prm.inimigo];
-  if (!dados) throw new Error(`Inimigo desconhecido: ${prm.inimigo}`);
-  const regiao = (REGIOES as Record<string, { fundo: string; musica: string }>)[dados.regiao];
+  const def: DadosBatalha = batalhaPorId(prm.batalha ?? prm.inimigo!);
+  const regiao = (REGIOES as Record<string, { fundo: string; musica: string }>)[def.regiao];
   const p = getEstado().personagem!;
   const pvMax = pvAntesDaForjaDe(p);
   const defesa = defesaDe(p);
+  const treino = def.treino === true;
+  const pvAntes = Math.max(1, Math.min(pvMax, getEstado().campanha.pvAtual ?? pvMax));
 
   // ---- estado da luta ----
-  let pvHeroi = Math.max(1, Math.min(pvMax, getEstado().campanha.pvAtual ?? pvMax));
-  let pvInimigo = dados.pv;
+  let pvHeroi = treino ? pvMax : pvAntes;
   let heroiCaido = false;
   let preparado = false;
-  let turnoInimigo = 0;
   let fim: Fim = null;
-  let vez: 'heroi' | 'inimigo' | null = null;
+  let vez: string | null = null;
+  let causouDano = false;
   const log: string[] = [];
-  let ordem: { id: 'heroi' | 'inimigo'; nome: string; valor: number }[] = [];
+  const dicasVistas = new Set<string>();
+  let ordem: { id: string; nome: string; valor: number }[] = [];
+  let inimigos: Inimigo[] = [];
   let saiu = false;
 
   // ---- elementos ----
@@ -72,7 +96,7 @@ export function telaBatalha(params?: unknown): Tela {
   const ficha = h('div', { class: 'batalha-ficha' },
     h('p', { class: 'ficha-nome' }, p.nome, status),
     h('div', { class: 'ficha-pv' }, h('span', { class: 'pv-rotulo' }, 'PV'), barraPv, numeroPv),
-    h('p', { class: 'ficha-defesa' }, `${T.defesa} ${defesa}`));
+    h('p', { class: 'ficha-defesa' }, `${T.defesa} ${defesa}${treino ? ` · ${T.treino}` : ''}`));
   const registro = h('ol', { class: 'batalha-log' });
   const btnRegistro = h('button', { type: 'button', class: 'batalha-btn-log', 'aria-expanded': 'false' }, T.registro);
   const caixaLog = h('div', { class: 'batalha-caixa-log', hidden: true }, registro);
@@ -86,17 +110,19 @@ export function telaBatalha(params?: unknown): Tela {
   const el = h('div', { class: 'tela-batalha' }, arena, janela, caixaLog);
 
   let heroi!: SpriteBatalha;
-  let inimigo!: SpriteBatalha;
 
   // ---- utilidades ----
-  const nomeInimigo = dados.nome;
   const msg = (t: string) => { mensagem.textContent = t; };
   const registrar = (linha: string) => {
     log.push(linha);
     registro.append(h('li', {}, linha));
     registro.scrollTop = registro.scrollHeight;
   };
-  const sfx = (n: string) => audio.sfx(n as NomeSfx);
+  const sfx = (n: string | undefined) => n && audio.sfx(n as NomeSfx);
+  const sinal = (n: number) => (n < 0 ? `−${Math.abs(n)}` : `+${n}`);
+  const ativos = () => inimigos.filter((i) => i.ativo);
+  const metade = (n: number) => Math.ceil(n / 2);
+  const comNome = (t: string, i: Inimigo) => t.replace(/\{nome\}/g, i.nome).replace(/\{inimigo\}/g, i.nome);
 
   function atualizarFicha() {
     const frac = Math.max(0, pvHeroi / pvMax);
@@ -112,20 +138,27 @@ export function telaBatalha(params?: unknown): Tela {
     return pvHeroi / pvMax <= 0.25 ? 'ferido' : 'parado';
   }
   function heroiEmGuarda() {
+    if (!heroi) return; // sprites ainda carregando
     const pose = poseHeroiParado();
     heroi.mudarPose(pose);
     heroi.respirar(pose === 'parado');
   }
-  function poseInimigoParado() {
-    if (dados.exaustoComPv && pvInimigo <= dados.exaustoComPv && dados.poses.exausto) return dados.poses.exausto;
-    return dados.poses.parado;
+  function poseInimigoParado(i: Inimigo) {
+    const d = i.dados;
+    if (i.caido && d.poses.caido) return d.poses.caido;
+    if (i.defesaExtra && d.poses.defendendo) return d.poses.defendendo;
+    if (i.assustado && d.poses.assustada) return d.poses.assustada;
+    if (d.exaustoComPv && i.pv <= d.exaustoComPv && d.poses.exausto) return d.poses.exausto;
+    return d.poses.parado;
   }
-  function inimigoEmGuarda() {
-    inimigo.mudarPose(poseInimigoParado());
-    inimigo.respirar(true);
+  function inimigoEmGuarda(i: Inimigo) {
+    if (!i.ativo) return;
+    const pose = poseInimigoParado(i);
+    i.sprite.mudarPose(pose);
+    i.sprite.respirar(pose === i.dados.poses.parado);
   }
 
-  /** Número de dano que sobe e some sobre o alvo (crítico em dourado e maior); "Errou!" no erro. */
+  /** Número que sobe e some sobre o alvo (crítico dourado e maior; cura em verde; "Errou!"). */
   function numeroSobre(alvo: SpriteBatalha, textoNum: string, classe: string) {
     const r = alvo.el.getBoundingClientRect();
     const a = arena.getBoundingClientRect();
@@ -136,67 +169,161 @@ export function telaBatalha(params?: unknown): Tela {
     setTimeout(() => n.remove(), 1400);
   }
 
+  /** Ícone que espatifa sobre o alvo (abóbora quebrada). */
+  function iconeQuebrando(alvo: SpriteBatalha, icone: string) {
+    const r = alvo.el.getBoundingClientRect();
+    const a = arena.getBoundingClientRect();
+    const img = h('img', { class: 'batalha-icone-quebra', src: src(ASSETS.item(icone)), alt: '' });
+    img.style.left = `${r.left - a.left + r.width * 0.6}px`;
+    img.style.top = `${r.top - a.top + r.height * 0.55}px`;
+    efeitos.append(img);
+    setTimeout(() => img.remove(), 1300);
+  }
+
+  // ---- dicas de tutorial (uma vez cada; o jogador toca para fechar) ----
+  async function dicaDe(quando: string) {
+    const d = def.dicas?.find((x) => x.quando === quando);
+    if (!d || dicasVistas.has(quando) || saiu) return;
+    dicasVistas.add(quando);
+    await new Promise<void>((ok) => {
+      const fechar = botao(T.entendi, () => { balao.remove(); ok(); }, { classe: 'btn-principal batalha-dica-ok' });
+      const balao = h('div', { class: 'batalha-tutorial', role: 'dialog', 'aria-live': 'polite' }, h('p', {}, d.texto), fechar);
+      arena.append(balao);
+      fechar.focus({ preventScroll: true });
+    });
+  }
+
   // ---- iniciativa ----
   async function rolarIniciativa() {
+    const rolagens: { id: string; nome: string; valor: number; bonus: number }[] = [];
     const dH = rolarD20();
     const bH = bonusPericia(p, 'iniciativa').total;
-    const dI = rolarD20();
-    const vH = dH + bH;
-    const vI = dI + dados.iniciativa;
-    ordem = [{ id: 'heroi' as const, nome: p.nome, valor: vH }, { id: 'inimigo' as const, nome: nomeInimigo, valor: vI }]
-      // Empate: quem tem o maior bônus age antes; persistindo, o herói.
-      .sort((a, b) => b.valor - a.valor || (a.id === 'heroi' ? -1 : 1));
-    registrar(fmt(T.logIniciativa, p.genero, { nome: p.nome, d: dH, b: sinal(bH), t: vH }));
-    registrar(fmt(T.logIniciativa, p.genero, { nome: nomeInimigo, d: dI, b: sinal(dados.iniciativa), t: vI }));
-    faixaTurnos.replaceChildren(...ordem.map((o) => h('li', { 'data-id': o.id }, h('span', { class: 'turno-nome' }, o.nome), h('span', { class: 'turno-valor' }, String(o.valor)))));
-    msg(fmt(T.iniciativa, p.genero, { a: `${p.nome} ${vH}`, b: `${nomeInimigo} ${vI}` }));
+    rolagens.push({ id: 'heroi', nome: p.nome, valor: dH + bH, bonus: bH });
+    registrar(fmt(T.logIniciativa, p.genero, { nome: p.nome, d: dH, b: sinal(bH), t: dH + bH }));
+    for (const i of inimigos) {
+      const d = rolarD20();
+      rolagens.push({ id: i.uid, nome: i.nome, valor: d + i.dados.iniciativa, bonus: i.dados.iniciativa });
+      registrar(fmt(T.logIniciativa, p.genero, { nome: i.nome, d, b: sinal(i.dados.iniciativa), t: d + i.dados.iniciativa }));
+    }
+    // Empate: maior bônus age antes; persistindo, o herói.
+    ordem = rolagens.sort((a, b) => b.valor - a.valor || b.bonus - a.bonus || (a.id === 'heroi' ? -1 : b.id === 'heroi' ? 1 : 0))
+      .map(({ id, nome, valor }) => ({ id, nome, valor }));
+    desenharFaixa();
+    msg(`${T.iniciativaRotulo}: ${ordem.map((o) => `${o.nome} ${o.valor}`).join(' · ')}`);
     el.classList.add('mostrando-iniciativa');
     await esperar(1500);
     el.classList.remove('mostrando-iniciativa');
   }
-  const sinal = (n: number) => (n < 0 ? `−${Math.abs(n)}` : `+${n}`);
 
-  function marcarVez(id: 'heroi' | 'inimigo') {
+  /** Faixa da ordem: quem fugiu sai dela. */
+  function desenharFaixa() {
+    const vivos = ordem.filter((o) => o.id === 'heroi' || inimigos.find((i) => i.uid === o.id)?.ativo);
+    faixaTurnos.replaceChildren(...vivos.map((o) => h('li', { 'data-id': o.id, class: o.id === vez ? 'atual' : '' },
+      h('span', { class: 'turno-nome' }, o.nome), h('span', { class: 'turno-valor' }, String(o.valor)))));
+  }
+
+  function marcarVez(id: string) {
     vez = id;
     for (const li of faixaTurnos.children) li.classList.toggle('atual', (li as HTMLElement).dataset.id === id);
   }
 
   // ---- comandos ----
-  let escolherComando: ((c: Comando) => void) | null = null;
+  let escolher: ((c: { cmd: Comando; alvo?: Inimigo; item?: string }) => void) | null = null;
 
   function montarComandos() {
-    const conversa = dados.aceitaConversa;
-    const itens: [Comando, string, boolean][] = [
-      ['bicuda', T.cmd.bicuda, true],
-      ['intimidar', T.cmd.intimidar, conversa],
-      ['acalmar', T.cmd.acalmar, conversa],
-      ['aguardar', T.cmd.aguardar, true],
-    ];
+    const conversa = inimigos.every((i) => i.dados.aceitaConversa);
+    const semConversa = inimigos.every((i) => i.dados.semConversa);
+    const itens: [Comando, string, boolean][] = [['bicuda', T.cmd.bicuda, true]];
+    for (const extra of def.comandosExtras ?? []) itens.push([extra as Comando, (T.cmd as Record<string, string>)[extra] ?? extra, true]);
+    if (!semConversa) itens.push(['intimidar', T.cmd.intimidar, conversa], ['acalmar', T.cmd.acalmar, conversa]);
+    itens.push(['aguardar', T.cmd.aguardar, true], ['item', T.cmd.item, temItensDeCura()]);
     listaComandos.replaceChildren(...itens.map(([id, rotulo, ok]) => {
-      const b = botao(rotulo, () => escolherComando?.(id), { classe: 'batalha-cmd', som: 'ui-confirm' });
+      const b = botao(rotulo, () => void aoComando(id), { classe: 'batalha-cmd', som: 'ui-confirm' });
       b.dataset.comando = id;
       b.dataset.liberado = ok ? '1' : '0';
-      if (!ok) {
+      if (!ok && (id === 'intimidar' || id === 'acalmar')) {
         b.title = T.furiosoDemais;
         b.setAttribute('aria-description', T.furiosoDemais);
       }
       return b;
     }));
-    dica.textContent = conversa ? '' : T.furiosoDemais;
+    dica.textContent = !semConversa && !conversa ? T.furiosoDemais : '';
   }
 
+  const temItensDeCura = () => Object.entries(ITENS_DEF).some(([id, d]) => d.tipo === 'cura' && qtdItem(id) > 0);
+
   function habilitarComandos(sim: boolean) {
-    for (const b of listaComandos.querySelectorAll<HTMLButtonElement>('.batalha-cmd')) b.disabled = !sim || b.dataset.liberado !== '1';
+    for (const b of listaComandos.querySelectorAll<HTMLButtonElement>('.batalha-cmd')) {
+      if (b.dataset.comando === 'item') b.dataset.liberado = temItensDeCura() ? '1' : '0';
+      b.disabled = !sim || b.dataset.liberado !== '1';
+    }
     janela.classList.toggle('esperando', sim);
     if (sim) listaComandos.querySelector<HTMLButtonElement>('.batalha-cmd:not(:disabled)')?.focus({ preventScroll: true });
   }
 
+  /** Bicuda e Rasteira escolhem o alvo (setas ou toque) se houver mais de um inimigo. */
+  async function aoComando(cmd: Comando) {
+    if (!escolher) return;
+    if (cmd === 'item') return escolherItem();
+    if ((cmd === 'bicuda' || cmd === 'rasteira') && ativos().length > 1) return escolherAlvo(cmd);
+    escolher({ cmd, alvo: ativos()[0] });
+  }
+
+  function escolherAlvo(cmd: Comando) {
+    const vivos = ativos();
+    let atual = 0;
+    const marcar = () => vivos.forEach((i, k) => i.sprite.el.classList.toggle('alvo-ativo', k === atual));
+    const terminar = (i: Inimigo | null) => {
+      vivos.forEach((x) => x.sprite.el.classList.remove('alvo-ativo', 'alvo-possivel'));
+      window.removeEventListener('keydown', tecla);
+      montarComandos();
+      if (i) escolher?.({ cmd, alvo: i });
+      else habilitarComandos(true);
+    };
+    const tecla = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { atual = (atual + vivos.length - 1) % vivos.length; marcar(); e.preventDefault(); }
+      else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { atual = (atual + 1) % vivos.length; marcar(); e.preventDefault(); }
+      else if (e.key === 'Escape') terminar(null);
+    };
+    window.addEventListener('keydown', tecla);
+    vivos.forEach((i) => {
+      i.sprite.el.classList.add('alvo-possivel');
+      i.sprite.el.onclick = () => { if (i.sprite.el.classList.contains('alvo-possivel')) terminar(i); };
+    });
+    msg(T.escolhaAlvo);
+    listaComandos.replaceChildren(
+      ...vivos.map((i, k) => {
+        const b = botao(i.nome, () => terminar(i), { classe: 'batalha-cmd batalha-alvo', som: 'ui-confirm' });
+        b.dataset.alvo = String(k);
+        b.addEventListener('focus', () => { atual = k; marcar(); });
+        return b;
+      }),
+      botao(T.voltar, () => terminar(null), { classe: 'batalha-cmd', som: 'ui-back' }),
+    );
+    marcar();
+    (listaComandos.querySelector('.batalha-alvo') as HTMLButtonElement | null)?.focus({ preventScroll: true });
+  }
+
+  function escolherItem() {
+    const curas = Object.entries(ITENS_DEF).filter(([id, d]) => d.tipo === 'cura' && qtdItem(id) > 0);
+    listaComandos.replaceChildren(
+      ...curas.map(([id, d]) => {
+        const b = botao(`${d.nome} ×${qtdItem(id)}`, () => { montarComandos(); escolher?.({ cmd: 'item', item: id }); }, { classe: 'batalha-cmd batalha-item', som: 'ui-confirm' });
+        b.dataset.item = id;
+        return b;
+      }),
+      botao(T.voltar, () => { montarComandos(); habilitarComandos(true); }, { classe: 'batalha-cmd', som: 'ui-back' }),
+    );
+    (listaComandos.querySelector('.batalha-item') as HTMLButtonElement | null)?.focus({ preventScroll: true });
+  }
+
   // ---- ações do herói ----
-  async function bicuda(prefixo = '') {
+  async function bicuda(alvo: Inimigo, prefixo = '') {
     const luta = bonusPericia(p, 'luta');
     const d = rolarD20();
-    const r = avaliar(d, luta.partes, dados.defesa);
-    const acerto = d !== 1 && (d === 20 || r.total >= dados.defesa);
+    const defAlvo = alvo.dados.defesa + alvo.defesaExtra;
+    const r = avaliar(d, luta.partes, defAlvo);
+    const acerto = d !== 1 && (d === 20 || r.total >= defAlvo);
     const critico = d === 20;
     msg(prefixo || fmt(T.bicuda, p.genero, { nome: p.nome }));
     let dano = 0;
@@ -210,27 +337,90 @@ export function telaBatalha(params?: unknown): Tela {
     await heroi.atacar('ataque', 20, async () => {
       if (!acerto) {
         sfx('miss');
-        numeroSobre(inimigo, T.errou, 'errou');
+        numeroSobre(alvo.sprite, T.errou, 'errou');
         return;
       }
       sfx(critico ? 'crit' : 'kick');
-      numeroSobre(inimigo, String(dano), critico ? 'critico' : 'dano');
-      pvInimigo -= dano;
-      await inimigo.levarDano(dados.poses.atingido);
+      numeroSobre(alvo.sprite, String(dano), critico ? 'critico' : 'dano');
+      alvo.pv -= dano;
+      causouDano = true;
+      await alvo.sprite.levarDano(alvo.dados.poses.atingido);
     });
-    registrar(`${T.cmd.bicuda}: ${r.conta} ${T.contra} ${T.defesa} ${dados.defesa} · ${acerto ? (critico ? T.critico : T.acerto) : T.erro}${acerto ? ` · ${rolagemDano}` : ''}`);
-    if (acerto && critico && dados.poses.tonto && pvInimigo > dados.fogeComPv) {
-      inimigo.mudarPose(dados.poses.tonto);
+    registrar(`${T.cmd.bicuda}: ${r.conta} ${T.contra} ${T.defesa} ${defAlvo}${alvo.nome !== inimigos[0].nome || inimigos.length > 1 ? ` (${alvo.nome})` : ''} · ${acerto ? (critico ? T.critico : T.acerto) : T.erro}${acerto ? ` · ${rolagemDano}` : ''}`);
+    if (!acerto && def.aoErrar) {
+      sfx(def.aoErrar.som);
+      iconeQuebrando(alvo.sprite, def.aoErrar.icone);
+      const n = somarContador(def.aoErrar.contador);
+      msg(def.aoErrar.mensagem);
+      registrar(`${def.aoErrar.mensagem} (${n})`);
+      await esperar(900);
+    }
+    if (acerto && critico && alvo.dados.poses.tonto && alvo.pv > alvo.dados.fogeComPv) {
+      alvo.sprite.mudarPose(alvo.dados.poses.tonto);
       await esperar(700);
     }
     heroiEmGuarda();
-    inimigoEmGuarda();
-    if (pvInimigo <= dados.fogeComPv) await inimigoFoge('fugiu');
+    await depoisDoDano(alvo);
   }
 
-  async function conversar(cmd: 'intimidar' | 'acalmar') {
+  /** Depois de levar dano: foge, fica assustado ou (no treino) encerra pela metade dos PV. */
+  async function depoisDoDano(alvo: Inimigo) {
+    if (treino && alvo.pv <= metade(alvo.pvMax)) { fim = 'vitoria'; return; }
+    if (alvo.pv <= alvo.dados.fogeComPv) {
+      if (alvo.dados.fogeNoProprioTurno) {
+        alvo.assustado = true;
+        inimigoEmGuarda(alvo);
+        if (alvo.pv <= 0) await inimigoFoge(alvo, 'fugiu');
+      } else {
+        await inimigoFoge(alvo, 'fugiu');
+      }
+      return;
+    }
+    inimigoEmGuarda(alvo);
+  }
+
+  async function rasteira(alvo: Inimigo) {
+    const luta = bonusPericia(p, 'luta');
+    const dH = rolarD20();
+    const dA = rolarD20();
+    const forti = alvo.dados.fortitude ?? 0;
+    const tH = dH + luta.total;
+    const tA = dA + forti;
+    const venceu = tH > tA;
+    const ela = alvo.dados.id === 'nyme' || alvo.dados.id === 'ratazana';
+    const veredito = venceu ? (ela ? T.elaCai : T.eleCai) : (ela ? T.elaAguenta : T.eleAguenta);
+    const linha = `${T.cmd.rasteira}: ${dH} + FOR ${p.atributosFinais.FOR} = ${tH} × ${T.fortitudeDe.replace('{nome}', alvo.nome)}: ${dA} + ${forti} = ${tA} · ${veredito}`;
+    msg(fmt(T.rasteiraMsg, p.genero, { nome: p.nome }));
+    sfx('rasteira');
+    await heroi.rasteira(() => {
+      if (venceu) {
+        alvo.caido = true;
+        alvo.sprite.respirar(false);
+        alvo.sprite.mudarPose(alvo.dados.poses.caido ?? alvo.dados.poses.atingido);
+      }
+    });
+    await mostrarOposto(dH, tH, dA, tA, alvo.nome, venceu, veredito);
+    registrar(linha);
+    heroiEmGuarda();
+    if (venceu && treino) fim = 'rasteira';
+  }
+
+  /** As duas rolagens lado a lado (teste oposto). */
+  async function mostrarOposto(dH: number, tH: number, dA: number, tA: number, nomeAlvo: string, venceu: boolean, veredito: string) {
+    const caixa = h('div', { class: `rolagem-oposta ${venceu ? 'sucesso' : 'falha'}`, role: 'status' },
+      h('div', { class: 'oposta-lado' }, h('p', { class: 'oposta-quem' }, p.nome), h('p', { class: 'oposta-d20' }, String(dH)), h('p', { class: 'oposta-total' }, `= ${tH}`)),
+      h('p', { class: 'oposta-x' }, '×'),
+      h('div', { class: 'oposta-lado' }, h('p', { class: 'oposta-quem' }, nomeAlvo), h('p', { class: 'oposta-d20' }, String(dA)), h('p', { class: 'oposta-total' }, `= ${tA}`)),
+      h('p', { class: 'oposta-veredito' }, veredito));
+    arena.append(caixa);
+    audio.sfx('dice-roll', { ganho: 0.6 });
+    await esperar(1900);
+    caixa.remove();
+  }
+
+  async function conversar(cmd: 'intimidar' | 'acalmar', alvo: Inimigo) {
     const pericia: IdPericia = cmd === 'intimidar' ? 'intimidacao' : 'adestramento';
-    const cd = cmd === 'intimidar' ? dados.cdIntimidar ?? 12 : dados.cdAcalmar ?? 15;
+    const cd = cmd === 'intimidar' ? alvo.dados.cdIntimidar ?? 12 : alvo.dados.cdAcalmar ?? 15;
     msg(fmt(cmd === 'intimidar' ? T.intimidando : T.acalmando, p.genero, { nome: p.nome }));
     const b = bonusPericia(p, pericia);
     const r = await mostrarRolagem(el, { titulo: T.cmd[cmd], d20: rolarD20(), partes: b.partes, alvo: cd, esperarToque: false, giroMs: 800 });
@@ -241,59 +431,104 @@ export function telaBatalha(params?: unknown): Tela {
       return;
     }
     marcarFlag(cmd === 'intimidar' ? 'intimidou' : 'acalmou');
-    if (dados.poses.recuando) {
-      inimigo.respirar(false);
-      inimigo.mudarPose(dados.poses.recuando);
+    if (alvo.dados.poses.recuando) {
+      alvo.sprite.respirar(false);
+      alvo.sprite.mudarPose(alvo.dados.poses.recuando);
     }
-    msg(fmt(cmd === 'intimidar' ? T.intimidarDeuCerto : T.acalmarDeuCerto, p.genero, { inimigo: nomeInimigo }));
+    msg(fmt(cmd === 'intimidar' ? T.intimidarDeuCerto : T.acalmarDeuCerto, p.genero, { inimigo: alvo.nome }));
     await esperar(1000);
-    await inimigoFoge(cmd === 'intimidar' ? 'fugiu' : 'acalmou');
+    await inimigoFoge(alvo, cmd === 'intimidar' ? 'fugiu' : 'acalmou');
   }
 
-  async function inimigoFoge(motivo: 'fugiu' | 'acalmou') {
-    sfx('pig-squeal');
-    msg(motivo === 'fugiu' ? fmt(T.inimigoFoge, p.genero, { inimigo: nomeInimigo }) : fmt(T.inimigoVolta, p.genero, { inimigo: nomeInimigo }));
-    registrar(motivo === 'fugiu' ? fmt(T.inimigoFoge, p.genero, { inimigo: nomeInimigo }) : fmt(T.inimigoVolta, p.genero, { inimigo: nomeInimigo }));
-    await inimigo.fugir(dados.poses.fugindo);
-    fim = 'vitoria';
+  async function usarItem(id: string) {
+    const d = ITENS_DEF[id];
+    const r = curarCom(d.cura!, pvHeroi);
+    darItem(id, -1);
+    pvHeroi = r.novo;
+    atualizarFicha();
+    heroiEmGuarda();
+    numeroSobre(heroi, `+${r.recuperou}`, 'cura');
+    msg(fmt(T.usouItem, p.genero, { nome: p.nome, item: d.nome, n: r.recuperou }));
+    registrar(`${T.cmd.item}: ${d.nome} · ${d.cura} = ${r.rolagem} · +${r.recuperou} PV`);
+    await esperar(1000);
+  }
+
+  async function inimigoFoge(i: Inimigo, motivo: 'fugiu' | 'acalmou') {
+    sfx(i.dados.id.startsWith('ratazana') ? 'rato-guincho' : 'pig-squeal');
+    const texto = fmt(motivo === 'fugiu' ? T.inimigoFoge : T.inimigoVolta, p.genero, { inimigo: i.nome });
+    msg(texto);
+    registrar(texto);
+    i.ativo = false;
+    await i.sprite.fugir(i.dados.poses.fugindo);
+    desenharFaixa();
+    if (!ativos().length) fim = 'vitoria';
   }
 
   // ---- turno do inimigo ----
-  function escolherAtaque(): AtaqueInimigo {
-    const ia = dados.ia;
-    let id = ia.ataque ?? 'presas';
-    if (ia.tipo === 'investida') {
-      if (turnoInimigo === 0 && ia.primeiro) id = ia.primeiro;
+  let acaoForcada: string | null = null;
+  function escolherAcao(i: Inimigo): AtaqueDados & { id: string } {
+    const ia = i.dados.ia;
+    let id = ia.ataque ?? Object.keys(i.dados.ataques)[0];
+    if (acaoForcada) { id = acaoForcada; acaoForcada = null; return { id, ...i.dados.ataques[id] }; }
+    if (ia.tipo === 'investida' || ia.tipo === 'padrao') {
+      if (i.turnos === 0 && ia.primeiro) id = ia.primeiro;
       else if (heroiCaido && ia.seCaido) id = ia.seCaido;
       else if (ia.senao) {
         let x = Math.random();
         for (const [nome, peso] of ia.senao) { if ((x -= peso) <= 0) { id = nome; break; } }
       }
     }
-    return { id, ...dados.ataques[id] };
+    return { id, ...i.dados.ataques[id] };
   }
 
-  async function ataqueDoInimigo() {
-    const atq = escolherAtaque();
-    turnoInimigo++;
+  async function turnoDoInimigo(i: Inimigo) {
+    if (i.assustado && i.dados.fogeNoProprioTurno) return inimigoFoge(i, 'fugiu');
+    i.defesaExtra = 0;
+    if (i.caido) {
+      i.caido = false;
+      msg(fmt(T.inimigoLevanta, p.genero, { inimigo: i.nome }));
+      registrar(fmt(T.inimigoLevanta, p.genero, { inimigo: i.nome }));
+      await esperar(900);
+      inimigoEmGuarda(i);
+      i.turnos++;
+      return;
+    }
+    const atq = escolherAcao(i);
+    i.turnos++;
+    if (atq.acao === 'provocar') {
+      msg(`${i.nome}: “${comNome(atq.mensagem, i)}”`);
+      registrar(`${i.nome}: ${atq.nome}`);
+      await esperar(1300);
+      return;
+    }
+    if (atq.acao === 'defender') {
+      i.defesaExtra = atq.bonusDefesa ?? 2;
+      inimigoEmGuarda(i);
+      msg(comNome(atq.mensagem, i));
+      registrar(`${i.nome}: ${atq.nome} (+${i.defesaExtra} ${T.defesa})`);
+      await esperar(900);
+      await dicaDe(`aposAcao:${atq.id}`);
+      return;
+    }
     // Aguardar: a Bicuda preparada sai antes do ataque.
     if (preparado) {
       preparado = false;
       el.classList.remove('heroi-preparado');
-      await bicuda(fmt(T.revida, p.genero, { nome: p.nome }));
-      if (fim) return;
+      await bicuda(i, fmt(T.revida, p.genero, { nome: p.nome }));
+      if (fim || !i.ativo || i.assustado) return;
       await esperar(300);
     }
-    msg(atq.mensagem);
+    msg(comNome(atq.mensagem, i));
     const d = rolarD20();
-    const total = d + atq.bonus;
+    const total = d + (atq.bonus ?? 0);
     const acerto = d !== 1 && (d === 20 || total >= defesa);
     const critico = d === 20;
-    const dd = lerDado(atq.dano);
+    const dd = lerDado(atq.dano ?? '1d2');
     const base = rolar(dd.qtd, dd.lados).reduce((a, b) => a + b, 0) + dd.mod;
     const dano = acerto ? Math.max(1, base) * (critico ? 2 : 1) : 0;
     sfx(atq.som);
-    await inimigo.atacar(atq.pose ? dados.poses[atq.pose] ?? atq.pose : dados.poses.ataque, atq.id === 'investida' ? 60 : 30, async () => {
+    const pose = atq.pose ? i.dados.poses[atq.pose] ?? atq.pose : i.dados.poses.ataque;
+    await i.sprite.atacar(pose, atq.id === 'investida' ? 60 : 30, async () => {
       if (!acerto) {
         sfx('miss');
         numeroSobre(heroi, T.errou, 'errou');
@@ -305,13 +540,10 @@ export function telaBatalha(params?: unknown): Tela {
       atualizarFicha();
       await heroi.levarDano('atingido');
     });
-    registrar(`${atq.nome}: ${d} ${sinal(atq.bonus)} = ${total} ${T.contra} ${T.defesa} ${defesa} · ${acerto ? (critico ? T.critico : T.acerto) : T.erro}${acerto ? ` · ${atq.dano} = ${Math.max(1, base)}${critico ? ` × 2 = ${dano}` : ''}` : ''}`);
-    inimigoEmGuarda();
-    if (pvHeroi <= 0) {
-      heroiEmGuarda();
-      fim = 'derrota';
-      return;
-    }
+    registrar(`${atq.nome}${inimigos.length > 1 ? ` (${i.nome})` : ''}: ${d} ${sinal(atq.bonus ?? 0)} = ${total} ${T.contra} ${T.defesa} ${defesa} · ${acerto ? (critico ? T.critico : T.acerto) : T.erro}${acerto ? ` · ${atq.dano} = ${Math.max(1, base)}${critico ? ` × 2 = ${dano}` : ''}` : ''}`);
+    inimigoEmGuarda(i);
+    if (treino && pvHeroi <= metade(pvMax)) { heroiEmGuarda(); fim = 'derrota'; return; }
+    if (pvHeroi <= 0) { heroiEmGuarda(); fim = 'derrota'; return; }
     // Investida: se acertou, Fortitude (CON) contra a CD ou o herói fica Caído.
     if (acerto && atq.derruba) {
       const b = bonusPericia(p, atq.derruba.pericia as IdPericia);
@@ -331,6 +563,7 @@ export function telaBatalha(params?: unknown): Tela {
       }
     }
     heroiEmGuarda();
+    await dicaDe('aposAtaqueInimigo');
   }
 
   // ---- turno do herói ----
@@ -344,12 +577,16 @@ export function telaBatalha(params?: unknown): Tela {
       heroiEmGuarda();
     }
     msg(fmt(T.vezDoHeroi, p.genero, { nome: p.nome }));
+    await dicaDe('primeiroTurnoHeroi');
     habilitarComandos(true);
-    const cmd = await new Promise<Comando>((ok) => { escolherComando = ok; });
-    escolherComando = null;
+    const escolha = await new Promise<{ cmd: Comando; alvo?: Inimigo; item?: string }>((ok) => { escolher = ok; });
+    escolher = null;
     habilitarComandos(false);
-    if (cmd === 'bicuda') await bicuda();
-    else if (cmd === 'intimidar' || cmd === 'acalmar') await conversar(cmd);
+    const alvo = escolha.alvo ?? ativos()[0];
+    if (escolha.cmd === 'bicuda') await bicuda(alvo);
+    else if (escolha.cmd === 'rasteira') await rasteira(alvo);
+    else if (escolha.cmd === 'item' && escolha.item) await usarItem(escolha.item);
+    else if (escolha.cmd === 'intimidar' || escolha.cmd === 'acalmar') await conversar(escolha.cmd, alvo);
     else {
       preparado = true;
       el.classList.add('heroi-preparado');
@@ -360,23 +597,46 @@ export function telaBatalha(params?: unknown): Tela {
   }
 
   // ---- fim ----
+  function aplicarFim(chave: string) {
+    const f = def.fins?.[chave];
+    if (!f) return;
+    for (const fl of f.flag === undefined ? [] : Array.isArray(f.flag) ? f.flag : [f.flag]) marcarFlag(fl);
+    for (const [id, n] of Object.entries(f.relacao ?? {})) mudarRelacao(id, n);
+  }
+
+  function seguirPara(cena: string) {
+    void irPara(prm.retorno === 'mapa' ? 'mapa' : 'capitulo', { cena }, { duracao: 700 });
+  }
+
   async function vitoria() {
     heroi.respirar(false);
     heroi.mudarPose('vitoria');
-    audio.tocarVinheta(ASSETS.musica('vitoria'));
-    msg(T.vitoria);
+    if (def.semVinheta) audio.pararMusica(1800);
+    else audio.tocarVinheta(ASSETS.musica('vitoria'));
+    msg(fim === 'rasteira' ? fmt(T.treinoRasteira, p.genero, { inimigo: inimigos[0].nome }) : treino ? T.treinoVitoria : T.vitoria);
     el.classList.add('vitoria');
-    atualizarCampanha({ pvAtual: pvHeroi });
-    marcarFlag('venceu_' + dados.id.split('-')[0]);
+    aplicarFim(fim === 'rasteira' ? 'rasteira' : 'vitoria');
+    if (def.flagDano && causouDano) marcarFlag(def.flagDano);
+    atualizarCampanha({ pvAtual: treino ? pvAntes : pvHeroi });
+    if (!treino) marcarFlag('venceu_' + def.id.split('-')[0]);
     await esperar(600);
-    const b = botao(T.continuar, () => void irPara('capitulo', { cena: prm.vitoria }), { classe: 'btn-principal batalha-continuar' });
-    listaComandos.replaceChildren(b);
-    dica.textContent = '';
-    b.focus({ preventScroll: true });
+    mostrarContinuar(prm.vitoria);
   }
 
   async function derrota() {
     heroi.respirar(false);
+    if (def.flagDano && causouDano) marcarFlag(def.flagDano);
+    if (treino) {
+      heroi.mudarPose('ferido');
+      const n = inimigos[0];
+      if (n.dados.poses.vitoria) { n.sprite.respirar(false); n.sprite.mudarPose(n.dados.poses.vitoria); }
+      audio.pararMusica(1800);
+      msg(fmt(T.treinoDerrota, p.genero, { inimigo: n.nome }));
+      aplicarFim('derrota');
+      atualizarCampanha({ pvAtual: pvAntes });
+      await esperar(600);
+      return mostrarContinuar(prm.derrota);
+    }
     heroi.mudarPose('caido');
     sfx('fall');
     msg(fmt(T.derrota, p.genero, { nome: p.nome }));
@@ -384,90 +644,118 @@ export function telaBatalha(params?: unknown): Tela {
     el.classList.add('derrota');
     await esperar(2200);
     if (saiu) return;
-    void irPara('capitulo', { cena: prm.derrota }, { duracao: 900 });
+    seguirPara(prm.derrota);
+  }
+
+  function mostrarContinuar(cena: string) {
+    const b = botao(T.continuar, () => seguirPara(cena), { classe: 'btn-principal batalha-continuar' });
+    listaComandos.replaceChildren(b);
+    dica.textContent = '';
+    b.focus({ preventScroll: true });
   }
 
   async function lutar() {
     await rolarIniciativa();
+    await dicaDe('inicio');
     while (!fim && !saiu) {
       for (const o of ordem) {
         if (fim || saiu) break;
+        const i = inimigos.find((x) => x.uid === o.id);
+        if (i && !i.ativo) continue;
         marcarVez(o.id);
         if (o.id === 'heroi') await turnoDoHeroi();
-        else await ataqueDoInimigo();
+        else await turnoDoInimigo(i!);
         await esperar(250);
       }
     }
     vez = null;
     if (saiu) return;
-    if (fim === 'vitoria') await vitoria();
-    else await derrota();
+    if (fim === 'derrota') await derrota();
+    else await vitoria();
   }
 
   // ---- escala dos sprites (inteira quando possível) ----
   function escalar() {
-    if (!heroi || !inimigo) return;
+    if (!heroi || !inimigos.length) return;
     const altura = arena.clientHeight;
-    // Cabe na altura (herói ~45% da arena) e na largura (os dois lado a lado, com folga no meio).
+    const largInimigos = Math.max(...inimigos.map((i) => i.sprite.larguraQuadro)) * (inimigos.length > 1 ? 1.5 : 1);
     const porAltura = altura / (heroi.alturaQuadro * 2.15);
-    const porLargura = (arena.clientWidth * 0.86) / (heroi.larguraQuadro + inimigo.larguraQuadro);
+    const porLargura = (arena.clientWidth * 0.86) / (heroi.larguraQuadro + largInimigos);
     const bruto = Math.min(porAltura, porLargura);
     const k = bruto >= 2 ? Math.min(4, Math.floor(bruto)) : bruto >= 1.5 ? 1.5 : 1;
     heroi.escalar(k);
-    inimigo.escalar(k);
+    inimigos.forEach((i) => i.sprite.escalar(k));
     el.style.setProperty('--escala', String(k));
   }
   const observador = new ResizeObserver(() => escalar());
 
-  function ganchosDeTeste() {
-    if (!parametros().has('test')) return;
-    (window as unknown as { __fdg: unknown }).__fdg = {
-      forceRoll: (v: number[]) => forcarD20(v),
-      setPv: (n: number) => { pvHeroi = n; atualizarFicha(); heroiEmGuarda(); },
-      comando: (c: Comando) => escolherComando?.(c),
-      desfazerInimigo: () => inimigo.desfazer(),
-      state: () => ({
-        tela: 'batalha',
-        inimigo: dados.id,
-        pvHeroi, pvMax, pvInimigo, defesa,
-        ordem: ordem.map((o) => o.id),
-        iniciativa: ordem.map((o) => o.valor),
-        vez,
-        poseHeroi: heroi?.pose ?? null,
-        poseInimigo: inimigo?.pose ?? null,
-        heroiCaido, preparado, fim,
-        comandos: [...listaComandos.querySelectorAll<HTMLButtonElement>('.batalha-cmd')].map((b) => ({ id: b.dataset.comando, habilitado: b.dataset.liberado === '1' })),
-        log: [...log],
-        musica: audio.estadoMusica(),
-      }),
-    };
-  }
+  registrarGanchos({
+    setPv: (n: number) => { pvHeroi = n; atualizarFicha(); heroiEmGuarda(); },
+    setPvInimigo: (n: number, k = 0) => { if (inimigos[k]) inimigos[k].pv = n; },
+    /** A próxima ação do inimigo (ex.: "espada"), em vez do sorteio da IA. */
+    forcarAcaoInimigo: (id: string) => { acaoForcada = id; },
+    comando: (c: Comando) => void aoComando(c),
+    alvo: (k: number) => (listaComandos.querySelectorAll<HTMLButtonElement>('.batalha-alvo')[k])?.click(),
+    desfazerInimigo: () => inimigos[0]?.sprite.desfazer(),
+    state: () => ({
+      ...estadoProgresso(),
+      tela: 'batalha',
+      batalha: def.id,
+      inimigo: inimigos[0]?.dados.id ?? null,
+      inimigos: inimigos.map((i) => ({ uid: i.uid, id: i.dados.id, nome: i.nome, pv: i.pv, ativo: i.ativo, pose: i.sprite.pose, caido: i.caido, defesaExtra: i.defesaExtra })),
+      pvHeroi, pvMax, defesa, treino,
+      pvInimigo: (ativos()[0] ?? inimigos[0])?.pv ?? null,
+      ordem: ordem.filter((o) => o.id === 'heroi' || inimigos.find((i) => i.uid === o.id)?.ativo).map((o) => o.id),
+      iniciativa: ordem.map((o) => o.valor),
+      vez,
+      poseHeroi: heroi?.pose ?? null,
+      poseInimigo: inimigos[0]?.sprite.pose ?? null,
+      heroiCaido, preparado, fim,
+      comandos: [...listaComandos.querySelectorAll<HTMLButtonElement>('.batalha-cmd[data-comando]')].map((b) => ({ id: b.dataset.comando, habilitado: b.dataset.liberado === '1' })),
+      log: [...log],
+    }),
+  });
 
   return {
     el,
     aoEntrar() {
       void (async () => {
-        await audio.carregarEfeitos(SFX_CAPITULO);
-        audio.tocarMusica(ASSETS.musica(regiao.musica), 1200);
-        const [fH, fI] = await Promise.all([
+        await audio.carregarEfeitos([...SFX_CAPITULO, ...SFX_FASE4]);
+        audio.tocarMusica(ASSETS.musica(def.musica ?? regiao.musica), 1200);
+        for (const b of def.bestiario ?? []) encontrarCriatura(b);
+        const ids = [...new Set(def.inimigos)];
+        const [fH, ...folhas] = await Promise.all([
           carregarFolha(ASSETS.spriteBatalhaHeroi(p.raca, p.genero)),
-          carregarFolha(ASSETS.spriteBatalhaInimigo(dados.sprite)),
+          ...ids.map((id) => carregarFolha(ASSETS.spriteBatalhaInimigo(INIMIGOS[id].sprite))),
         ]);
         if (saiu) return;
         heroi = new SpriteBatalha(fH, 'heroi', 'direita');
-        inimigo = new SpriteBatalha(fI, 'inimigo', 'esquerda');
         ladoHeroi.append(heroi.el);
-        ladoInimigo.append(inimigo.el);
+        const contagem: Record<string, number> = {};
+        const repetidos = (id: string) => def.inimigos.filter((x) => x === id).length > 1;
+        const formacao = FORMACOES[Math.min(3, def.inimigos.length)];
+        inimigos = def.inimigos.slice(0, 3).map((id, k) => {
+          const dados = INIMIGOS[id];
+          contagem[id] = (contagem[id] ?? 0) + 1;
+          const nome = repetidos(id) ? `${dados.nome} ${'ABC'[contagem[id] - 1]}` : dados.nome;
+          const sprite = new SpriteBatalha(folhas[ids.indexOf(id)], 'inimigo', 'esquerda');
+          const [x, y] = formacao[k];
+          Object.assign(sprite.el.style, { position: 'absolute', left: `${x}%`, bottom: `${y}%`, zIndex: String(10 - Math.round(y / 5)) });
+          sprite.el.dataset.uid = k === 0 ? 'inimigo' : `inimigo-${k + 1}`;
+          ladoInimigo.append(sprite.el);
+          const pv = treino ? dados.pv : dados.pv;
+          return { uid: sprite.el.dataset.uid, dados, nome, pv, pvMax: dados.pv, ativo: true, assustado: false, caido: false, defesaExtra: 0, turnos: 0, sprite };
+        });
+        ladoInimigo.classList.toggle('varios', inimigos.length > 1);
         montarComandos();
         habilitarComandos(false);
         atualizarFicha();
         escalar();
         observador.observe(arena);
         heroiEmGuarda();
-        inimigoEmGuarda();
-        ganchosDeTeste();
+        inimigos.forEach(inimigoEmGuarda);
         el.classList.add('pronta');
-        msg(fmt(T.aparece, p.genero, { inimigo: nomeInimigo }));
+        msg(inimigos.length > 1 ? fmt(T.aparecemVarios, p.genero, { inimigo: inimigos[0].dados.nome }) : fmt(T.aparece, p.genero, { inimigo: inimigos[0].nome }));
         await esperar(1100);
         if (!saiu) await lutar();
       })();

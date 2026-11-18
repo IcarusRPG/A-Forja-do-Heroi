@@ -1,0 +1,33 @@
+{
+  "id": "ratazanas",
+  "inimigos": [
+    "ratazana",
+    "ratazana",
+    "ratazana"
+  ],
+  "regiao": "plantacao",
+  "musica": "batalha-ratazanas",
+  "bestiario": [
+    "ratazana"
+  ],
+  "dicas": [
+    {
+      "quando": "inicio",
+      "texto": "A ordem dos turnos é decidida pela Iniciativa: d20 + Destreza."
+    },
+    {
+      "quando": "primeiroTurnoHeroi",
+      "texto": "Bicuda: você rola d20 + Luta contra a Defesa do alvo."
+    },
+    {
+      "quando": "aposAtaqueInimigo",
+      "texto": "Aguardar: você prepara uma Bicuda que acerta antes do próximo ataque do inimigo."
+    }
+  ],
+  "aoErrar": {
+    "mensagem": "Sua Bicuda acerta uma abóbora!",
+    "contador": "aboboras_quebradas",
+    "icone": "abobora",
+    "som": "abobora-splat"
+  }
+}

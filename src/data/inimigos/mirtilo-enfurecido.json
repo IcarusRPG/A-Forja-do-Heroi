@@ -8,11 +8,53 @@
   "iniciativa": 1,
   "fogeComPv": 4,
   "aceitaConversa": false,
-  "poses": { "parado": "parado", "ataque": "mordida", "atingido": "atingido", "exausto": "exausto", "fugindo": "fugindo", "investida": "investida" },
+  "poses": {
+    "parado": "parado",
+    "ataque": "mordida",
+    "atingido": "atingido",
+    "exausto": "exausto",
+    "fugindo": "fugindo",
+    "investida": "investida"
+  },
   "exaustoComPv": 6,
   "ataques": {
-    "presas": { "nome": "Presas", "bonus": 4, "dano": "1d6+1", "tipoDano": "perfuração", "pose": "ataque", "som": "pig-squeal", "mensagem": "O Mirtilo morde com as presas!" },
-    "investida": { "nome": "Investida", "bonus": 6, "dano": "1d6+1", "tipoDano": "perfuração", "pose": "investida", "som": "pig-charge", "mensagem": "O Mirtilo dispara numa Investida!", "derruba": { "pericia": "fortitude", "cd": 12 } }
+    "presas": {
+      "nome": "Presas",
+      "bonus": 4,
+      "dano": "1d6+1",
+      "tipoDano": "perfuração",
+      "pose": "ataque",
+      "som": "pig-squeal",
+      "mensagem": "O Mirtilo morde com as presas!"
+    },
+    "investida": {
+      "nome": "Investida",
+      "bonus": 6,
+      "dano": "1d6+1",
+      "tipoDano": "perfuração",
+      "pose": "investida",
+      "som": "pig-charge",
+      "mensagem": "O Mirtilo dispara numa Investida!",
+      "derruba": {
+        "pericia": "fortitude",
+        "cd": 12
+      }
+    }
   },
-  "ia": { "tipo": "investida", "primeiro": "investida", "seCaido": "presas", "senao": [["investida", 0.5], ["presas", 0.5]] }
+  "ia": {
+    "tipo": "investida",
+    "primeiro": "investida",
+    "seCaido": "presas",
+    "senao": [
+      [
+        "investida",
+        0.5
+      ],
+      [
+        "presas",
+        0.5
+      ]
+    ]
+  },
+  "fortitude": 2
 }
