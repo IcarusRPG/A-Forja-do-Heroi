@@ -1,0 +1,10 @@
+{
+  "pao-de-mel": { "nome": "Pão de mel da Vó Hulda", "tipo": "cura", "cura": "1d4", "icone": "pao", "texto": "Recupera 1d4 PV." },
+  "bandagem": { "nome": "Bandagem", "tipo": "cura", "cura": "1d4", "icone": "bandagem", "texto": "Recupera 1d4 PV." },
+  "unguento": { "nome": "Unguento de Selene", "tipo": "cura", "cura": "1d4+1", "icone": "unguento", "texto": "Recupera 1d4+1 PV." },
+  "cesto-paes": { "nome": "Cesto de pães", "tipo": "chave", "icone": "cesto-paes", "texto": "O pão do templo, para o Artho.", "contador": { "rotulo": "Pães", "total": 6 } },
+  "lencol": { "nome": "Lençol da Vó Hulda", "tipo": "missao", "icone": "lencol", "missao": "hulda", "grupo": "Peças do varal", "total": 3 },
+  "lenco": { "nome": "Lenço azul", "tipo": "missao", "icone": "lenco", "missao": "hulda", "grupo": "Peças do varal", "total": 3 },
+  "camisa": { "nome": "Camisa de linho", "tipo": "missao", "icone": "camisa", "missao": "hulda", "grupo": "Peças do varal", "total": 3 },
+  "repolho": { "nome": "Repolho", "tipo": "missao", "icone": "repolho", "missao": "osric", "grupo": "Repolhos", "total": 5 }
+}

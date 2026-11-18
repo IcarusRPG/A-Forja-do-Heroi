@@ -47,7 +47,8 @@
     "continuar": "Continuar",
     "opcoes": "Opções",
     "creditos": "Créditos",
-    "versao": "Versão DEMO"
+    "versao": "Versão DEMO",
+    "compendio": "Compêndio"
   },
   "opcoes": {
     "titulo": "Opções",
@@ -247,7 +248,8 @@
     },
     "fim": {
       "fimDo": "Fim do",
-      "seguir": "Continuar"
+      "seguir": "Continuar",
+      "atraso": "Atraso: {estado}"
     }
   },
   "batalha": {
@@ -260,7 +262,9 @@
       "bicuda": "Bicuda",
       "intimidar": "Intimidar",
       "acalmar": "Acalmar",
-      "aguardar": "Aguardar"
+      "aguardar": "Aguardar",
+      "item": "Item",
+      "rasteira": "Rasteira"
     },
     "furiosoDemais": "Ele está furioso demais.",
     "aparece": "{inimigo} bloqueia o caminho!",
@@ -292,11 +296,87 @@
     "falha": "falha",
     "vitoria": "Vitória!",
     "derrota": "{nome} cai na lama…",
-    "continuar": "Continuar"
+    "continuar": "Continuar",
+    "treino": "treino",
+    "entendi": "Entendi",
+    "iniciativaRotulo": "Iniciativa",
+    "escolhaAlvo": "Escolha o alvo.",
+    "voltar": "Voltar",
+    "elaCai": "ELA CAI!",
+    "eleCai": "ELE CAI!",
+    "elaAguenta": "ELA AGUENTA!",
+    "eleAguenta": "ELE AGUENTA!",
+    "fortitudeDe": "Fortitude de {nome}",
+    "rasteiraMsg": "{nome} tenta uma Rasteira!",
+    "usouItem": "{nome} usa {item}: +{n} PV.",
+    "inimigoLevanta": "{inimigo} se levanta.",
+    "treinoRasteira": "{inimigo} vai ao chão! Fim do treino.",
+    "treinoVitoria": "Você vence o treino nos pontos!",
+    "treinoDerrota": "{inimigo} vence o treino.",
+    "aparecemVarios": "{inimigo}s atacam a plantação!"
   },
   "gameOver": {
     "texto": "Sua jornada termina aqui…",
     "tentar": "Tentar novamente",
     "menu": "Voltar ao menu"
+  },
+  "progresso": {
+    "niveis": {
+      "ressentido": "Ressentido",
+      "frio": "Frio",
+      "neutro": "Neutro",
+      "simpatico": "Simpático",
+      "amigo": "Amigo",
+      "leal": "Leal"
+    },
+    "agoraE": "{nome} agora é {nivel}",
+    "compendioAtualizado": "Compêndio atualizado: {nome}",
+    "atraso": {
+      "0": "{Atrasado|Atrasada}",
+      "1": "Muito {atrasado|atrasada}",
+      "3": "{Atrasadíssimo|Atrasadíssima}",
+      "4": "Artho vai te esfolar"
+    },
+    "reais": "Reais",
+    "itens": "Itens",
+    "semItens": "Nenhum item.",
+    "usar": "Usar",
+    "comerPao": "Comer um pão",
+    "confirmarPao": "Artho vai perceber que falta pão. Comer mesmo assim?",
+    "comerMesmo": "Comer",
+    "naoComer": "Melhor não",
+    "intacto": "intacto",
+    "faltaPao": "falta pão",
+    "pvMais": "+{n} PV",
+    "pvCheio": "Seus PV já estão cheios."
+  },
+  "compendio": {
+    "titulo": "Compêndio",
+    "personagens": "Personagens",
+    "bestiario": "Bestiário",
+    "vozes": "Vozes",
+    "desconhecido": "???",
+    "voltar": "Voltar",
+    "oQueSabe": "O que você sabe",
+    "raca": "Raça",
+    "papel": "Papel",
+    "vozSemNome": "Uma voz {cor}",
+    "nomeNaForja": "A Forja revelará este nome.",
+    "semVozes": "Nenhuma voz ouvida ainda."
+  },
+  "mapa": {
+    "carregando": "Füllmun…"
+  },
+  "introFullmun": {
+    "pular": "Pular",
+    "toque": "Toque para continuar",
+    "avancar": "Avançar",
+    "frases": [
+      "Füllmun é um vilarejo pequeno, cercado de campos e colinas, onde a vida segue o ritmo do sol.",
+      "Seus moradores vivem do que plantam, dos animais que criam e do comércio que movimenta a pequena praça do mercado.",
+      "Além dos agricultores, Füllmun guarda talentos que muitas cidades invejariam: curandeiros habilidosos, que conhecem cada erva das colinas, e armeiros talentosos, cujo trabalho atende de lavradores a viajantes.",
+      "Ali, todos se conhecem pelo nome. Ali, nada de grave jamais aconteceu.",
+      "É nessa vila que você cresceu."
+    ]
   }
 }

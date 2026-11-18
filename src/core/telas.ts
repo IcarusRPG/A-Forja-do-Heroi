@@ -13,7 +13,7 @@ export interface Tela {
 
 export type NomeTela =
   | 'loading' | 'intro' | 'menu' | 'criacao' | 'prologo' | 'sonho' | 'despertar'
-  | 'capitulo' | 'batalha' | 'fimCapitulo' | 'gameOver' | 'emBreve';
+  | 'introFullmun' | 'capitulo' | 'mapa' | 'batalha' | 'fimCapitulo' | 'gameOver' | 'emBreve';
 type Fabrica = (params?: unknown) => Tela;
 
 const fabricas = new Map<NomeTela, Fabrica>();

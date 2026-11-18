@@ -1,9 +1,32 @@
 {
-  "artho": { "nome": "Artho" },
-  "aylin": { "nome": "Aylin" },
-  "gerulf": { "nome": "Gerulf" },
-  "kobanu": { "nome": "Kobanu" },
-  "nyme": { "nome": "Nyme" },
-  "osric": { "nome": "Osric Balança" },
-  "vo-hulda": { "nome": "Vó Hulda" }
+  "artho": {
+    "nome": "Artho"
+  },
+  "aylin": {
+    "nome": "Aylin"
+  },
+  "gerulf": {
+    "nome": "Gerulf"
+  },
+  "kobanu": {
+    "nome": "Kobanu"
+  },
+  "nyme": {
+    "nome": "Nyme"
+  },
+  "osric": {
+    "nome": "Osric Balança"
+  },
+  "vo-hulda": {
+    "nome": "Vó Hulda"
+  },
+  "tobias": {
+    "nome": "Tobias Miolo"
+  },
+  "selene": {
+    "nome": "Selene Raiz"
+  },
+  "dagna": {
+    "nome": "Dagna Brasa"
+  }
 }

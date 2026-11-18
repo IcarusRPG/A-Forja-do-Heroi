@@ -8,6 +8,7 @@ import './styles/criacao.css';
 import './styles/sonho.css';
 import './styles/capitulo.css';
 import './styles/batalha.css';
+import './styles/fase4.css';
 
 import { irPara, registrarTela } from './core/telas';
 import { telaCriacao } from './screens/criacao';
@@ -22,6 +23,8 @@ import { telaCapitulo } from './screens/capitulo';
 import { telaBatalha } from './screens/batalha';
 import { telaFimCapitulo } from './screens/fimCapitulo';
 import { telaGameOver } from './screens/gameOver';
+import { telaMapa } from './screens/mapa';
+import { telaIntroFullmun } from './screens/introFullmun';
 
 registrarTela('loading', telaLoading);
 registrarTela('intro', telaIntro);
@@ -35,6 +38,8 @@ registrarTela('batalha', telaBatalha);
 registrarTela('fimCapitulo', telaFimCapitulo);
 registrarTela('gameOver', telaGameOver);
 registrarTela('emBreve', telaEmBreve);
+registrarTela('mapa', telaMapa);
+registrarTela('introFullmun', telaIntroFullmun);
 
 void irPara('loading', undefined, { som: false, duracao: 0 });
 

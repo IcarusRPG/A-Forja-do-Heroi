@@ -135,6 +135,34 @@ class GerenciadorAudio {
     fonte.start();
   }
 
+  /** Efeito em loop (ex.: batida do coração na câmera lenta). Devolve a função que para. */
+  sfxLoop(nome: NomeSfx, ganho = 1): () => void {
+    const ctx = this.ctx;
+    const buffer = this.buffers.get(nome);
+    if (!ctx || !buffer || !this.ganhoSfx) return () => {};
+    const fonte = ctx.createBufferSource();
+    fonte.buffer = buffer;
+    fonte.loop = true;
+    const g = ctx.createGain();
+    g.gain.value = ganho;
+    fonte.connect(g).connect(this.ganhoSfx);
+    fonte.start();
+    return () => { try { fonte.stop(); } catch { /* já parou */ } };
+  }
+
+  /** Música abafada (câmera lenta): o elemento de áudio não passa por filtro, então só baixa o volume. */
+  private fatorAbafar = 1;
+  /** Volume relativo pedido pela tela (ex.: intro de Füllmun a 50%). */
+  private fatorExtra = 1;
+  volumeRelativo(f: number): void {
+    this.fatorExtra = f;
+    this.aplicarVolumes();
+  }
+  abafar(sim: boolean): void {
+    this.fatorAbafar = sim ? 0.3 : 1;
+    this.aplicarVolumes();
+  }
+
   /** Ambiente sintetizado (drone suave), usado quando a cena não tem música própria. */
   private ambiente: Ambiente | null = null;
 
@@ -301,7 +329,7 @@ class GerenciadorAudio {
     const { config } = getEstado();
     for (const c of this.canais) {
       c.el.muted = config.mudo;
-      c.el.volume = Math.max(0, Math.min(1, config.musica * c.fator));
+      c.el.volume = Math.max(0, Math.min(1, config.musica * c.fator * this.fatorAbafar * this.fatorExtra));
     }
     if (this.ganhoSfx) this.ganhoSfx.gain.value = config.mudo ? 0 : config.efeitos;
     this.ambiente?.atualizarVolume();

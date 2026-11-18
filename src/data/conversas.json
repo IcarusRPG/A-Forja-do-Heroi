@@ -1,0 +1,270 @@
+{
+  "vo-hulda": {
+    "conversas": [
+      {
+        "requer": {
+          "semFlag": "falou_hulda"
+        },
+        "cena": "f-hulda-1"
+      },
+      {
+        "requer": {
+          "missao": {
+            "hulda": "aceita"
+          },
+          "temItem": [
+            "lencol",
+            "lenco",
+            "camisa"
+          ]
+        },
+        "cena": "f-hulda-entrega"
+      },
+      {
+        "requer": {
+          "missao": {
+            "hulda": "aceita"
+          }
+        },
+        "cena": "f-hulda-andamento"
+      },
+      {
+        "requer": {
+          "missao": {
+            "hulda": "concluida"
+          }
+        },
+        "cena": "f-hulda-retorno"
+      },
+      {
+        "cena": "f-hulda-oferta"
+      }
+    ],
+    "marcadores": [
+      {
+        "requer": {
+          "missao": {
+            "hulda": "aceita"
+          },
+          "temItem": [
+            "lencol",
+            "lenco",
+            "camisa"
+          ]
+        },
+        "tipo": "?"
+      },
+      {
+        "requer": {
+          "missao": {
+            "hulda": "aceita"
+          }
+        },
+        "tipo": "…"
+      },
+      {
+        "requer": {
+          "missao": {
+            "hulda": "concluida"
+          }
+        },
+        "tipo": null
+      },
+      {
+        "tipo": "!"
+      }
+    ]
+  },
+  "osric": {
+    "conversas": [
+      {
+        "requer": {
+          "semFlag": "falou_osric"
+        },
+        "cena": "f-osric-1"
+      },
+      {
+        "requer": {
+          "missao": {
+            "osric": "aceita"
+          },
+          "itemMin": {
+            "repolho": 5
+          }
+        },
+        "cena": "f-osric-entrega"
+      },
+      {
+        "requer": {
+          "missao": {
+            "osric": "aceita"
+          }
+        },
+        "cena": "f-osric-andamento"
+      },
+      {
+        "requer": {
+          "missao": {
+            "osric": "concluida"
+          }
+        },
+        "cena": "f-osric-retorno"
+      },
+      {
+        "cena": "f-osric-oferta"
+      }
+    ],
+    "marcadores": [
+      {
+        "requer": {
+          "missao": {
+            "osric": "aceita"
+          },
+          "itemMin": {
+            "repolho": 5
+          }
+        },
+        "tipo": "?"
+      },
+      {
+        "requer": {
+          "missao": {
+            "osric": "aceita"
+          }
+        },
+        "tipo": "…"
+      },
+      {
+        "requer": {
+          "missao": {
+            "osric": "concluida"
+          }
+        },
+        "tipo": null
+      },
+      {
+        "tipo": "!"
+      }
+    ]
+  },
+  "kobanu": {
+    "conversas": [
+      {
+        "requer": {
+          "semFlag": "falou_kobanu"
+        },
+        "cena": "f-kobanu-1"
+      },
+      {
+        "requer": {
+          "missao": {
+            "kobanu": "concluida"
+          }
+        },
+        "cena": "f-kobanu-retorno"
+      },
+      {
+        "cena": "f-kobanu-oferta"
+      }
+    ],
+    "marcadores": [
+      {
+        "requer": {
+          "missao": {
+            "kobanu": "concluida"
+          }
+        },
+        "tipo": null
+      },
+      {
+        "tipo": "!"
+      }
+    ]
+  },
+  "tobias": {
+    "conversas": [
+      {
+        "requer": {
+          "semFlag": "falou_tobias"
+        },
+        "cena": "f-tobias-1"
+      },
+      {
+        "requer": {
+          "missao": {
+            "tobias": "aceita"
+          }
+        },
+        "cena": "f-tobias-retorno"
+      },
+      {
+        "cena": "f-tobias-oferta"
+      }
+    ],
+    "marcadores": [
+      {
+        "requer": {
+          "missao": {
+            "tobias": "aceita"
+          }
+        },
+        "tipo": "…"
+      },
+      {
+        "tipo": "!"
+      }
+    ]
+  },
+  "selene": {
+    "conversas": [
+      {
+        "requer": {
+          "semFlag": "falou_selene"
+        },
+        "cena": "f-selene-1"
+      },
+      {
+        "cena": "f-selene-retorno"
+      }
+    ],
+    "marcadores": []
+  },
+  "dagna": {
+    "conversas": [
+      {
+        "requer": {
+          "semFlag": "falou_dagna"
+        },
+        "cena": "f-dagna-1"
+      },
+      {
+        "cena": "f-dagna-retorno"
+      }
+    ],
+    "marcadores": []
+  },
+  "gerulf": {
+    "conversas": [
+      {
+        "cena": "f-gerulf-retorno"
+      }
+    ],
+    "marcadores": []
+  },
+  "artho": {
+    "conversas": [
+      {
+        "cena": "t-artho-retorno"
+      }
+    ],
+    "marcadores": []
+  },
+  "nyme": {
+    "conversas": [
+      {
+        "cena": "t-nyme-retorno"
+      }
+    ],
+    "marcadores": []
+  }
+}

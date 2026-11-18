@@ -68,10 +68,55 @@ export interface Campanha {
   bonusProximoTeste: number;
   /** Cena com a escolha que levou à última batalha (Game Over → "Tentar novamente"). */
   cenaAntesDaBatalha: string | null;
+  // ---- Fase 4 (versaoSave 4) ----
+  /** Marcas do relógio do atraso (0 a 4). */
+  atraso: number;
+  missoes: Record<string, EstadoMissao>;
+  /** Quantidade de cada item (cura, itens-chave, peças de missão). */
+  inventario: Record<string, number>;
+  reais: number;
+  /** Pontos de relação por personagem. */
+  relacoes: Record<string, number>;
+  compendio: ProgressoCompendio;
+  /** Itens de mapa já recolhidos e pontos já usados (ids únicos: "fullmun:lenco", "salao:mancha-3"…). */
+  coletados: string[];
+  /** Contadores livres (abóboras quebradas, manchas limpas, estantes…). */
+  contadores: Record<string, number>;
+  /** Onde o jogo retoma: numa cena (tela de capítulo) ou num mapa, na posição salva. */
+  local: LocalJogo;
 }
+
+export type EstadoMissao = 'nao_iniciada' | 'aceita' | 'concluida' | 'recusada';
+
+export interface LocalJogo {
+  tela: 'capitulo' | 'mapa';
+  mapa?: string;
+  x?: number;
+  y?: number;
+  direcao?: string;
+}
+
+/** Quantos parágrafos de cada ficha o jogador já viu, e o que ainda não abriu. */
+export interface ProgressoCompendio {
+  /** Personagens conhecidos (ficha liberada). */
+  conhecidos: string[];
+  /** Criaturas encontradas; `sabe` = "O que você sabe" liberado. */
+  bestiario: Record<string, { sabe: boolean }>;
+  /** Parágrafos já anunciados por ficha (para os avisos de novidade). */
+  vistos: Record<string, number>;
+  /** Há novidade não vista (ponto dourado no menu de pausa). */
+  novidade: boolean;
+}
+
+/** Relações iniciais (Fase 4). Também usadas na migração de saves antigos. */
+export const RELACOES_INICIAIS: Readonly<Record<string, number>> = {
+  artho: 2, nyme: 2, aylin: 1, 'vo-hulda': 0, osric: 0, kobanu: 0, gerulf: 0, tobias: 0, selene: 0, dagna: 0,
+};
 
 export interface EstadoJogo {
   versao: 1;
+  /** Formato do save (4 = Fase 4: atraso, missões, inventário, relações, Compêndio). */
+  versaoSave?: number;
   config: Config;
   personagem: Personagem | null;
   sonho: ProgressoSonho;
@@ -82,6 +127,7 @@ const CHAVE = 'a-forja-do-heroi:estado';
 
 const padrao = (): EstadoJogo => ({
   versao: 1,
+  versaoSave: 4,
   config: { musica: 0.7, efeitos: 0.8, mudo: false },
   personagem: null,
   sonho: { concluido: false, ouvidas: [] },
@@ -90,7 +136,33 @@ const padrao = (): EstadoJogo => ({
 
 export const campanhaNova = (): Campanha => ({
   capitulo: 1, cena: null, modo: 'falas', flags: [], caminho: [], usadas: [], pvAtual: null, bonusProximoTeste: 0, cenaAntesDaBatalha: null,
+  atraso: 0, missoes: {}, inventario: {}, reais: 0, relacoes: { ...RELACOES_INICIAIS },
+  compendio: { conhecidos: [], bestiario: {}, vistos: {}, novidade: false },
+  coletados: [], contadores: {}, local: { tela: 'capitulo' },
 });
+
+/**
+ * Migração de saves anteriores à Fase 4. Um save parado em "Capítulo 02 · Em breve" (capítulo 2,
+ * cena "inicio") entra no início do Capítulo 02 com as relações iniciais, atraso 2, sem cesto e com o
+ * inventário vazio. Saves no meio do Capítulo 01 antigo recomeçam na soleira (a corrida virou o mapa).
+ */
+function migrar(c: Campanha, versao: number | undefined): Campanha {
+  const base = campanhaNova();
+  const m: Campanha = {
+    ...base, ...c,
+    relacoes: { ...base.relacoes, ...(c.relacoes ?? {}) },
+    compendio: { ...base.compendio, ...(c.compendio ?? {}) },
+    local: c.local ?? base.local,
+  };
+  if ((versao ?? 1) < 4) {
+    if (m.capitulo >= 2) {
+      Object.assign(m, { capitulo: 2, cena: null, modo: 'falas', atraso: 2, inventario: {}, reais: 0, relacoes: { ...RELACOES_INICIAIS }, local: { tela: 'capitulo' } });
+    } else if (m.cena && ['c01-hulda', 'c01-osric', 'c01-kobanu'].includes(m.cena)) {
+      Object.assign(m, { cena: 'c01-soleira', modo: 'escolhas' });
+    }
+  }
+  return m;
+}
 
 function carregar(): EstadoJogo {
   try {
@@ -106,7 +178,8 @@ function carregar(): EstadoJogo {
         concluido: dados.sonho?.concluido === true,
         ouvidas: Array.isArray(dados.sonho?.ouvidas) ? dados.sonho!.ouvidas.filter((x) => typeof x === 'string') : [],
       },
-      campanha: { ...base.campanha, ...(dados.campanha ?? {}) },
+      campanha: dados.campanha ? migrar(dados.campanha as Campanha, dados.versaoSave) : base.campanha,
+      versaoSave: 4,
     };
   } catch {
     return padrao();

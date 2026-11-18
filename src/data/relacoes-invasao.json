@@ -1,0 +1,48 @@
+{
+  "_sobre": "Bônus das relações na invasão do Ato I. Só dados: o Ato I lê este arquivo. A Nyme não entra.",
+  "vo-hulda": {
+    "amigo": { "descricao": "Esconde aldeões no porão", "efeito": "menos_vitimas" },
+    "leal": { "descricao": "Esconde o herói numa fuga e um combate pode ser evitado", "efeito": "evita_combate" },
+    "ressentido": { "descricao": "Fecha a porta", "efeito": "mais_vitimas" }
+  },
+  "osric": {
+    "amigo": { "descricao": "Barricada de carroças: +2 de Defesa contra flechas numa batalha", "efeito": "barricada" },
+    "leal": { "descricao": "Barricada mais Reais e itens", "efeito": "barricada_itens" },
+    "ressentido": { "descricao": "Foge com a carroça", "efeito": "sem_barricada" }
+  },
+  "kobanu": {
+    "amigo": { "descricao": "Segura um Ka'Ruun no portão: um inimigo a menos numa batalha", "efeito": "remove_inimigo" },
+    "leal": { "descricao": "Luta ao lado do herói numa batalha, com o machado do pai", "efeito": "aliado_kobanu" },
+    "ressentido": null
+  },
+  "tobias": {
+    "amigo": { "descricao": "Fumaça do forno: arqueiros com −2 por 2 rodadas", "efeito": "fumaca" },
+    "leal": { "descricao": "Fumaça mais cura de grupo", "efeito": "fumaca_cura" },
+    "ressentido": null
+  },
+  "selene": {
+    "amigo": { "descricao": "2 unguentos", "efeito": "unguentos" },
+    "leal": { "descricao": "Levanta o herói caído uma vez, com metade dos PV", "efeito": "reviver" },
+    "ressentido": { "descricao": "Sem unguentos", "efeito": "sem_ajuda" }
+  },
+  "dagna": {
+    "amigo": { "descricao": "Uma arma simples", "efeito": "arma_simples" },
+    "leal": { "descricao": "Arma e escudo de madeira", "efeito": "arma_escudo" },
+    "ressentido": { "descricao": "Forja fechada", "efeito": "forja_fechada" }
+  },
+  "gerulf": {
+    "amigo": { "descricao": "Porcos soltos: os inimigos perdem o 1º turno", "efeito": "porcos" },
+    "leal": { "descricao": "O Mirtilo investe e causa dano", "efeito": "mirtilo_aliado" },
+    "ressentido": { "descricao": "Porcos atrapalham", "efeito": "porcos_contra" }
+  },
+  "aylin": {
+    "amigo": { "descricao": "Atalho: pula uma batalha", "efeito": "atalho" },
+    "leal": null,
+    "ressentido": null
+  },
+  "artho": {
+    "amigo": { "descricao": "+1 de paciência com Bashmu", "efeito": "paciencia_1" },
+    "leal": { "descricao": "+2 de paciência", "efeito": "paciencia_2" },
+    "ressentido": null
+  }
+}

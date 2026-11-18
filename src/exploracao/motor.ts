@@ -26,6 +26,10 @@ export interface OpcoesMotor {
   debugInicial: boolean;
   /** Quantas alturas de tela o mapa ocupa (o zoom se ajusta a isso). */
   alturasDeTela?: number;
+  /** Imagens a mais para carregar junto do mapa (folhas de moradores, ícones de itens). */
+  extras?: { chave: string; url: string; tipo: 'folha' | 'imagem' }[];
+  /** Começa aqui em vez do `inicio` do mapa (posição salva, saída de outro mapa). */
+  inicio?: { x: number; y: number; direcao?: Direcao };
   aoProximidade?: (id: string | null) => void;
   aoEntrarGatilho?: (id: string) => void;
   aoSairGatilho?: (id: string) => void;
@@ -175,6 +179,10 @@ export function criarMotor(o: OpcoesMotor): Promise<Motor> {
       preload() {
         this.load.image('mapa', o.imagemUrl);
         if (o.heroi.spriteUrl) this.load.spritesheet(CHAVE_FOLHA, o.heroi.spriteUrl, { frameWidth: QUADRO, frameHeight: QUADRO });
+        for (const e of o.extras ?? []) {
+          if (e.tipo === 'folha') this.load.spritesheet(e.chave, e.url, { frameWidth: QUADRO, frameHeight: QUADRO });
+          else this.load.image(e.chave, e.url);
+        }
       }
 
       create() {
@@ -195,7 +203,8 @@ export function criarMotor(o: OpcoesMotor): Promise<Motor> {
           });
         });
 
-        heroi = this.add.sprite(mapa.inicio.x, mapa.inicio.y, CHAVE_FOLHA, DIRECOES.indexOf(direcao) * COLUNAS);
+        if (o.inicio?.direcao) direcao = o.inicio.direcao;
+        heroi = this.add.sprite(o.inicio?.x ?? mapa.inicio.x, o.inicio?.y ?? mapa.inicio.y, CHAVE_FOLHA, DIRECOES.indexOf(direcao) * COLUNAS);
         heroi.setOrigin(0.5, 46 / QUADRO).setDepth(heroi.y);
         heroi.on(Phaser.Animations.Events.ANIMATION_UPDATE, (_a: unknown, quadro: Phaser.Animations.AnimationFrame) => {
           if (quadro.index === 2 || quadro.index === 4) o.aoPasso?.();
