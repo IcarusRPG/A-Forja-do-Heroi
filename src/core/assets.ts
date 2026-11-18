@@ -4,7 +4,7 @@ export type Genero = 'm' | 'f';
 
 const BASE = import.meta.env.BASE_URL;
 
-/** URL pública de um asset (respeita o `base` do Vite, ex.: /A-Forja-do-Heroi/). */
+/** URL pública de um asset (respeita o `base` do Vite, ex.: /aforjadoheroi/). */
 export const urlAsset = (caminho: string): string => `${BASE}assets/${caminho}`;
 
 export const ASSETS = {

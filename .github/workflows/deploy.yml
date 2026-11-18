@@ -26,6 +26,9 @@ jobs:
       # --ignore-scripts: o ffmpeg-static (usado só no scripts/prepare-assets.mjs) não precisa baixar o binário aqui.
       - run: npm ci --ignore-scripts
       - run: npm run build
+        env:
+          # Endereço do PocketBase (Settings → Secrets and variables → Actions → Variables).
+          VITE_PB_URL: ${{ vars.VITE_PB_URL }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

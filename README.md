@@ -3,7 +3,7 @@
 RPG narrativo de navegador ambientado em **Icarus**, o sistema de RPG de mesa autoral.
 Já jogável: carregamento, vídeo de abertura, menu, criação de personagem (Araké, Azakar, Nyashi e Ayoran; cinco classes), prólogo e o **sonho dos deuses**, a primeira cena de exploração.
 
-**Jogar:** https://icarusrpg.github.io/A-Forja-do-Heroi/
+**Jogar:** https://game.icarusrpg.com.br/aforjadoheroi/
 
 ## Rodar localmente
 
@@ -12,7 +12,7 @@ npm install
 npm run dev
 ```
 
-Abra `http://localhost:5174/A-Forja-do-Heroi/`.
+Abra `http://localhost:5174/aforjadoheroi/`.
 
 ## Scripts
 
@@ -25,7 +25,7 @@ Abra `http://localhost:5174/A-Forja-do-Heroi/`.
 | `npm run sprites` | Gera as folhas de caminhada (heróis e NPCs) e as folhas de batalha (ver abaixo). Caminhada: gera as folhas do herói (`public/assets/sprites/chibi-<raca>-<m\|f>.png`) a partir das folhas 2 × 2 de vistas paradas em `assets-src/sprites/<raca>-<m\|f>.png`; prévias 6× e GIFs em `tests/screenshots/sprites/`. Batalha (`scripts/build-battle-sprites.mjs`): folhas 3 × 2 de poses paradas em `assets-src/batalha/` viram folhas horizontais de 6 quadros alinhadas pelos pés + JSON em `public/assets/img/batalha/`; prévias em `tests/screenshots/batalha/` |
 | `node scripts/conferir-mapa.mjs [saida.png]` | Confere o mapa do sonho: tudo alcançável a pé a partir da escada, caminho até o altar de cada estátua e largura das passagens |
 | `node scripts/ver-mapa.mjs [saida.png]` | Desenha colisões, áreas de interação e recortes de profundidade sobre a imagem do mapa |
-| `npm run test:mobile` | Testes e2e (Playwright) da criação de personagem e do sonho dos deuses em Pixel 7, iPhone 13 e paisagem 844×390; screenshots em `tests/screenshots/`. Na primeira vez: `npx playwright install chromium webkit`. Para testar o site publicado em vez do build local: `BASE_URL=https://icarusrpg.github.io/A-Forja-do-Heroi/ npm run test:mobile` |
+| `npm run test:mobile` | Testes e2e (Playwright) da criação de personagem e do sonho dos deuses em Pixel 7, iPhone 13 e paisagem 844×390; screenshots em `tests/screenshots/`. Na primeira vez: `npx playwright install chromium webkit`. Para testar o site publicado em vez do build local: `BASE_URL=https://game.icarusrpg.com.br/aforjadoheroi/ npm run test:mobile` |
 
 Os originais da pasta `FdG` nunca são movidos nem alterados. Para recodificar o vídeo mesmo que já exista uma versão otimizada, use `FORCAR_VIDEO=1 npm run assets`.
 
@@ -58,7 +58,7 @@ Todo texto visível ao jogador está em `src/data/textos.json` (com flexão de g
 
 - **Roteiro em dados:** cada capítulo é um JSON em `src/data/capitulos/` com a lista de cenas: `fundo`, `musica` (`"fullmun"` é a playlist da vila; o resto é o nome do arquivo em `music/`), `falas` (`quem`: vazio = narração, `"pensamento"`, `"heroi"` ou o id de um NPC de `src/data/npcs.json`) e `escolhas` (`requer` por origem/flag/semFlag/gênero, `uma_vez`, `efeitos`, `teste` de perícia com `sucesso`/`falha`, `batalha` com `vitoria`/`derrota`). Texto: `{nome}` e `{homem|mulher}`.
 - **Testes de perícia:** d20 + atributo + 2 da origem (se for a perícia dela) + bônus raciais + bônus do próximo teste. Antes da Forja, o treino de classe não conta.
-- **Save:** cena atual, caminho, escolhas usadas, flags e PV atuais ficam em `campanha` no localStorage; Continuar retoma na última cena.
+- **Save:** 1 slot automático (`fdg.save.auto`) e 2 manuais (`fdg.save.manual1`, `fdg.save.manual2`) no localStorage; opções em `fdg.opcoes`. Salvar no menu de pausa, Carregar e Continuar (o mais recente) no menu inicial, cópia de segurança em .json na tela Carregar. O localStorage é separado por domínio: saves de outro endereço só passam para cá exportando lá e importando aqui.
 
 ## Batalha (estilo Final Fantasy VI)
 
@@ -74,6 +74,20 @@ Todo texto visível ao jogador está em `src/data/textos.json` (com flexão de g
 - **Sprites chibi:** as folhas de caminhada são geradas por `npm run sprites` a partir das folhas 2 × 2 em `assets-src/sprites/` (frente, esquerda / direita, costas). Formato final: grade 4 × 4 de quadros de 48 × 48 px; linhas: baixo, esquerda, direita, cima. Sem o arquivo, o jogo desenha um boneco provisório.
 - **Música do sonho:** coloque `public/assets/music/sonho.mp3` (ou `.ogg`/`.m4a`), ou um arquivo cujo nome comece com "sonho" na pasta de músicas do FdG antes de `npm run assets`. Sem ela, toca um ambiente sintetizado.
 - **Créditos:** acrescente linhas em `creditos.extras` no `textos.json`.
+
+## Variáveis de ambiente
+
+| Variável | Valor | Para quê |
+| --- | --- | --- |
+| `VITE_PB_URL` | `https://api.icarusrpg.com.br` | Endereço do PocketBase. O código lê `import.meta.env.VITE_PB_URL` e nunca tem o endereço fixo |
+
+- **Local:** copie `.env.example` para `.env.local` (fica fora do git).
+- **Publicação:** crie a variável `VITE_PB_URL` no repositório (Settings → Secrets and variables → Actions → Variables); o workflow a passa para o build.
+
+## Endereço e rotas
+
+- O jogo é servido em **https://game.icarusrpg.com.br/aforjadoheroi/**: GitHub Pages do repositório `IcarusRPG/aforjadoheroi`, com o domínio próprio `game.icarusrpg.com.br` configurado no site da conta (`IcarusRPG/icarusrpg.github.io`). O `base` do Vite é `/aforjadoheroi/`, e todos os assets passam por `import.meta.env.BASE_URL` (nada começa com `/assets`).
+- **Rotas por hash:** `#/privacidade` vira `https://game.icarusrpg.com.br/aforjadoheroi/#/privacidade`; abrir o link direto ou recarregar funciona. Quem abrir um caminho sem hash (`/aforjadoheroi/privacidade`) cai no `404.html` gerado no build, que leva para a versão com hash mantendo a query. Telas de conferência: `?tela=gameover` ou `#/gameover` (`src/core/rotas.ts`).
 
 ## Publicação
 

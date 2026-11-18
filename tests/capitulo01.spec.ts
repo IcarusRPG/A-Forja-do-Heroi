@@ -329,9 +329,18 @@ test('derrota: Gerulf salva o herói, que fica com 1 PV e machucado; a Aylin com
   await entrarNoCapitulo(page, 'c01-grito');
   await escolher(page, 'enfrentá-lo');
   await expect.poll(async () => (await estado(page)).tela, { timeout: 20_000 }).toBe('batalha');
+  // Espera a iniciativa (com a máquina carregada ela pode sair antes de qualquer dado forçado):
+  // se o herói começar, ele aguarda; o Mirtilo ataca com 18 e o herói, com 1 PV, cai.
+  await expect.poll(async () => ((await estado(page)).ordem ?? []).length, { timeout: 20_000 }).toBeGreaterThan(0);
   await fdg(page, 'setPv', 1);
-  await fdg(page, 'forceRoll', [1, 20, 18]);
-  await expect.poll(async () => (await estado(page)).fim ?? null, { timeout: 30_000 }).toBe('derrota');
+  await fdg(page, 'forceRoll', [18, 18]);
+  await expect.poll(async () => {
+    const s = await estado(page);
+    if (s.fim) return s.fim;
+    const aguardar = page.locator('[data-comando="aguardar"]');
+    if (s.vez === 'heroi' && (await aguardar.isEnabled().catch(() => false))) await aguardar.click().catch(() => {});
+    return null;
+  }, { timeout: 30_000, intervals: [300] }).toBe('derrota');
   expect((await estado(page)).poseHeroi).toBe('caido');
   await page.waitForTimeout(900);
   await foto(page, info.project.name, '10-batalha-derrota');

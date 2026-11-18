@@ -9,3 +9,6 @@ desktop.ini
 test-results/
 playwright-report/
 tests/screenshots/
+.env
+.env.local
+.env.*.local

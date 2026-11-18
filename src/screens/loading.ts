@@ -5,6 +5,7 @@ import { irPara, type Tela } from '../core/telas';
 import { ehToque, textos } from '../core/textos';
 import { h } from '../core/ui';
 import { criarElementoVideo } from '../core/video';
+import { rotaAtual } from '../core/rotas';
 
 const KB = 1024;
 const MB = KB * KB;
@@ -53,8 +54,8 @@ export function telaLoading(): Tela {
     audio.desbloquear();
     audio.sfx('start');
     window.removeEventListener('keydown', tecla);
-    // Para conferir telas soltas: ?tela=gameover.
-    if (new URLSearchParams(location.search).get('tela') === 'gameover') return void irPara('gameOver', undefined, { som: false, duracao: 700 });
+    // Para conferir telas soltas: ?tela=gameover (ou #/gameover).
+    if (rotaAtual() === 'gameover') return void irPara('gameOver', undefined, { som: false, duracao: 700 });
     const video = criarElementoVideo(src(ASSETS.videoIntro));
     video.play().catch(() => {});
     void irPara('intro', { video }, { som: false, duracao: 700 });

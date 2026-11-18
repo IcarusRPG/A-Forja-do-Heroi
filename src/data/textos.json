@@ -57,7 +57,9 @@
       "auto": "O save automático atual ({nome}, {capitulo}) será substituído pela nova aventura.",
       "comecar": "Começar nova aventura",
       "voltar": "Voltar"
-    }
+    },
+    "avisoEndereco": "O jogo mudou de endereço. Se você tinha saves no endereço antigo, abra-o, exporte uma cópia de segurança e importe aqui.",
+    "avisoEnderecoOk": "Entendi"
   },
   "opcoes": {
     "titulo": "Opções",
