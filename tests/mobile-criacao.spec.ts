@@ -227,10 +227,21 @@ test('save antigo sem classe: Continuar retoma no passo Classe', async ({ page }
 const NOMES_SUGERIDOS = NOMES as Record<string, Record<string, string[]>>;
 
 /** Pula o prólogo em texto (o "pular" só vale depois de 5 s) e espera o sonho começar. */
-async function pularPrologoAteOSonho(page: Page) {
+/** Pula o prólogo em texto; a intro de Füllmun aparece (frase a frase) e o "Pular" leva ao sonho. */
+async function pularPrologoAteOSonho(page: Page, foto?: () => Promise<void>) {
   await expect(page.locator('.tela-prologo')).toBeVisible({ timeout: 10_000 });
   await expect(page.locator('.tela-prologo .dica-pular.visivel')).toBeVisible({ timeout: 15_000 });
   await page.keyboard.press('Escape');
+  // Intro de Füllmun, entre o prólogo e o sonho
+  const intro = page.locator('.tela-intro-fullmun');
+  await expect(intro).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('.intro-fullmun-frase')).toHaveText(/Füllmun é um vilarejo pequeno/, { timeout: 5000 });
+  await page.waitForTimeout(600);
+  await intro.click({ position: { x: 40, y: 200 } });
+  await expect(page.locator('.intro-fullmun-frase')).toHaveText(/Seus moradores vivem do que plantam/, { timeout: 5000 });
+  await expect(intro).toHaveAttribute('data-frase', '2');
+  await foto?.();
+  await page.getByRole('button', { name: 'Pular' }).click();
   await expect(page.locator('.tela-sonho.pronto canvas')).toBeVisible({ timeout: 30_000 });
 }
 
@@ -295,7 +306,7 @@ test('criação: Nyashi mulher Ladina e, depois do prólogo, o sonho', async ({ 
   await foto(page, info, 'nyashi-revisao');
   await avancar(page).click();
 
-  await pularPrologoAteOSonho(page);
+  await pularPrologoAteOSonho(page, () => foto(page, info, 'intro-fullmun'));
   const estado = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado') ?? '{}'));
   expect(estado.personagem).toMatchObject({ raca: 'nyashi', genero: 'f', classe: 'ladino', pvMax: 18, pmMax: 4 });
   expect(estado.sonho).toEqual({ concluido: false, ouvidas: [] });

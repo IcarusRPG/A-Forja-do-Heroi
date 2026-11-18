@@ -22,7 +22,7 @@ export function telaPrologo(): Tela {
   const el = h('div', { class: 'tela-prologo' });
   let atual: Tela | null = null;
   let saiu = false;
-  const fim = () => void irPara('sonho', undefined, { som: false, duracao: 800 });
+  const fim = () => void irPara('introFullmun', undefined, { som: false, duracao: 800 });
   const usarTexto = () => {
     if (saiu) return;
     atual?.aoSair?.();
