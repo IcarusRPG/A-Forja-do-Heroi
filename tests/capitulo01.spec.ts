@@ -155,31 +155,6 @@ test('quarto: Religioso faz a prece e ganha +1 no teste seguinte', async ({ page
   await expect.poll(async () => (await estado(page)).cena).toBe('c01-intimidou');
 });
 
-test('corrida: Vó Hulda, Osric e Kobanu com busto e nome; {nome} e {garoto|garota} trocados', async ({ page }, info) => {
-  await semear(page, { genero: 'f', campanha: { cena: 'c01-soleira', modo: 'escolhas' } });
-  await entrarNoCapitulo(page, 'c01-soleira');
-  await escolher(page, 'Correr para o templo');
-  const npcs: [string, string, string, RegExp][] = [
-    ['c01-hulda', 'Vó Hulda', 'npc-vo-hulda', /Bom dia, Lilith! O sol chegou antes de você hoje/],
-    ['c01-osric', 'Osric Balança', 'npc-osric', /Lilith! Atrasada de novo/],
-    ['c01-kobanu', 'Kobanu', 'npc-kobanu', /Correndo como sempre, garota!/],
-  ];
-  for (const [cena, nome, retrato, fala] of npcs) {
-    await expect.poll(async () => (await estado(page)).cena).toBe(cena);
-    await expect.poll(async () => { if ((await page.locator('.cena-busto').isHidden())) await fdg(page, 'avancar'); return page.locator('.cena-busto').isVisible(); }, { timeout: 20_000 }).toBe(true);
-    await expect(page.locator('.cena-nome')).toHaveText(nome);
-    await expect(page.locator('.cena-busto')).toHaveAttribute('data-retrato', `img/retratos/${retrato}.webp`);
-    await expect(page.locator('.cena-texto')).toHaveText(fala, { timeout: 10_000 });
-    await expect(page.locator('.cena-texto')).not.toContainText('{');
-    if (cena === 'c01-hulda') { await page.waitForTimeout(300); await foto(page, info.project.name, '03-hulda-busto'); }
-    await ateEscolhas(page);
-    await page.locator('.cena-escolha').first().click();
-  }
-  await expect.poll(async () => (await estado(page)).cena).toBe('c01-pensamentos');
-  expect((await estado(page)).flags).toEqual(expect.arrayContaining(['gentil_hulda', 'brincou_osric', 'brincou_kobanu']));
-  await ateTexto(page, 'Distraída, você tropeça');
-});
-
 test('Mirtilo: intimidar com sucesso espanta o porco, toca a vitória e volta a Füllmun', async ({ page }, info) => {
   await semear(page, { campanha: { cena: 'c01-grito', modo: 'falas' } });
   await entrarNoCapitulo(page, 'c01-grito');
@@ -229,9 +204,9 @@ test('Mirtilo: intimidar falha → batalha contra o enfurecido (sem Intimidar/Ac
   const s = await estado(page);
   expect(s.inimigo).toBe('mirtilo-enfurecido');
   expect(s.comandos).toEqual([
-    { id: 'bicuda', habilitado: true }, { id: 'intimidar', habilitado: false }, { id: 'acalmar', habilitado: false }, { id: 'aguardar', habilitado: true },
+    { id: 'bicuda', habilitado: true }, { id: 'intimidar', habilitado: false }, { id: 'acalmar', habilitado: false }, { id: 'aguardar', habilitado: true }, { id: 'item', habilitado: false },
   ]);
-  await expect(page.locator('.batalha-cmd')).toHaveText(['Bicuda', 'Intimidar', 'Acalmar', 'Aguardar']);
+  await expect(page.locator('.batalha-cmd')).toHaveText(['Bicuda', 'Intimidar', 'Acalmar', 'Aguardar', 'Item']);
   await expect(page.getByRole('button', { name: /fugir/i })).toHaveCount(0);
   await expect(page.locator('.batalha-dica')).toHaveText('Ele está furioso demais.');
   await expect.poll(async () => (await estado(page)).vez).toBe('heroi');
@@ -299,7 +274,7 @@ test('Mirtilo: lutar → batalha contra o normal, com dano, ajoelhado e vitória
   const s0 = await estado(page);
   expect(s0.inimigo).toBe('mirtilo');
   expect(s0.log.filter((l: string) => l.startsWith('Iniciativa')).length).toBe(2);
-  expect(s0.comandos.every((c: { habilitado: boolean }) => c.habilitado)).toBe(true);
+  expect(s0.comandos.filter((c: { id: string }) => c.id !== 'item').every((c: { habilitado: boolean }) => c.habilitado)).toBe(true);
   expect(s0.musica.faixa).toBe('music/tensao-porco.mp3');
   await expect(page.locator('.batalha-turnos li')).toHaveCount(2);
   await foto(page, info.project.name, '09-batalha-mirtilo-idle');
@@ -384,12 +359,12 @@ test('Guarda: vê o trinco arrebentado e Gerulf reage', async ({ page }) => {
   await escolher(page, 'Sentir o rosto');
   await expect.poll(async () => (await estado(page)).cena).toBe('c01-gerulf');
   await ateEscolhas(page);
-  expect((await estado(page)).escolhas).toEqual(['“O trinco foi arrebentado, Gerulf. Não esquecido aberto.”', 'Levar a Aylin para casa e seguir para o templo']);
+  expect((await estado(page)).escolhas).toEqual(['“O trinco foi arrebentado, Gerulf. Não esquecido aberto.”', 'Levar a Aylin para casa']);
   await escolha(page, 'O trinco foi arrebentado').click();
   await ateTexto(page, 'Arrebentado? …O Mirtilo não tem força pra isso.');
   await ateEscolhas(page);
   expect((await estado(page)).flags).toContain('pista_trinco');
-  expect((await estado(page)).escolhas).toEqual(['Levar a Aylin para casa e seguir para o templo']);
+  expect((await estado(page)).escolhas).toEqual(['Levar a Aylin para casa']);
 });
 
 test('música: a playlist de Füllmun alterna 01 e 02, troca para a tensão no grito e volta depois', async ({ page }) => {
@@ -415,93 +390,6 @@ test('música: a playlist de Füllmun alterna 01 e 02, troca para a tensão no g
   await expect.poll(async () => (await estado(page)).musica.faixa).toBe('music/fullmun-01.mp3');
   const h: string[] = (await estado(page)).musica.historico;
   expect(h.slice(-4)).toEqual(['music/fullmun-02.mp3', 'music/fullmun-01.mp3', 'music/tensao-porco.mp3', 'music/fullmun-01.mp3']);
-});
-
-test('fluxo completo: do quarto à porta do templo, fim de capítulo e "Capítulo 02 · Em breve"; Continuar retoma', async ({ page }, info) => {
-  test.setTimeout(480_000);
-  await semear(page);
-  await entrarNoCapitulo(page);
-  await escolher(page, 'Sair de casa');
-  await expect.poll(async () => (await estado(page)).cena).toBe('c01-soleira');
-  await ateEscolhas(page);
-  await foto(page, info.project.name, '02-soleira');
-  await escolha(page, 'Correr para o templo').click();
-  await escolher(page, 'Acenar e seguir correndo');
-  await expect.poll(async () => (await estado(page)).cena).toBe('c01-osric');
-  // Recarregar no meio: Continuar volta para a mesma cena
-  await irAteMenu(page, './?test=1');
-  await page.getByRole('button', { name: 'Continuar' }).click();
-  await expect.poll(async () => (await estado(page)).cena, { timeout: 20_000 }).toBe('c01-osric');
-  await ateEscolhas(page);
-  await foto(page, info.project.name, '03-osric');
-  await escolha(page, 'Hoje não').click();
-  await ateEscolhas(page);
-  await foto(page, info.project.name, '03-kobanu');
-  await escolha(page, 'Acenar e seguir').click();
-  await expect.poll(async () => (await estado(page)).cena).toBe('c01-pensamentos');
-  await ateEscolhas(page);
-  await foto(page, info.project.name, '04-pensamentos');
-  await escolha(page, 'Continuar').click();
-  await expect.poll(async () => (await estado(page)).cena).toBe('c01-grito');
-  await fdg(page, 'forceRoll', [16]);
-  await escolher(page, 'Gritar');
-  await seguirRolagem(page);
-  await expect.poll(async () => (await estado(page)).cena).toBe('c01-intimidou');
-  await ateEscolhas(page);
-  await foto(page, info.project.name, '06-intimidou');
-  await escolha(page, 'Continuar').click();
-  await expect.poll(async () => (await estado(page)).cena).toBe('c01-aylin');
-  await ateEscolhas(page);
-  await foto(page, info.project.name, '07-aylin');
-  await escolha(page, 'impossível').click();
-  await expect.poll(async () => (await estado(page)).cena).toBe('c01-gerulf');
-  await ateEscolhas(page);
-  await foto(page, info.project.name, '08-gerulf');
-  await escolha(page, 'Levar a Aylin').click();
-  await expect.poll(async () => (await estado(page)).cena).toBe('c01-caminho');
-  await expect.poll(async () => { await fdg(page, 'avancar'); return (await estado(page)).fundo; }, { timeout: 20_000 }).toBe('cena-templo-porta');
-  await ateEscolhas(page);
-  await page.waitForTimeout(2600);
-  await foto(page, info.project.name, '09-templo');
-  await escolha(page, 'Entrar no templo').click();
-  // Fim do capítulo
-  await expect(page.locator('.tela-fim-capitulo')).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator('.fim-rotulo')).toHaveText('Fim do Capítulo 01');
-  await expect(page.locator('.fim-titulo')).toHaveText('Amanhecer Tardio');
-  await expect(page.locator('.fim-resumo')).toContainText('Você espantou o Mirtilo no grito.');
-  await expect(page.locator('.fim-resumo')).toContainText('A Aylin está a salvo.');
-  await page.waitForTimeout(1800);
-  await foto(page, info.project.name, '10-fim');
-  const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado')!).campanha);
-  expect(salvo).toMatchObject({ capitulo: 2, cena: 'inicio', pvAtual: 12 });
-  expect(salvo.flags).toEqual(expect.arrayContaining(['intimidou', 'salvou_aylin']));
-  expect(salvo.caminho.length).toBeGreaterThan(5);
-  await page.locator('.tela-fim-capitulo .btn-principal').click();
-  await expect(page.locator('.tela-embreve')).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator('.tela-embreve')).toContainText('Capítulo 02');
-  await expect(page.locator('.tela-embreve')).toContainText('O Templo de Sólem');
-  await expect(page.locator('.tela-embreve')).toContainText('Em breve');
-  await page.waitForTimeout(1200);
-  await foto(page, info.project.name, '11-embreve');
-  // Continuar no menu leva ao Capítulo 02 (Em breve)
-  await irAteMenu(page, './?test=1');
-  await page.getByRole('button', { name: 'Continuar' }).click();
-  await expect(page.locator('.tela-embreve')).toBeVisible({ timeout: 15_000 });
-});
-
-test('pausa: Diário com as vozes do sonho e o resumo; botões de 44 px', async ({ page }) => {
-  await semear(page, { campanha: { cena: 'c01-aylin', modo: 'escolhas', flags: ['intimidou', 'salvou_aylin', 'gentil_hulda'] } });
-  await entrarNoCapitulo(page, 'c01-aylin');
-  const pausa = page.locator('.cena-btn-pausa');
-  expect((await pausa.boundingBox())!.width).toBeGreaterThanOrEqual(44);
-  await pausa.click();
-  for (const nome of ['Continuar', 'Diário', 'Opções', 'Voltar ao menu']) await expect(page.getByRole('button', { name: nome, exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Diário', exact: true }).click();
-  const diario = page.locator('.diario');
-  await expect(diario).toContainText('Vozes do sonho');
-  await expect(diario.locator('.diario-vozes li')).toHaveCount(3);
-  await expect(diario).toContainText('Você espantou o Mirtilo no grito.');
-  await expect(diario).toContainText('Você prometeu à Vó Hulda chegar antes do galo.');
 });
 
 test('game over: ?tela=gameover mostra a tela com a música e os botões', async ({ page }, info) => {

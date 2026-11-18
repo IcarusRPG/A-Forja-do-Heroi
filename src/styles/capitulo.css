@@ -25,6 +25,31 @@
   background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(5, 4, 3, 0.55) 70%, rgba(5, 4, 3, 0.82) 100%);
 }
 
+/* ---------- Palco (tela de capítulo ou por cima do mapa) ---------- */
+.palco-cena { position: absolute; inset: 0; overflow: hidden; }
+.palco-cena.sem-fundo .cena-fundo { opacity: 0; }
+.palco-cena.sobre-mapa.sem-fundo .cena-veu { background: linear-gradient(180deg, rgba(5, 4, 3, 0.35), rgba(5, 4, 3, 0.55) 55%, rgba(5, 4, 3, 0.85)); }
+.cena-flash { position: absolute; inset: 0; z-index: 7; background: #fff; opacity: 0; pointer-events: none; }
+.cena-flash.ativo { animation: flash-cena 0.35s ease-out; }
+@keyframes flash-cena { 0% { opacity: 0.95; } 100% { opacity: 0; } }
+.cena-brilho-alcapao { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.palco-cena.visual-alcapao .cena-fundo.visivel { animation: zoom-lento 18s ease-out forwards; }
+.palco-cena.visual-alcapao .cena-brilho-alcapao {
+  opacity: 1;
+  background: radial-gradient(ellipse 34% 22% at 50% 62%, rgba(255, 210, 110, 0.45), rgba(255, 190, 80, 0) 70%);
+  mix-blend-mode: screen;
+  animation: brilho-frestas 2.6s ease-in-out infinite;
+}
+@keyframes brilho-frestas { 50% { opacity: 0.45; } }
+@keyframes zoom-lento { from { transform: scale(1); } to { transform: scale(1.06); } }
+.palco-cena.visual-dessaturado .cena-fundo.visivel { filter: saturate(0.3); animation: zoom-lento 30s linear forwards; transition: filter 0.2s; }
+.palco-cena.visual-normal .cena-fundo.visivel { filter: none; }
+.palco-cena.visual-alcapao-escuro .cena-fundo.visivel { filter: brightness(0.45) saturate(0.6); transition: filter 0.15s; }
+.palco-cena.visual-preto::after { content: ''; position: absolute; inset: 0; z-index: 4; background: #000; animation: para-preto 2s ease forwards; pointer-events: none; }
+.palco-cena.visual-preto .cena-caixa { background: rgba(0, 0, 0, 0.9); border-color: rgba(214, 169, 74, 0.35); }
+.palco-cena.visual-preto .cena-painel { z-index: 5; }
+@keyframes para-preto { from { opacity: 0; } to { opacity: 1; } }
+
 /* ---------- Painel de baixo: busto, caixa de fala e escolhas ---------- */
 .cena-painel {
   position: absolute;
@@ -349,5 +374,5 @@
   .cena-escolha { min-height: 46px; padding: 0.45rem 0.9rem; }
   .cena-ameaca { width: min(190px, 26vw); top: max(10px, env(safe-area-inset-top)); right: calc(max(10px, env(safe-area-inset-right)) + 56px); }
   /* Pouca altura: o cartão de ameaça sai quando as escolhas aparecem, para não cobri-las. */
-  .tela-capitulo.com-escolhas .cena-ameaca { display: none; }
+  .palco-cena.com-escolhas .cena-ameaca { display: none; }
 }

@@ -6,6 +6,8 @@ import { ehToque, textos } from '../core/textos';
 import { botao, h } from '../core/ui';
 import { abrirCreditos } from './creditos';
 import { abrirOpcoes } from './opcoes';
+import { abrirCompendio } from './compendio';
+import { CAPITULOS } from '../narrativa/capitulo';
 
 export function telaMenu(): Tela {
   const t = textos.menu;
@@ -15,13 +17,14 @@ export function telaMenu(): Tela {
     if (p && !p.classe) void irPara('criacao', { retomar: p });
     // Herói pronto que ainda não terminou o sonho dos deuses: retoma no sonho.
     else if (p && !getEstado().sonho.concluido) void irPara('sonho');
-    // Capítulo 01 em andamento: retoma na última cena.
-    else if (getEstado().campanha.capitulo === 1) void irPara('capitulo');
+    // Capítulo em andamento: retoma na última cena ou no mapa, na posição salva.
+    else if (CAPITULOS[getEstado().campanha.capitulo]) void irPara(getEstado().campanha.local.tela === 'mapa' ? 'mapa' : 'capitulo');
     else void irPara('emBreve');
   }, { desabilitado: !temSave() });
   const botoes = h('nav', { class: 'menu-botoes', 'aria-label': 'Menu principal' },
     botao(t.novoJogo, () => void irPara('criacao'), { classe: 'btn-principal', som: 'ui-confirm' }),
     continuar,
+    temSave() ? botao(t.compendio, () => abrirCompendio()) : null,
     botao(t.opcoes, abrirOpcoes),
     botao(t.creditos, abrirCreditos),
   );

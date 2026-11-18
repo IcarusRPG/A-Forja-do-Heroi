@@ -1,0 +1,981 @@
+{
+ "id": "fullmun",
+ "imagem": "img/mapas/fullmun.png",
+ "largura": 1672,
+ "altura": 941,
+ "inicio": {
+  "x": 300,
+  "y": 872,
+  "direcao": "cima"
+ },
+ "alturasDeTela": 1.6,
+ "musica": "fullmun",
+ "hud": "relogio",
+ "colisoes": [
+  {
+   "id": "chao",
+   "tipo": "andavel",
+   "pontos": [
+    [12, 12],
+    [1660, 12],
+    [1660, 930],
+    [12, 930]
+   ]
+  },
+  {
+   "id": "floresta-topo",
+   "tipo": "bloqueado",
+   "pontos": [
+    [0, 0],
+    [1672, 0],
+    [1672, 50],
+    [0, 50]
+   ]
+  },
+  {
+   "id": "casa-curandeira",
+   "tipo": "bloqueado",
+   "pontos": [
+    [130, 45],
+    [480, 45],
+    [480, 200],
+    [130, 200]
+   ]
+  },
+  {
+   "id": "horta",
+   "tipo": "bloqueado",
+   "pontos": [
+    [87, 157],
+    [560, 157],
+    [560, 290],
+    [87, 290]
+   ]
+  },
+  {
+   "id": "caminho-horta",
+   "tipo": "andavel",
+   "pontos": [
+    [368, 292],
+    [422, 292],
+    [414, 248],
+    [348, 222],
+    [272, 206],
+    [268, 224],
+    [338, 242],
+    [378, 266]
+   ]
+  },
+  {
+   "id": "arvore-esquerda-topo",
+   "tipo": "bloqueado",
+   "pontos": [
+    [0, 140],
+    [62, 140],
+    [62, 235],
+    [0, 235]
+   ]
+  },
+  {
+   "id": "penhasco-esquerdo",
+   "tipo": "bloqueado",
+   "pontos": [
+    [488, 55],
+    [806, 55],
+    [806, 332],
+    [780, 332],
+    [770, 300],
+    [492, 300]
+   ]
+  },
+  {
+   "id": "penhasco-direito",
+   "tipo": "bloqueado",
+   "pontos": [
+    [894, 55],
+    [1100, 55],
+    [1100, 255],
+    [1085, 292],
+    [950, 292],
+    [918, 332],
+    [894, 332]
+   ]
+  },
+  {
+   "id": "templo",
+   "tipo": "bloqueado",
+   "pontos": [
+    [806, 0],
+    [894, 0],
+    [894, 136],
+    [806, 136]
+   ]
+  },
+  {
+   "id": "casa-aylin",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1142, 52],
+    [1298, 52],
+    [1298, 172],
+    [1142, 172]
+   ]
+  },
+  {
+   "id": "cerca-aylin-esq",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1098, 132],
+    [1114, 132],
+    [1114, 255],
+    [1098, 255]
+   ]
+  },
+  {
+   "id": "cerca-aylin-baixo-esq",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1098, 240],
+    [1182, 240],
+    [1182, 256],
+    [1098, 256]
+   ]
+  },
+  {
+   "id": "cerca-aylin-baixo-dir",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1232, 240],
+    [1314, 240],
+    [1314, 256],
+    [1232, 256]
+   ]
+  },
+  {
+   "id": "cerca-aylin-dir",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1300, 128],
+    [1316, 128],
+    [1316, 256],
+    [1300, 256]
+   ]
+  },
+  {
+   "id": "chiqueiro",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1312, 140],
+    [1592, 140],
+    [1592, 266],
+    [1312, 266]
+   ]
+  },
+  {
+   "id": "arvore-chiqueiro",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1560, 0],
+    [1672, 0],
+    [1672, 245],
+    [1560, 245]
+   ]
+  },
+  {
+   "id": "tronco-perto-templo",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1048, 328],
+    [1096, 328],
+    [1096, 372],
+    [1048, 372]
+   ]
+  },
+  {
+   "id": "padaria",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1098, 300],
+    [1380, 300],
+    [1380, 438],
+    [1098, 438]
+   ]
+  },
+  {
+   "id": "mesa-paes",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1205, 424],
+    [1295, 424],
+    [1295, 466],
+    [1205, 466]
+   ]
+  },
+  {
+   "id": "pedras-cachoeira",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1420, 266],
+    [1672, 250],
+    [1672, 392],
+    [1430, 386]
+   ]
+  },
+  {
+   "id": "abobora",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1312, 392],
+    [1672, 392],
+    [1672, 612],
+    [1312, 612]
+   ]
+  },
+  {
+   "id": "banco",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1385, 600],
+    [1465, 600],
+    [1465, 644],
+    [1385, 644]
+   ]
+  },
+  {
+   "id": "rio",
+   "tipo": "bloqueado",
+   "pontos": [
+    [780, 941],
+    [796, 894],
+    [900, 852],
+    [1000, 822],
+    [1080, 792],
+    [1180, 762],
+    [1300, 726],
+    [1400, 696],
+    [1500, 672],
+    [1672, 660],
+    [1672, 941]
+   ]
+  },
+  {
+   "id": "ponte",
+   "tipo": "andavel",
+   "pontos": [
+    [1044, 726],
+    [1096, 708],
+    [1302, 746],
+    [1338, 772],
+    [1326, 808],
+    [1280, 800],
+    [1090, 770],
+    [1044, 764]
+   ]
+  },
+  {
+   "id": "pedras-baixo",
+   "tipo": "bloqueado",
+   "pontos": [
+    [88, 886],
+    [790, 886],
+    [790, 941],
+    [88, 941]
+   ]
+  },
+  {
+   "id": "casa-heroi",
+   "tipo": "bloqueado",
+   "pontos": [
+    [52, 650],
+    [313, 650],
+    [313, 828],
+    [52, 828]
+   ]
+  },
+  {
+   "id": "barris-heroi",
+   "tipo": "bloqueado",
+   "pontos": [
+    [18, 765],
+    [76, 765],
+    [76, 860],
+    [18, 860]
+   ]
+  },
+  {
+   "id": "poste-heroi",
+   "tipo": "bloqueado",
+   "pontos": [
+    [356, 820],
+    [374, 820],
+    [374, 862],
+    [356, 862]
+   ]
+  },
+  {
+   "id": "casa-hulda",
+   "tipo": "bloqueado",
+   "pontos": [
+    [452, 631],
+    [661, 631],
+    [661, 815],
+    [452, 815]
+   ]
+  },
+  {
+   "id": "quintal-hulda",
+   "tipo": "bloqueado",
+   "pontos": [
+    [478, 700],
+    [828, 700],
+    [828, 880],
+    [478, 880]
+   ]
+  },
+  {
+   "id": "tronco-ipe",
+   "tipo": "bloqueado",
+   "pontos": [
+    [450, 742],
+    [480, 742],
+    [480, 772],
+    [450, 772]
+   ]
+  },
+  {
+   "id": "forja",
+   "tipo": "bloqueado",
+   "pontos": [
+    [35, 313],
+    [436, 313],
+    [436, 470],
+    [35, 470]
+   ]
+  },
+  {
+   "id": "bigorna",
+   "tipo": "bloqueado",
+   "pontos": [
+    [238, 505],
+    [292, 505],
+    [292, 546],
+    [238, 546]
+   ]
+  },
+  {
+   "id": "armas",
+   "tipo": "bloqueado",
+   "pontos": [
+    [108, 466],
+    [186, 466],
+    [186, 552],
+    [108, 552]
+   ]
+  },
+  {
+   "id": "barris-forja",
+   "tipo": "bloqueado",
+   "pontos": [
+    [52, 494],
+    [106, 494],
+    [106, 546],
+    [52, 546]
+   ]
+  },
+  {
+   "id": "bancada-forja",
+   "tipo": "bloqueado",
+   "pontos": [
+    [346, 474],
+    [410, 474],
+    [410, 528],
+    [346, 528]
+   ]
+  },
+  {
+   "id": "barraca-azul",
+   "tipo": "bloqueado",
+   "pontos": [
+    [643, 339],
+    [766, 339],
+    [766, 436],
+    [643, 436]
+   ]
+  },
+  {
+   "id": "barraca-vermelha",
+   "tipo": "bloqueado",
+   "pontos": [
+    [565, 409],
+    [680, 409],
+    [680, 545],
+    [565, 545]
+   ]
+  },
+  {
+   "id": "barraca-creme",
+   "tipo": "bloqueado",
+   "pontos": [
+    [837, 348],
+    [960, 348],
+    [960, 436],
+    [837, 436]
+   ]
+  },
+  {
+   "id": "barraca-roxa",
+   "tipo": "bloqueado",
+   "pontos": [
+    [907, 409],
+    [1021, 409],
+    [1021, 536],
+    [907, 536]
+   ]
+  },
+  {
+   "id": "poco",
+   "tipo": "bloqueado",
+   "pontos": [
+    [752, 453],
+    [836, 453],
+    [836, 553],
+    [752, 553]
+   ]
+  },
+  {
+   "id": "tronco-forja",
+   "tipo": "bloqueado",
+   "pontos": [
+    [504, 390],
+    [546, 390],
+    [546, 436],
+    [504, 436]
+   ]
+  },
+  {
+   "id": "tronco-casa-heroi",
+   "tipo": "bloqueado",
+   "pontos": [
+    [252, 660],
+    [296, 660],
+    [296, 702],
+    [252, 702]
+   ]
+  },
+  {
+   "id": "arvore-esquerda-baixo",
+   "tipo": "bloqueado",
+   "pontos": [
+    [0, 544],
+    [70, 544],
+    [70, 727],
+    [0, 727]
+   ]
+  },
+  {
+   "id": "tronco-hulda",
+   "tipo": "bloqueado",
+   "pontos": [
+    [768, 690],
+    [812, 690],
+    [812, 728],
+    [768, 728]
+   ]
+  },
+  {
+   "id": "tronco-ponte",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1208, 615],
+    [1252, 615],
+    [1252, 660],
+    [1208, 660]
+   ]
+  },
+  {
+   "id": "arvore-sudeste",
+   "tipo": "bloqueado",
+   "pontos": [
+    [1420, 692],
+    [1672, 692],
+    [1672, 941],
+    [1420, 941]
+   ]
+  }
+ ],
+ "interacoes": [],
+ "gatilhos": [],
+ "pontos": {
+  "porta-aylin": {
+   "x": 1206,
+   "y": 206
+  },
+  "depois-mirtilo": {
+   "x": 1262,
+   "y": 296
+  },
+  "subida": {
+   "x": 850,
+   "y": 176
+  },
+  "base-subida": {
+   "x": 850,
+   "y": 352
+  }
+ },
+ "oclusores": [
+  {
+   "id": "telhado-curandeira",
+   "base": 200,
+   "contorno": [
+    [140, 10],
+    [480, 10],
+    [480, 150],
+    [140, 150]
+   ],
+   "sementes": [],
+   "fixo": [
+    [140, 10],
+    [480, 10],
+    [480, 150],
+    [140, 150]
+   ]
+  },
+  {
+   "id": "telhado-forja",
+   "base": 470,
+   "contorno": [
+    [35, 270],
+    [436, 270],
+    [436, 420],
+    [35, 420]
+   ],
+   "sementes": [],
+   "fixo": [
+    [35, 270],
+    [436, 270],
+    [436, 420],
+    [35, 420]
+   ]
+  },
+  {
+   "id": "telhado-padaria",
+   "base": 438,
+   "contorno": [
+    [1098, 250],
+    [1380, 250],
+    [1380, 392],
+    [1098, 392]
+   ],
+   "sementes": [],
+   "fixo": [
+    [1098, 250],
+    [1380, 250],
+    [1380, 392],
+    [1098, 392]
+   ]
+  },
+  {
+   "id": "casa-aylin",
+   "base": 172,
+   "contorno": [
+    [1142, 30],
+    [1298, 30],
+    [1298, 140],
+    [1142, 140]
+   ],
+   "sementes": [],
+   "fixo": [
+    [1142, 30],
+    [1298, 30],
+    [1298, 140],
+    [1142, 140]
+   ]
+  },
+  {
+   "id": "telhado-heroi",
+   "base": 828,
+   "contorno": [
+    [52, 590],
+    [313, 590],
+    [313, 760],
+    [52, 760]
+   ],
+   "sementes": [],
+   "fixo": [
+    [52, 590],
+    [313, 590],
+    [313, 760],
+    [52, 760]
+   ]
+  },
+  {
+   "id": "telhado-hulda",
+   "base": 815,
+   "contorno": [
+    [452, 585],
+    [661, 585],
+    [661, 740],
+    [452, 740]
+   ],
+   "sementes": [],
+   "fixo": [
+    [452, 585],
+    [661, 585],
+    [661, 740],
+    [452, 740]
+   ]
+  },
+  {
+   "id": "copa-forja",
+   "base": 436,
+   "contorno": [
+    [452, 287],
+    [591, 287],
+    [591, 395],
+    [452, 395]
+   ],
+   "sementes": [],
+   "fixo": [
+    [452, 287],
+    [591, 287],
+    [591, 395],
+    [452, 395]
+   ]
+  },
+  {
+   "id": "copa-templo",
+   "base": 372,
+   "contorno": [
+    [1020, 191],
+    [1168, 191],
+    [1168, 330],
+    [1020, 330]
+   ],
+   "sementes": [],
+   "fixo": [
+    [1020, 191],
+    [1168, 191],
+    [1168, 330],
+    [1020, 330]
+   ]
+  },
+  {
+   "id": "copa-ponte",
+   "base": 660,
+   "contorno": [
+    [1150, 510],
+    [1307, 510],
+    [1307, 615],
+    [1150, 615]
+   ],
+   "sementes": [],
+   "fixo": [
+    [1150, 510],
+    [1307, 510],
+    [1307, 615],
+    [1150, 615]
+   ]
+  },
+  {
+   "id": "copa-hulda",
+   "base": 728,
+   "contorno": [
+    [722, 631],
+    [852, 631],
+    [852, 690],
+    [722, 690]
+   ],
+   "sementes": [],
+   "fixo": [
+    [722, 631],
+    [852, 631],
+    [852, 690],
+    [722, 690]
+   ]
+  },
+  {
+   "id": "barraca-azul",
+   "base": 436,
+   "contorno": [
+    [643, 330],
+    [766, 330],
+    [766, 395],
+    [643, 395]
+   ],
+   "sementes": [],
+   "fixo": [
+    [643, 330],
+    [766, 330],
+    [766, 395],
+    [643, 395]
+   ]
+  },
+  {
+   "id": "barraca-roxa",
+   "base": 536,
+   "contorno": [
+    [900, 400],
+    [1021, 400],
+    [1021, 470],
+    [900, 470]
+   ],
+   "sementes": [],
+   "fixo": [
+    [900, 400],
+    [1021, 400],
+    [1021, 470],
+    [900, 470]
+   ]
+  }
+ ],
+ "npcs": [
+  {
+   "id": "vo-hulda",
+   "x": 432,
+   "y": 800,
+   "direcao": "direita"
+  },
+  {
+   "id": "osric",
+   "x": 640,
+   "y": 552,
+   "direcao": "baixo"
+  },
+  {
+   "id": "kobanu",
+   "x": 1296,
+   "y": 622,
+   "direcao": "esquerda"
+  },
+  {
+   "id": "tobias",
+   "x": 1160,
+   "y": 478,
+   "direcao": "baixo"
+  },
+  {
+   "id": "selene",
+   "x": 396,
+   "y": 304,
+   "direcao": "baixo"
+  },
+  {
+   "id": "dagna",
+   "x": 322,
+   "y": 560,
+   "direcao": "baixo"
+  },
+  {
+   "id": "gerulf",
+   "x": 1350,
+   "y": 288,
+   "direcao": "esquerda",
+   "requer": {
+    "flag": "evento_mirtilo_fim"
+   }
+  }
+ ],
+ "objetos": [
+  {
+   "id": "lencol",
+   "item": "lencol",
+   "x": 1328,
+   "y": 520,
+   "interacao": {
+    "x": 1296,
+    "y": 530
+   },
+   "requer": {
+    "missao": {
+     "hulda": "aceita"
+    }
+   },
+   "cena": "m-pega-lencol"
+  },
+  {
+   "id": "lenco",
+   "item": "lenco",
+   "x": 596,
+   "y": 584,
+   "requer": {
+    "missao": {
+     "hulda": "aceita"
+    }
+   },
+   "cena": "m-pega-lenco"
+  },
+  {
+   "id": "camisa",
+   "item": "camisa",
+   "x": 1140,
+   "y": 386,
+   "interacao": {
+    "x": 1150,
+    "y": 470
+   },
+   "requer": {
+    "missao": {
+     "hulda": "aceita"
+    }
+   },
+   "cena": "m-camisa"
+  },
+  {
+   "id": "repolho-1",
+   "item": "repolho",
+   "x": 902,
+   "y": 566,
+   "requer": {
+    "missao": {
+     "osric": "aceita"
+    }
+   },
+   "coletar": {
+    "itens": {
+     "repolho": 1
+    }
+   }
+  },
+  {
+   "id": "repolho-2",
+   "item": "repolho",
+   "x": 960,
+   "y": 606,
+   "requer": {
+    "missao": {
+     "osric": "aceita"
+    }
+   },
+   "coletar": {
+    "itens": {
+     "repolho": 1
+    }
+   }
+  },
+  {
+   "id": "repolho-3",
+   "item": "repolho",
+   "x": 1012,
+   "y": 648,
+   "requer": {
+    "missao": {
+     "osric": "aceita"
+    }
+   },
+   "coletar": {
+    "itens": {
+     "repolho": 1
+    }
+   }
+  },
+  {
+   "id": "repolho-4",
+   "item": "repolho",
+   "x": 1060,
+   "y": 690,
+   "requer": {
+    "missao": {
+     "osric": "aceita"
+    }
+   },
+   "coletar": {
+    "itens": {
+     "repolho": 1
+    }
+   }
+  },
+  {
+   "id": "repolho-5",
+   "item": "repolho",
+   "x": 980,
+   "y": 712,
+   "requer": {
+    "missao": {
+     "osric": "aceita"
+    }
+   },
+   "coletar": {
+    "itens": {
+     "repolho": 1
+    }
+   }
+  }
+ ],
+ "gatilhosCena": [
+  {
+   "id": "mirtilo",
+   "pontos": [
+    [790, 286],
+    [960, 286],
+    [960, 346],
+    [790, 346]
+   ],
+   "requer": {
+    "semFlag": "evento_mirtilo"
+   },
+   "cena": "c01-pensamentos",
+   "fullscreen": true
+  },
+  {
+   "id": "mirtilo-leste",
+   "pontos": [
+    [1150, 262],
+    [1460, 262],
+    [1460, 320],
+    [1150, 320]
+   ],
+   "requer": {
+    "semFlag": "evento_mirtilo"
+   },
+   "cena": "c01-pensamentos",
+   "fullscreen": true
+  },
+  {
+   "id": "casa-aylin",
+   "pontos": [
+    [1180, 190],
+    [1232, 190],
+    [1232, 238],
+    [1180, 238]
+   ],
+   "requer": {
+    "flag": "aylin_seguindo",
+    "semFlag": "aylin_em_casa"
+   },
+   "cena": "c01-aylin-casa"
+  },
+  {
+   "id": "subida",
+   "pontos": [
+    [812, 150],
+    [890, 150],
+    [890, 200],
+    [812, 200]
+   ],
+   "cena": "m-subida",
+   "empurra": {
+    "x": 850,
+    "y": 236
+   }
+  }
+ ],
+ "seguidores": [
+  {
+   "id": "aylin",
+   "requer": {
+    "flag": "aylin_seguindo",
+    "semFlag": "aylin_em_casa"
+   }
+  }
+ ],
+ "dicas": [
+  {
+   "requer": {
+    "flag": "aylin_seguindo",
+    "semFlag": "aylin_em_casa"
+   },
+   "texto": "Leve a Aylin para casa"
+  }
+ ]
+}
