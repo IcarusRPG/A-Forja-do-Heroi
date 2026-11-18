@@ -47,6 +47,29 @@ async function findIn(dir, predicate) {
   return names.find((n) => predicate(nfc(n).toLowerCase()));
 }
 
+/**
+ * Bustos dos heróis (falas, pausa, cards de save). Olham para a esquerda. O do Nyashi masculino veio
+ * sem o sufixo "-busto" no nome; o Azakar usa o mesmo busto nas variantes Luz e Sombra.
+ */
+async function bustosHerois() {
+  const dir = path.join(SRC, 'img', 'herois', 'portraits');
+  const outDir = path.join(OUT, 'img', 'retratos');
+  await ensureDir(outDir);
+  const vistos = new Set();
+  for (const f of (await readdir(dir)).filter((n) => /\.png$/i.test(n))) {
+    const m = chave(path.parse(f).name).match(/^([a-z]+)-(male|female)-comun(-busto)?$/);
+    const r = m && RACAS[m[1]];
+    if (!r) { console.warn(`  busto não reconhecido: ${f}`); continue; }
+    const nome = `heroi-${r}-${GENEROS[m[2]]}`;
+    const dest = path.join(outDir, `${nome}.webp`);
+    await sharp(path.join(dir, f)).resize({ width: 768, withoutEnlargement: true }).webp({ quality: 85, alphaQuality: 90 }).toFile(dest);
+    vistos.add(nome);
+    console.log(`  busto ${f} → ${nome}.webp (${fmt(await sizeOf(dest))})`);
+  }
+  const faltando = RACAS_SAIDA.flatMap((r) => ['m', 'f'].map((g) => `heroi-${r}-${g}`)).filter((n) => !vistos.has(n));
+  if (faltando.length) { console.error(`  BUSTOS FALTANDO: ${faltando.join(', ')}`); process.exitCode = 1; }
+}
+
 async function retratos() {
   const dir = path.join(SRC, 'img', 'herois', 'imagens');
   const outDir = path.join(OUT, 'img', 'herois');
@@ -176,6 +199,8 @@ async function capitulo01() {
   const RETRATOS = {
     'artho-portrait': 'artho', aylin: 'aylin', gerulf: 'gerulf', kobanu: 'kobanu', 'nyme-portrait': 'nyme', 'osric balanca': 'osric', 'vo hulda': 'vo-hulda',
     tobias: 'tobias', selene: 'selene', dagna: 'dagna',
+    // Expressões: npc-<id>-<expressao>.webp
+    'aylin-chorando': 'aylin-chorando',
   };
   const retratos = await pasta('portraits');
   for (const f of (await readdir(retratos)).filter((n) => /\.png$/i.test(n))) {
@@ -272,6 +297,7 @@ async function conferirLimite(dir = OUT) {
 console.log(`Origem: ${SRC}`);
 if (!existsSync(SRC)) { console.error('Pasta de origem não encontrada.'); process.exit(1); }
 console.log('Retratos…'); await retratos();
+console.log('Bustos dos heróis…'); await bustosHerois();
 console.log('Logos…'); await logos();
 console.log('Favicon…'); await favicon();
 console.log('Wallpaper…'); await wallpaper();
