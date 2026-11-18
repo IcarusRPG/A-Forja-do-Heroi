@@ -6,14 +6,34 @@ import { irPara } from '../core/telas';
 import { textos } from '../core/textos';
 import { abrirModal, botao, h } from '../core/ui';
 import { CAPITULOS, resumoDoCapitulo } from '../narrativa/capitulo';
+import { classePorId, nomeDaClasse } from '../core/classes';
+import { racaPorId } from '../core/regras';
+import { fmt } from '../core/textos';
 import { abrirCompendio } from './compendio';
 import { abrirOpcoes } from './opcoes';
+import { abrirSalvar } from './saves';
 
 /**
  * Menu de pausa compartilhado (cenas e mapas): Continuar · Itens · Compêndio · Diário · Opções ·
  * Voltar ao menu. O botão do Compêndio ganha um ponto dourado quando há novidade.
  */
-export function abrirMenuPausa(o: { aoFechar?: () => void; aoMudarPv?: (recuperou: number) => void } = {}): () => void {
+/** Topo do menu de pausa: busto pequeno do herói, nome, raça, classe e PV. */
+function cabecalhoHeroi(): HTMLElement | null {
+  const p = getEstado().personagem;
+  if (!p) return null;
+  const classe = classePorId(p.classe);
+  const linha = fmt(textos.cenas.pausaHeroi, p.genero, {
+    raca: racaPorId(p.raca)?.nome ?? p.raca, classe: classe ? nomeDaClasse(classe, p.genero) : '', pv: pvAtual(), pvMax: pvMaxAtual(),
+  });
+  return h('div', { class: 'pausa-heroi' },
+    h('img', { class: 'pausa-busto', src: src(ASSETS.bustoHeroi(p.raca, p.genero)), alt: '', draggable: 'false' }),
+    h('div', {}, h('p', { class: 'pausa-nome' }, p.nome), h('p', { class: 'pausa-linha' }, linha)));
+}
+
+/**
+ * `emBatalha`: o Salvar aparece desabilitado (com a dica) e os Itens ficam no comando Item da batalha.
+ */
+export function abrirMenuPausa(o: { aoFechar?: () => void; aoMudarPv?: (recuperou: number) => void; emBatalha?: boolean } = {}): () => void {
   audio.sfx('ui-click');
   let fecharModal = () => {};
   const fechar = () => fecharModal();
@@ -21,9 +41,14 @@ export function abrirMenuPausa(o: { aoFechar?: () => void; aoMudarPv?: (recupero
   const btnCompendio = botao(textos.compendio.titulo, () => abrirCompendio());
   if (novidade) btnCompendio.append(h('span', { class: 'ponto-novidade', 'aria-label': 'novidade' }));
   btnCompendio.classList.add('btn-compendio');
+  const btnSalvar = botao(textos.saves.salvar, () => abrirSalvar(), { desabilitado: o.emBatalha, classe: 'btn-salvar' });
+  const dicaSalvar = o.emBatalha ? h('p', { class: 'pausa-dica', id: 'dica-salvar' }, textos.saves.semBatalha) : null;
+  if (dicaSalvar) btnSalvar.setAttribute('aria-describedby', 'dica-salvar');
   const corpo = h('div', { class: 'pausa-botoes' },
+    cabecalhoHeroi(),
     botao(textos.cenas.continuar, () => fechar(), { classe: 'btn-principal' }),
-    botao(textos.progresso.itens, () => abrirItens({ aoMudarPv: o.aoMudarPv })),
+    btnSalvar, dicaSalvar,
+    o.emBatalha ? null : botao(textos.progresso.itens, () => abrirItens({ aoMudarPv: o.aoMudarPv })),
     btnCompendio,
     botao(textos.cenas.diario.titulo, () => abrirDiario()),
     botao(textos.sonho.opcoes, () => abrirOpcoes()),

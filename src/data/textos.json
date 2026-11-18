@@ -48,7 +48,16 @@
     "opcoes": "Opções",
     "creditos": "Créditos",
     "versao": "Versão DEMO",
-    "compendio": "Compêndio"
+    "compendio": "Compêndio",
+    "carregar": "Carregar",
+    "continuarInfo": "{nome} · {capitulo} · {quando}",
+    "avisoNovoJogo": {
+      "titulo": "Nova aventura",
+      "manuais": "Seus saves manuais continuam guardados.",
+      "auto": "O save automático atual ({nome}, {capitulo}) será substituído pela nova aventura.",
+      "comecar": "Começar nova aventura",
+      "voltar": "Voltar"
+    }
   },
   "opcoes": {
     "titulo": "Opções",
@@ -250,7 +259,8 @@
       "fimDo": "Fim do",
       "seguir": "Continuar",
       "atraso": "Atraso: {estado}"
-    }
+    },
+    "pausaHeroi": "{raca} · {classe} · PV {pv}/{pvMax}"
   },
   "batalha": {
     "ordem": "Ordem dos turnos",
@@ -378,5 +388,46 @@
       "Ali, todos se conhecem pelo nome. Ali, nada de grave jamais aconteceu.",
       "É nessa vila que você cresceu."
     ]
+  },
+  "saves": {
+    "salvar": "Salvar",
+    "carregar": "Carregar",
+    "tituloSalvar": "Salvar o jogo",
+    "tituloCarregar": "Carregar um save",
+    "fechar": "Fechar",
+    "salvarAqui": "Salvar aqui",
+    "apagar": "Apagar",
+    "auto": "AUTOMÁTICO",
+    "manual": "MANUAL {n}",
+    "nomeSlot": {
+      "auto": "Automático",
+      "manual1": "Manual 1",
+      "manual2": "Manual 2"
+    },
+    "apoioAuto": "Salvo pelo jogo",
+    "apoioManual": "Salvo por você",
+    "vazio": "Vazio",
+    "danificado": "Save danificado",
+    "danificadoInfo": "Este save não pode ser lido.",
+    "prologo": "Prólogo",
+    "capitulo": "Capítulo {n}",
+    "deJogo": "{tempo} de jogo",
+    "salvo": "Jogo salvo no {slot}",
+    "falhou": "Não foi possível salvar. Libere espaço no navegador e tente de novo.",
+    "inicioCena": "Você vai voltar ao início desta cena.",
+    "semBatalha": "Não dá para salvar durante uma batalha.",
+    "substituirPergunta": "Substituir o save de {nome} · {capitulo} · {local} · salvo {quando}?",
+    "substituir": "Substituir",
+    "cancelar": "Cancelar",
+    "apagarPergunta": "Apagar este save? Não dá para desfazer.",
+    "copia": "Fazer cópia de segurança",
+    "copiaTitulo": "Cópia de segurança",
+    "copiaTexto": "Guarde um arquivo com os 3 saves, para trocar de aparelho ou limpar o navegador sem perder nada.",
+    "exportar": "Exportar saves",
+    "importar": "Importar saves",
+    "importarPergunta": "Substituir os seus saves atuais por estes?",
+    "importarOk": "Saves importados.",
+    "invalido": "Arquivo de save inválido",
+    "importarVazio": "(vazio no arquivo)"
   }
 }

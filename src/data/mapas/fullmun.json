@@ -1,5 +1,71 @@
 {
  "id": "fullmun",
+ "nome": "Füllmun",
+ "areas": [
+  {
+   "nome": "Subida do templo",
+   "ret": [
+    760,
+    0,
+    960,
+    240
+   ]
+  },
+  {
+   "nome": "Chiqueiro do Gerulf",
+   "ret": [
+    1240,
+    0,
+    1672,
+    360
+   ]
+  },
+  {
+   "nome": "Padaria do Tobias",
+   "ret": [
+    1000,
+    330,
+    1240,
+    540
+   ]
+  },
+  {
+   "nome": "Plantação de abóboras",
+   "ret": [
+    1240,
+    360,
+    1672,
+    941
+   ]
+  },
+  {
+   "nome": "Varal da Vó Hulda",
+   "ret": [
+    0,
+    660,
+    620,
+    941
+   ]
+  },
+  {
+   "nome": "Ponte do riacho",
+   "ret": [
+    620,
+    640,
+    1240,
+    941
+   ]
+  },
+  {
+   "nome": "Praça do mercado",
+   "ret": [
+    480,
+    360,
+    1000,
+    640
+   ]
+  }
+ ],
  "imagem": "img/mapas/fullmun.png",
  "largura": 1672,
  "altura": 941,

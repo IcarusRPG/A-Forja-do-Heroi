@@ -1,33 +1,76 @@
 import { ASSETS, src } from '../core/assets';
 import { audio } from '../core/audio';
-import { getEstado, temSave } from '../core/estado';
+import { carregarSlot, getEstado, temSave } from '../core/estado';
+import { lerSlot, maisRecente, temAlgumSave, type IdSlot } from '../core/saves';
 import { irPara, type Tela } from '../core/telas';
-import { ehToque, textos } from '../core/textos';
-import { botao, h } from '../core/ui';
+import { ehToque, fmt, textos } from '../core/textos';
+import { botao, confirmar, h } from '../core/ui';
 import { abrirCreditos } from './creditos';
 import { abrirOpcoes } from './opcoes';
 import { abrirCompendio } from './compendio';
 import { CAPITULOS } from '../narrativa/capitulo';
+import { abrirCarregar, abrirCopia, nomeCapitulo, resumoContinuar } from './saves';
+
+/** Retoma o jogo que está em memória (recém-carregado de um slot) no ponto em que foi salvo. */
+export function retomarJogo(): void {
+  const p = getEstado().personagem;
+  // Heróis salvos antes da escolha de classe retomam a criação no passo Classe.
+  if (p && !p.classe) void irPara('criacao', { retomar: p });
+  // Herói pronto que ainda não terminou o sonho dos deuses: retoma no sonho.
+  else if (p && !getEstado().sonho.concluido) void irPara('sonho');
+  // Capítulo em andamento: retoma na última cena ou no mapa, na posição salva.
+  else if (CAPITULOS[getEstado().campanha.capitulo]) void irPara(getEstado().campanha.local.tela === 'mapa' ? 'mapa' : 'capitulo');
+  else void irPara('emBreve');
+}
+
+function carregarERetomar(slot: IdSlot): void {
+  if (carregarSlot(slot)) retomarJogo();
+}
+
+/**
+ * Novo jogo: com um save automático, avisa antes que ele será substituído (os manuais ficam). O
+ * automático só muda no primeiro autosave da aventura nova, no fim da criação do herói.
+ */
+async function novoJogo(): Promise<void> {
+  const auto = lerSlot('auto');
+  if (auto.estado === 'ok') {
+    const A = textos.menu.avisoNovoJogo;
+    const m = auto.meta;
+    const sim = await confirmar({
+      texto: h('div', {},
+        h('h2', { class: 'modal-titulo' }, A.titulo),
+        h('p', {}, A.manuais),
+        h('p', {}, fmt(A.auto, m.genero, { nome: m.nomeHeroi, capitulo: nomeCapitulo(m.capitulo) }))),
+      ok: A.comecar, cancelar: A.voltar, classe: 'aviso-novo-jogo',
+    });
+    if (!sim) return;
+  }
+  void irPara('criacao');
+}
 
 export function telaMenu(): Tela {
   const t = textos.menu;
-  const continuar = botao(t.continuar, () => {
-    const p = getEstado().personagem;
-    // Heróis salvos antes da escolha de classe retomam a criação no passo Classe.
-    if (p && !p.classe) void irPara('criacao', { retomar: p });
-    // Herói pronto que ainda não terminou o sonho dos deuses: retoma no sonho.
-    else if (p && !getEstado().sonho.concluido) void irPara('sonho');
-    // Capítulo em andamento: retoma na última cena ou no mapa, na posição salva.
-    else if (CAPITULOS[getEstado().campanha.capitulo]) void irPara(getEstado().campanha.local.tela === 'mapa' ? 'mapa' : 'capitulo');
-    else void irPara('emBreve');
-  }, { desabilitado: !temSave() });
+  const recente = maisRecente();
+  const continuar = recente
+    ? botao(t.continuar, () => carregarERetomar(recente.slot), { classe: 'btn-principal btn-continuar', som: 'ui-confirm' })
+    : null;
+  if (continuar && recente) continuar.append(h('span', { class: 'menu-continuar-info' }, resumoContinuar(recente.meta)));
   const botoes = h('nav', { class: 'menu-botoes', 'aria-label': 'Menu principal' },
-    botao(t.novoJogo, () => void irPara('criacao'), { classe: 'btn-principal', som: 'ui-confirm' }),
     continuar,
+    temAlgumSave() ? botao(t.carregar, () => abrirCarregar(carregarERetomar), { classe: 'btn-carregar' }) : null,
+    botao(t.novoJogo, () => void novoJogo(), { classe: recente ? 'btn-novo-jogo' : 'btn-principal btn-novo-jogo', som: 'ui-confirm' }),
+    // O Compêndio usa o save mais recente (que é o que está em memória ao abrir o jogo).
     temSave() ? botao(t.compendio, () => abrirCompendio()) : null,
     botao(t.opcoes, abrirOpcoes),
     botao(t.creditos, abrirCreditos),
   );
+  // Navegador limpo (aparelho novo): sem saves, o Carregar não aparece; a cópia de segurança fica
+  // num link discreto para importar os saves de outro aparelho.
+  if (!temAlgumSave()) {
+    const importar = h('button', { type: 'button', class: 'saves-link menu-importar' }, textos.saves.importar);
+    importar.addEventListener('click', () => abrirCopia(() => void irPara('menu', undefined, { duracao: 200 })));
+    botoes.append(importar);
+  }
 
   const el = h('div', { class: 'tela-menu' },
     h('img', { class: 'menu-wallpaper', src: src(ASSETS.wallpaperMenu), alt: '', draggable: 'false' }),

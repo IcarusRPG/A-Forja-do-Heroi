@@ -3,6 +3,7 @@ import { forcarD20 } from './dados';
 import { atualizarCampanha, getEstado, type EstadoMissao } from './estado';
 import { avisosRecentes } from './toasts';
 import { darItem, definirMissao, somarAtraso } from './progresso';
+import { definirRelogio, listarSlots } from './saves';
 
 /**
  * Ganchos de teste (só com ?test=1), comuns a todas as telas do jogo. Cada tela acrescenta os seus
@@ -30,9 +31,23 @@ export function estadoProgresso() {
   };
 }
 
+/** Saves (Fase 4B): metadados dos 3 slots e o relógio simulado (para o "há 3 dias"). */
+const ganchosSaves = () => ({
+  saves: () => listarSlots().map((s) => (s.estado === 'ok' ? { slot: s.slot, estado: s.estado, ...s.meta } : { slot: s.slot, estado: s.estado })),
+  setRelogio: (iso: string | null) => definirRelogio(iso),
+});
+
+/** Ganchos mínimos (telas sem ganchos próprios, como o menu): saves e relógio. */
+export function registrarGanchosBase(): void {
+  const w = window as unknown as { __fdg?: Record<string, unknown> };
+  if (!modoTeste() || w.__fdg) return;
+  w.__fdg = { ...ganchosSaves(), state: () => ({ ...estadoProgresso(), tela: null }) };
+}
+
 export function registrarGanchos(extra: Record<string, unknown>): void {
   if (!modoTeste()) return;
   (window as unknown as { __fdg: unknown }).__fdg = {
+    ...ganchosSaves(),
     forceRoll: (v: number[]) => forcarD20(v),
     pularFaixa: () => audio.pularParaOFim(),
     setAtraso: (n: number) => somarAtraso(n - getEstado().campanha.atraso),

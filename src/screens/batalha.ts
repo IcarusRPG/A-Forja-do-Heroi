@@ -12,6 +12,7 @@ import { botao, esperar, h } from '../core/ui';
 import { carregarFolha, SpriteBatalha } from '../batalha/sprite';
 import { INIMIGOS, batalhaPorId, type AtaqueDados, type DadosBatalha, type DadosInimigo } from '../batalha/inimigos';
 import { avaliar, mostrarRolagem } from '../narrativa/rolagem';
+import { abrirMenuPausa } from './pausa';
 
 /**
  * Batalha no estilo Final Fantasy VI: até 3 inimigos à esquerda (em formação escalonada, virados para a
@@ -87,6 +88,15 @@ export function telaBatalha(params?: unknown): Tela {
   const efeitos = h('div', { class: 'batalha-efeitos', 'aria-hidden': 'true' });
   const escuro = h('div', { class: 'batalha-escuro' });
   arena.append(ladoInimigo, ladoHeroi, efeitos, h('div', { class: 'batalha-topo' }, mensagem, faixaTurnos), escuro);
+  // Pausa: Opções e Voltar ao menu; o Salvar aparece desabilitado durante a batalha.
+  const btnPausa = h('button', { type: 'button', class: 'btn-pausa batalha-btn-pausa', 'aria-label': textos.cenas.pausa }, h('span', { 'aria-hidden': 'true' }, 'II'));
+  let pausaAberta = false;
+  btnPausa.addEventListener('click', () => {
+    if (pausaAberta) return;
+    pausaAberta = true;
+    abrirMenuPausa({ emBatalha: true, aoFechar: () => { pausaAberta = false; } });
+  });
+  arena.append(btnPausa);
 
   const listaComandos = h('div', { class: 'batalha-comandos', role: 'group', 'aria-label': T.comandos });
   const dica = h('p', { class: 'batalha-dica' });

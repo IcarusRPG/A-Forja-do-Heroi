@@ -3,7 +3,7 @@ import NPCS from '../data/npcs.json';
 import { ASSETS, existeAsset, existeAssetCache, src, type NomeSfx } from '../core/assets';
 import { audio } from '../core/audio';
 import { rolarD20 } from '../core/dados';
-import { atualizarCampanha, getEstado, marcarFlag, tremoresLigados } from '../core/estado';
+import { atualizarCampanha, getEstado, limparInicioCena, marcarFlag, marcarInicioCena, tremoresLigados } from '../core/estado';
 import { PERICIAS, bonusPericia } from '../core/pericias';
 import {
   conhecer, darItem, definirMissao, encontrarCriatura, mudarRelacao, pvMaxAtual, somarAtraso, somarContador, somarReais, verificarCompendio,
@@ -402,6 +402,8 @@ export function criarPalco(o: OpcoesPalco): Palco {
     pararFala();
     cena = c;
     o.aoEntrarCena?.(c, modo);
+    // Um save manual no meio desta cena volta para cá, antes dos efeitos de entrada.
+    marcarInicioCena(c.id, modo);
     ameaca.hidden = true;
     ameaca.classList.remove('entrou');
     limparEscolhas();
@@ -460,6 +462,7 @@ export function criarPalco(o: OpcoesPalco): Palco {
     fundo: () => fundoAtual,
     destruir() {
       destruido = true;
+      limparInicioCena();
       pararFala();
       pararLoop?.();
       audio.abafar(false);

@@ -404,6 +404,15 @@ const efeitos = {
     ruido(b, { inicio: 0.2, dur: 0.08, amp: 0.7, ataque: 0.001, decai: 0.015, corte: 4000 });
     return normalizar(b, 0.8);
   },
+  // Salvar: pena riscando o papel (três traços curtos e um respiro)
+  'salvar': () => {
+    const b = buffer(0.62);
+    for (const [ini, dur, c0, c1] of [[0, 0.11, 2600, 4200], [0.15, 0.09, 3000, 4800], [0.27, 0.16, 2400, 3800]]) {
+      ruido(b, { inicio: ini, dur, amp: 0.55, ataque: 0.012, decai: 0.05, corte: c0, corteFim: c1, passaAlta: 1800 });
+    }
+    tom(b, { inicio: 0.44, freq: 880, freqFim: 1320, dur: 0.16, amp: 0.12, ataque: 0.02, decai: 0.1, parciais: [[1, 1], [2, 0.3]] });
+    return normalizar(b, 0.6);
+  },
 };
 
 await mkdir(OUT, { recursive: true });

@@ -684,7 +684,7 @@ for (const comMusica of [true, false]) {
     if (!comMusica) return;
     await page.waitForTimeout(1600);
     await foto(page, info.project.name, 'fim-cap02');
-    const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado')!).campanha);
+    const salvo = await page.evaluate(() => ((a) => ({ ...(a?.jogo ?? {}), versaoSave: a?.versaoSave, config: JSON.parse(localStorage.getItem('fdg.opcoes') ?? '{}') }))(JSON.parse(localStorage.getItem('fdg.save.auto') ?? 'null')).campanha);
     expect(salvo).toMatchObject({ capitulo: 3, cena: 'inicio' });
     expect(salvo.relacoes).toBeTruthy();
     await page.locator('.tela-fim-capitulo .btn-principal').click();
@@ -718,8 +718,8 @@ test('save antigo da Fase 3 (parado em "Capítulo 02 · Em breve") migra para o 
   expect(s.atraso).toBe(2);
   expect(s.inventario).toEqual({});
   expect(s.relacoes).toMatchObject({ artho: 2, nyme: 2, aylin: 1, kobanu: 0 });
-  const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado')!));
-  expect(salvo.versaoSave).toBe(4);
+  const salvo = await page.evaluate(() => ((a) => ({ ...(a?.jogo ?? {}), versaoSave: a?.versaoSave, config: JSON.parse(localStorage.getItem('fdg.opcoes') ?? '{}') }))(JSON.parse(localStorage.getItem('fdg.save.auto') ?? 'null')));
+  expect(salvo.versaoSave).toBe(5);
 });
 
 test('modo de ajuste (F2) nos três mapas novos', async ({ page }, info) => {

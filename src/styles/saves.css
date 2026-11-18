@@ -1,0 +1,164 @@
+/* Fase 4B: saves (cards, Salvar, Carregar, cópia de segurança), confirmações, pausa e menu. */
+
+:root {
+  --prata: #b9c8dc;
+  --prata-borda: rgba(170, 192, 220, 0.75);
+}
+
+/* ---------- Confirmações (Substituir, Apagar, Importar, Nova aventura) ---------- */
+.confirmar-fundo { z-index: 90; }
+.confirmar { width: min(440px, 100%); }
+.confirmar-texto { color: var(--marmore); line-height: 1.5; }
+.confirmar-texto p { margin: 0 0 0.6rem; }
+.confirmar-texto .modal-titulo { margin-top: 0; }
+.confirmar-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 1rem; }
+.confirmar-acoes .btn { min-height: 44px; width: 100%; }
+.btn-perigo { border-color: #c2604e; color: #ffd6cc; background: linear-gradient(180deg, rgba(120, 36, 24, 0.9), rgba(70, 20, 14, 0.95)); }
+.confirmar-importar .saves-previa { margin-top: 0.4rem; }
+
+/* ---------- Painel de saves (tela cheia no celular) ---------- */
+.saves-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: rgba(5, 4, 3, 0.75);
+  animation: aparecer 0.2s ease;
+}
+.saves-fundo.saindo { opacity: 0; transition: opacity 0.2s ease; }
+.saves {
+  display: flex;
+  flex-direction: column;
+  width: min(560px, 100%);
+  max-height: calc(100dvh - 24px);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(48, 36, 24, 0.97), rgba(20, 15, 11, 0.99));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+}
+.saves-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--borda);
+}
+.saves-topo h2 { margin: 0; font-family: var(--fonte-titulo); color: var(--ouro-claro); font-size: 1.15rem; }
+.saves-fechar { min-height: 44px; min-width: 88px; }
+.saves-lista { display: grid; gap: 0.75rem; padding: 0.9rem; overflow-y: auto; }
+.saves-rodape { padding: 0 1rem 0.9rem; text-align: center; }
+.saves-rodape:empty { display: none; }
+.saves-link {
+  min-height: 44px;
+  padding: 0 0.6rem;
+  border: 0;
+  background: none;
+  color: var(--texto-suave);
+  font: inherit;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.saves-link:hover, .saves-link:focus-visible { color: var(--ouro-claro); }
+.saves-copia .saves-lista .btn { width: 100%; min-height: 44px; }
+.saves-texto { margin: 0; color: var(--marmore-suave); line-height: 1.5; }
+.saves-erro { margin: 0; color: var(--negativo); font-weight: 600; text-align: center; }
+.saves-erro[hidden] { display: none; }
+
+/* ---------- Card de save ---------- */
+.save-card {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 0.4rem 0.8rem;
+  align-items: start;
+  padding: 0.75rem;
+  border: 2px solid var(--borda-forte);
+  border-radius: 10px;
+  background: rgba(14, 11, 8, 0.7);
+}
+/* Automático: borda prata/azulada; manual: a borda dourada do jogo. */
+.save-card.auto { border-color: var(--prata-borda); background: rgba(16, 20, 28, 0.72); }
+.save-card.vazio { border-style: dashed; border-color: rgba(214, 169, 74, 0.45); background: rgba(14, 11, 8, 0.35); }
+.save-card.auto.vazio { border-color: rgba(170, 192, 220, 0.45); }
+.save-card.danificado { border-color: rgba(229, 138, 122, 0.8); }
+.save-busto {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+  object-position: center 18%;
+  background: radial-gradient(circle at 50% 40%, rgba(242, 212, 138, 0.18), rgba(0, 0, 0, 0.4));
+}
+.save-busto-vazio { display: grid; place-items: center; color: var(--negativo); font-size: 1.6rem; font-weight: 700; }
+.save-info { min-width: 0; display: grid; gap: 0.12rem; }
+.save-info p { margin: 0; }
+.save-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  justify-self: start;
+  margin-bottom: 0.2rem !important;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #1a140c;
+  background: var(--ouro);
+}
+.save-card.auto .save-selo { background: var(--prata); color: #121822; }
+.save-icone { width: 14px; height: 14px; flex: none; }
+.save-nome { font-family: var(--fonte-titulo); font-weight: 700; color: var(--marmore); font-size: 1.05rem; overflow-wrap: anywhere; }
+.save-card.vazio .save-nome { color: var(--texto-suave); font-family: var(--fonte-texto); font-weight: 400; }
+.save-card.danificado .save-nome { color: var(--negativo); }
+.save-detalhe { color: var(--marmore-suave); font-size: 0.88rem; line-height: 1.35; }
+.save-apoio { color: var(--texto-suave); font-size: 0.8rem; font-style: italic; }
+.save-card.auto .save-apoio { color: var(--prata); }
+.save-aviso { margin-top: 0.25rem !important; color: var(--ouro-claro); font-size: 0.82rem; }
+.save-acoes { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.save-acoes .btn { flex: 1 1 140px; min-height: 44px; }
+.save-card.piscando { animation: save-piscar 1.1s ease; }
+@keyframes save-piscar {
+  0%, 100% { box-shadow: none; }
+  25%, 60% { box-shadow: 0 0 0 3px var(--ouro-claro), 0 0 28px var(--ouro-brilho); background: rgba(80, 60, 20, 0.55); }
+}
+
+@media (max-width: 560px) {
+  .saves-fundo { padding: 0; }
+  .saves { width: 100%; height: 100dvh; max-height: none; border-radius: 0; border: 0; }
+  .saves-topo { padding-top: max(0.8rem, env(safe-area-inset-top)); }
+  .saves-lista { padding-bottom: max(0.9rem, env(safe-area-inset-bottom)); }
+}
+
+/* ---------- Menu de pausa: herói no topo e dica do Salvar ---------- */
+.pausa-heroi {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.4rem 0.2rem 0.6rem;
+  border-bottom: 1px solid var(--borda);
+}
+.pausa-busto { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; object-position: center 18%; border: 1px solid var(--borda); background: rgba(0, 0, 0, 0.35); }
+.pausa-nome { margin: 0; font-family: var(--fonte-titulo); font-weight: 700; color: var(--ouro-claro); }
+.pausa-linha { margin: 0; color: var(--marmore-suave); font-size: 0.85rem; }
+.pausa-dica { margin: -0.35rem 0 0; color: var(--texto-suave); font-size: 0.82rem; text-align: center; }
+
+/* ---------- Batalha: botão de pausa sem cobrir a mensagem ---------- */
+.tela-batalha .batalha-btn-pausa { z-index: 8; }
+.tela-batalha .batalha-topo { right: calc(max(8px, env(safe-area-inset-right)) + 54px); }
+
+/* ---------- Menu inicial: resumo embaixo do Continuar ---------- */
+.btn-continuar { display: grid; justify-items: center; gap: 0.1rem; }
+.menu-continuar-info { font-family: var(--fonte-texto); font-size: 0.74rem; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.85; }
+
+/* ---------- Criação: busto na revisão ---------- */
+.revisao-cabeca { display: flex; align-items: center; gap: 0.7rem; }
+.revisao-busto { width: 72px; height: 72px; flex: none; border-radius: 50%; object-fit: cover; object-position: center 18%; border: 1px solid var(--borda); background: rgba(0, 0, 0, 0.35); }
+
+/* Com o painel de saves aberto, o aviso ("Jogo salvo no Manual 1") desce para não cobrir o título. */
+body:has(.saves-fundo) .toasts { top: calc(max(10px, env(safe-area-inset-top)) + 64px); }

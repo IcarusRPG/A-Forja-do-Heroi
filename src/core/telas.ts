@@ -1,5 +1,7 @@
 import { audio } from './audio';
 import { esperar } from './ui';
+import { contarTempo, limparInicioCena } from './estado';
+import { registrarGanchosBase } from './ganchos';
 
 /** Máquina de telas: uma tela visível por vez, com fade entre elas. */
 
@@ -31,6 +33,8 @@ export interface OpcoesTroca {
   duracao?: number;
 }
 
+const SEM_TEMPO_DE_JOGO: NomeTela[] = ['loading', 'intro', 'menu', 'criacao'];
+
 export async function irPara(nome: NomeTela, params?: unknown, opcoes: OpcoesTroca = {}): Promise<void> {
   if (trocando) return;
   trocando = true;
@@ -47,6 +51,9 @@ export async function irPara(nome: NomeTela, params?: unknown, opcoes: OpcoesTro
     }
     const fabrica = fabricas.get(nome);
     if (!fabrica) throw new Error(`Tela desconhecida: ${nome}`);
+    // Tempo de jogo só conta jogando (não no menu, na criação nem nas telas de abertura).
+    contarTempo(!SEM_TEMPO_DE_JOGO.includes(nome));
+    limparInicioCena();
     const nova = fabrica(params);
     nova.el.classList.add('tela', 'tela-entrando');
     nova.el.style.setProperty('--fade', `${duracao}ms`);
@@ -56,6 +63,7 @@ export async function irPara(nome: NomeTela, params?: unknown, opcoes: OpcoesTro
     void nova.el.offsetWidth;
     nova.el.classList.remove('tela-entrando');
     nova.aoEntrar?.();
+    registrarGanchosBase();
   } finally {
     trocando = false;
   }

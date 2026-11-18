@@ -97,10 +97,11 @@ test('sprites: cada raça e gênero carrega a própria folha (não o boneco prov
   await entrarNoSonho(page);
   for (const [r, g] of combinacoes) {
     await page.evaluate(([rr, gg]) => {
-      const e = JSON.parse(localStorage.getItem('a-forja-do-heroi:estado')!);
-      e.personagem.raca = rr;
-      e.personagem.genero = gg;
-      localStorage.setItem('a-forja-do-heroi:estado', JSON.stringify(e));
+      // O herói mora no slot automático (Fase 4B).
+      const a = JSON.parse(localStorage.getItem('fdg.save.auto')!);
+      a.jogo.personagem.raca = rr;
+      a.jogo.personagem.genero = gg;
+      localStorage.setItem('fdg.save.auto', JSON.stringify(a));
     }, [r, g]);
     await entrarNoSonho(page);
     expect((await estado(page)).sprite).toBe(`sprites/chibi-${r}-${g}.png`);
@@ -215,7 +216,7 @@ test('sonho dos deuses: andar, ouvir as sete vozes, caminhada sozinho até o alt
 
   // Despertar e tela provisória
   await expect(page.locator('.tela-sequencia')).toContainText('Você acorda num sobressalto.', { timeout: 20_000 });
-  const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado') ?? '{}').sonho);
+  const salvo = await page.evaluate(() => ((a) => ({ ...(a?.jogo ?? {}), versaoSave: a?.versaoSave, config: JSON.parse(localStorage.getItem('fdg.opcoes') ?? '{}') }))(JSON.parse(localStorage.getItem('fdg.save.auto') ?? 'null')).sonho);
   expect(salvo.concluido).toBe(true);
   // Depois do despertar, o Capítulo 01 começa com o cartão de título
   await expect(page.locator('.tela-capitulo .cena-cartao-titulo')).toContainText('Amanhecer Tardio', { timeout: 30_000 });
@@ -311,7 +312,7 @@ test('clima: neblina em camadas e tremores que podem ser desligados nas Opções
   const s2 = await estado(page);
   expect(s2.tremores).toBeGreaterThanOrEqual(antes + 2);
   expect(s2.tremorCamera).toBe(false);
-  const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado')!).config.tremores);
+  const salvo = await page.evaluate(() => ((a) => ({ ...(a?.jogo ?? {}), versaoSave: a?.versaoSave, config: JSON.parse(localStorage.getItem('fdg.opcoes') ?? '{}') }))(JSON.parse(localStorage.getItem('fdg.save.auto') ?? 'null')).config.tremores);
   expect(salvo).toBe(false);
 
   // FPS baixo: a neblina perde camadas

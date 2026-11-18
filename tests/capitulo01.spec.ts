@@ -300,7 +300,7 @@ test('Mirtilo: lutar → batalha contra o normal, com dano, ajoelhado e vitória
   await page.waitForTimeout(400);
   await foto(page, info.project.name, '09-batalha-mirtilo-vitoria');
   // Os PV atuais ficam salvos
-  const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado')!).campanha);
+  const salvo = await page.evaluate(() => ((a) => ({ ...(a?.jogo ?? {}), versaoSave: a?.versaoSave, config: JSON.parse(localStorage.getItem('fdg.opcoes') ?? '{}') }))(JSON.parse(localStorage.getItem('fdg.save.auto') ?? 'null')).campanha);
   expect(salvo.pvAtual).toBe(3);
   expect(salvo.flags).toEqual(expect.arrayContaining(['lutou']));
   await page.locator('.batalha-continuar').click();

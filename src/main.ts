@@ -9,7 +9,10 @@ import './styles/sonho.css';
 import './styles/capitulo.css';
 import './styles/batalha.css';
 import './styles/fase4.css';
+import './styles/saves.css';
 
+import { definirConstrutorLocal, iniciarEstado } from './core/estado';
+import { localDoJogo } from './core/lugar';
 import { irPara, registrarTela } from './core/telas';
 import { telaCriacao } from './screens/criacao';
 import { telaEmBreve } from './screens/emBreve';
@@ -40,6 +43,10 @@ registrarTela('gameOver', telaGameOver);
 registrarTela('emBreve', telaEmBreve);
 registrarTela('mapa', telaMapa);
 registrarTela('introFullmun', telaIntroFullmun);
+
+// Saves: o nome do lugar no card vem dos capítulos e mapas; depois migra o save antigo e abre o mais recente.
+definirConstrutorLocal(localDoJogo);
+iniciarEstado();
 
 void irPara('loading', undefined, { som: false, duracao: 0 });
 

@@ -77,4 +77,38 @@ export function abrirModal(titulo: string, conteudo: Node, textoFechar: string, 
   return fechar;
 }
 
+/**
+ * Pergunta de confirmação por cima de tudo (Substituir / Cancelar, Apagar / Cancelar…). Esc e toque
+ * fora cancelam. Devolve true se o jogador confirmou.
+ */
+export function confirmar(o: { texto: Node | string; ok: string; cancelar: string; classe?: string; perigo?: boolean }): Promise<boolean> {
+  return new Promise((resolver) => {
+    const anterior = document.activeElement as HTMLElement | null;
+    const fechar = (sim: boolean) => {
+      window.removeEventListener('keydown', teclado, true);
+      fundo.classList.add('saindo');
+      setTimeout(() => fundo.remove(), 200);
+      anterior?.focus?.();
+      resolver(sim);
+    };
+    const teclado = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.stopImmediatePropagation();
+      audio.sfx('ui-back');
+      fechar(false);
+    };
+    const btnCancelar = botao(o.cancelar, () => fechar(false), { som: 'ui-back' });
+    const btnOk = botao(o.ok, () => fechar(true), { classe: o.perigo ? 'btn-perigo' : 'btn-principal', som: 'ui-confirm' });
+    const caixa = h('div', { class: `modal confirmar ${o.classe ?? ''}`.trim(), role: 'alertdialog', 'aria-modal': 'true' },
+      h('div', { class: 'confirmar-texto' }, o.texto),
+      h('div', { class: 'modal-acoes confirmar-acoes' }, btnCancelar, btnOk),
+    );
+    const fundo = h('div', { class: 'modal-fundo confirmar-fundo' }, caixa);
+    fundo.addEventListener('pointerdown', (e) => { if (e.target === fundo) fechar(false); });
+    window.addEventListener('keydown', teclado, true);
+    document.body.append(fundo);
+    btnCancelar.focus();
+  });
+}
+
 export const esperar = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));

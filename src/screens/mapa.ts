@@ -485,6 +485,7 @@ export function telaMapa(params?: unknown): Tela {
 
   function abrirPausa() {
     if (fecharPausa || ocupado) return;
+    salvarPosicao(); // um save manual na pausa grava a posição exata
     motor?.pausar(true);
     controles.habilitar(false);
     fecharPausa = abrirMenuPausa({

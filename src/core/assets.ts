@@ -36,7 +36,7 @@ export const ASSETS = {
 
 export const SFX = [
   'ui-hover', 'ui-click', 'ui-confirm', 'ui-back', 'ui-locked',
-  'point-up', 'point-down', 'start', 'hero-confirm', 'transition',
+  'point-up', 'point-down', 'start', 'hero-confirm', 'transition', 'salvar',
 ] as const;
 /** Efeitos do sonho: carregados só ao entrar na exploração. */
 export const SFX_SONHO = [
