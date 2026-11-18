@@ -641,43 +641,58 @@ test('biblioteca: a escolha da pista do sonho só aparece com a flag', async ({ 
   expect(await ateEscolhas(page)).toHaveLength(2);
 });
 
-test('tragédia: câmera lenta dessaturada, corte com flash, tela preta; sem a música dedicada e sem tremor (opção desligada)', async ({ page }, info) => {
-  await semear(page, MAPA('templo-biblioteca', { capitulo: 2, cena: 't-alcapao-artho', flags: ['carinho_nyme', 'nyme_saiu', 'alcapao_liberado'] }), { config: { tremores: false } });
-  await noMapa(page, 'templo-biblioteca');
-  await f(page, 'goto', 'c02-gritos');
-  await ateTexto(page, 'Gritos rasgam o ar lá fora');
-  await expect.poll(async () => (await st(page)).musica.tocando, { timeout: 5000 }).toBe(false);
-  await expect(page.locator('.tela.tremendo')).toHaveCount(0);
-  await escolher(page, 'Continuar');
-  await expect.poll(async () => (await st(page)).cena, { timeout: 10_000 }).toBe('c02-tragedia');
-  await expect(page.locator('.palco-cena.visual-dessaturado')).toBeVisible();
-  await ateTexto(page, 'No fim do salão, a Nyme já está na porta do templo');
-  await page.waitForTimeout(1200);
-  await foto(page, info.project.name, 'tragedia-camera-lenta');
-  // tragedia.mp3 não existe: a cena segue em silêncio (só a batida)
-  expect((await st(page)).musica.tocando).toBe(false);
-  await ateTexto(page, 'O mundo volta de repente.');
-  await expect(page.locator('.palco-cena.visual-normal')).toBeVisible();
-  await expect(page.locator('.tela.tremendo')).toHaveCount(0);
-  await ateTexto(page, 'Eu me sinto querida e segura.');
-  await expect(page.locator('.palco-cena.visual-preto')).toBeVisible();
-  await page.waitForTimeout(1800);
-  await foto(page, info.project.name, 'tragedia-preto');
-  await ateTexto(page, 'O silêncio que vem depois é pior do que os gritos.');
-  await escolher(page, 'Continuar');
-  await expect(page.locator('.tela-fim-capitulo')).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator('.fim-rotulo')).toHaveText('Fim do Capítulo 02');
-  await expect(page.locator('.fim-resumo li').last()).toHaveText('A Nyme deu a vida pela vila.');
-  await page.waitForTimeout(1600);
-  await foto(page, info.project.name, 'fim-cap02');
-  const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado')!).campanha);
-  expect(salvo).toMatchObject({ capitulo: 3, cena: 'inicio' });
-  expect(salvo.relacoes).toBeTruthy();
-  await page.locator('.tela-fim-capitulo .btn-principal').click();
-  await expect(page.locator('.tela-embreve')).toContainText('Capítulo 03', { timeout: 15_000 });
-  await expect(page.locator('.tela-embreve')).toContainText('Provação Sob a Luz');
-  await foto(page, info.project.name, 'embreve-cap03');
-});
+for (const comMusica of [true, false]) {
+  test(`tragédia ${comMusica ? 'com' : 'sem'} tragedia.mp3: câmera lenta dessaturada, corte com flash, tela preta, sem tremor (opção desligada)`, async ({ page }, info) => {
+    // Sem a faixa (como antes de ela existir), a cena segue só com a batida.
+    if (!comMusica) await page.route('**/music/tragedia.mp3', (r) => r.fulfill({ status: 404, body: '' }));
+    await semear(page, MAPA('templo-biblioteca', { capitulo: 2, cena: 't-alcapao-artho', flags: ['carinho_nyme', 'nyme_saiu', 'alcapao_liberado'] }), { config: { tremores: false } });
+    await noMapa(page, 'templo-biblioteca');
+    await f(page, 'goto', 'c02-gritos');
+    await ateTexto(page, 'Gritos rasgam o ar lá fora');
+    await expect.poll(async () => (await st(page)).musica.tocando, { timeout: 5000 }).toBe(false);
+    await expect(page.locator('.tela.tremendo')).toHaveCount(0);
+    await escolher(page, 'Continuar');
+    await expect.poll(async () => (await st(page)).cena, { timeout: 10_000 }).toBe('c02-tragedia');
+    await expect(page.locator('.palco-cena.visual-dessaturado')).toBeVisible();
+    if (comMusica) {
+      await expect.poll(async () => { const m = (await st(page)).musica; return m.tocando && m.faixa?.endsWith('music/tragedia.mp3'); }, { timeout: 10_000 }).toBe(true);
+    }
+    await ateTexto(page, 'No fim do salão, a Nyme já está na porta do templo');
+    if (comMusica) {
+      await page.waitForTimeout(1200);
+      await foto(page, info.project.name, 'tragedia-camera-lenta');
+    } else {
+      expect((await st(page)).musica.tocando).toBe(false);
+    }
+    await ateTexto(page, 'O mundo volta de repente.');
+    await expect(page.locator('.palco-cena.visual-normal')).toBeVisible();
+    await expect(page.locator('.tela.tremendo')).toHaveCount(0);
+    if (comMusica) expect((await st(page)).musica.faixa).toMatch(/music\/tragedia\.mp3$/);
+    await ateTexto(page, 'Eu me sinto querida e segura.');
+    await expect(page.locator('.palco-cena.visual-preto')).toBeVisible();
+    // Na tela preta a música some: "o silêncio que vem depois"
+    await expect.poll(async () => (await st(page)).musica.tocando, { timeout: 8000 }).toBe(false);
+    if (comMusica) {
+      await page.waitForTimeout(1800);
+      await foto(page, info.project.name, 'tragedia-preto');
+    }
+    await ateTexto(page, 'O silêncio que vem depois é pior do que os gritos.');
+    await escolher(page, 'Continuar');
+    await expect(page.locator('.tela-fim-capitulo')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.fim-rotulo')).toHaveText('Fim do Capítulo 02');
+    await expect(page.locator('.fim-resumo li').last()).toHaveText('A Nyme deu a vida pela vila.');
+    if (!comMusica) return;
+    await page.waitForTimeout(1600);
+    await foto(page, info.project.name, 'fim-cap02');
+    const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado')!).campanha);
+    expect(salvo).toMatchObject({ capitulo: 3, cena: 'inicio' });
+    expect(salvo.relacoes).toBeTruthy();
+    await page.locator('.tela-fim-capitulo .btn-principal').click();
+    await expect(page.locator('.tela-embreve')).toContainText('Capítulo 03', { timeout: 15_000 });
+    await expect(page.locator('.tela-embreve')).toContainText('Provação Sob a Luz');
+    await foto(page, info.project.name, 'embreve-cap03');
+  });
+}
 
 test('fluxo: Continuar retoma no meio do mapa, na posição salva', async ({ page }) => {
   await semear(page, MAPA('templo-salao', { capitulo: 2, cena: 'c02-artho', atraso: 2, flags: ['nyme_seguindo'] }));
