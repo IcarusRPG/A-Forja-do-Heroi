@@ -1,6 +1,6 @@
 import AMEACAS from '../data/ameacas.json';
 import NPCS from '../data/npcs.json';
-import { ASSETS, existeAsset, src, type NomeSfx } from '../core/assets';
+import { ASSETS, existeAsset, existeAssetCache, src, type NomeSfx } from '../core/assets';
 import { audio } from '../core/audio';
 import { rolarD20 } from '../core/dados';
 import { atualizarCampanha, getEstado, marcarFlag, tremoresLigados } from '../core/estado';
@@ -93,13 +93,20 @@ export function criarPalco(o: OpcoesPalco): Palco {
   const p = getEstado().personagem;
   const fundoA = h('img', { class: 'cena-fundo visivel', alt: '', draggable: 'false' });
   const fundoB = h('img', { class: 'cena-fundo', alt: '', draggable: 'false' });
+  // Bustos: o NPC à esquerda (com uma camada para o crossfade de expressão) e o herói à direita.
+  // Quem fala fica aceso; o outro lado da conversa fica escurecido.
   const busto = h('img', { class: 'cena-busto', alt: '', draggable: 'false', hidden: true });
+  const bustoTroca = h('img', { class: 'cena-busto-troca', alt: '', draggable: 'false', 'aria-hidden': 'true', hidden: true });
+  const ladoNpc = h('div', { class: 'cena-busto-npc' }, busto, bustoTroca);
+  const bustoHeroi = h('img', { class: 'cena-busto-heroi', alt: p?.nome ?? '', draggable: 'false', hidden: true });
+  if (p) { bustoHeroi.src = src(ASSETS.bustoHeroi(p.raca, p.genero)); bustoHeroi.dataset.retrato = ASSETS.bustoHeroi(p.raca, p.genero); }
+  const bustos = h('div', { class: 'cena-bustos', hidden: true }, ladoNpc, bustoHeroi);
   const nome = h('p', { class: 'cena-nome', hidden: true });
   const texto = h('p', { class: 'cena-texto' });
   const seta = h('span', { class: 'cena-seta', 'aria-hidden': 'true' }, '▾');
   const caixa = h('div', { class: 'cena-caixa', role: 'button', tabindex: '0', 'aria-label': T.avancar }, nome, texto, seta);
   const escolhas = h('div', { class: 'cena-escolhas', role: 'group', 'aria-label': T.escolhas });
-  const painel = h('div', { class: 'cena-painel' }, busto, caixa, escolhas);
+  const painel = h('div', { class: 'cena-painel' }, bustos, caixa, escolhas);
   const ameaca = h('aside', { class: 'cena-ameaca', hidden: true, 'aria-live': 'polite' });
   const brilho = h('div', { class: 'cena-brilho-alcapao', 'aria-hidden': 'true' });
   const flash = h('div', { class: 'cena-flash', 'aria-hidden': 'true' });
@@ -137,32 +144,100 @@ export function criarPalco(o: OpcoesPalco): Palco {
     visivel.classList.remove('visivel');
   }
 
-  function quemFala(f: Fala): { nome: string | null; retrato: string | null; classe: string } {
-    if (!f.quem) return { nome: null, retrato: null, classe: 'narracao' };
-    if (f.quem === 'pensamento') return { nome: null, retrato: null, classe: 'pensamento' };
-    if (f.quem === 'heroi') return { nome: p?.nome ?? '', retrato: p ? ASSETS.retrato(p.raca, p.genero, 'comum') : null, classe: 'heroi' };
-    return { nome: NOMES_NPC[f.quem]?.nome ?? f.quem, retrato: ASSETS.retratoNpc(f.quem), classe: 'npc' };
+  function quemFala(f: Fala): { nome: string | null; classe: string } {
+    if (!f.quem) return { nome: null, classe: 'narracao' };
+    if (f.quem === 'pensamento') return { nome: null, classe: 'pensamento' };
+    if (f.quem === 'heroi') return { nome: p?.nome ?? '', classe: 'heroi' };
+    return { nome: NOMES_NPC[f.quem]?.nome ?? f.quem, classe: 'npc' };
   }
 
-  function mostrarFala(f: Fala): Promise<void> {
+  /** NPC em cena na conversa e se o herói já falou nela (os dois bustos aparecem conversando). */
+  let npcNaConversa: string | null = null;
+  let heroiNaConversa = false;
+
+  /** Busto do NPC, com a expressão quando o arquivo existe (senão o normal, sem erro). */
+  async function retratoDe(f: Fala): Promise<string> {
+    const normal = ASSETS.retratoNpc(f.quem!);
+    if (!f.expressao) return normal;
+    const comExpressao = ASSETS.retratoNpc(f.quem!, f.expressao);
+    return (await existeAssetCache(comExpressao, 'image')) ? comExpressao : normal;
+  }
+
+  /** Troca o busto do NPC; na troca de expressão do mesmo NPC, crossfade de 150 ms (sem piscar). */
+  async function mostrarNpc(id: string, retrato: string) {
+    const mesmo = npcNaConversa === id && !busto.hidden;
+    if (mesmo && busto.dataset.retrato === retrato) return;
+    const novo = src(retrato);
+    const img = new Image();
+    img.src = novo;
+    await img.decode().catch(() => {});
+    if (mesmo) {
+      bustoTroca.src = busto.src;
+      bustoTroca.classList.remove('sumindo');
+      bustoTroca.hidden = false;
+      busto.src = novo;
+      requestAnimationFrame(() => requestAnimationFrame(() => bustoTroca.classList.add('sumindo')));
+      window.setTimeout(() => { bustoTroca.hidden = true; bustoTroca.classList.remove('sumindo'); }, 200);
+    } else {
+      busto.src = novo;
+      busto.classList.remove('entra');
+      void busto.offsetWidth;
+      busto.classList.add('entra');
+    }
+    busto.dataset.retrato = retrato;
+    busto.dataset.npc = id;
+    busto.alt = NOMES_NPC[id]?.nome ?? id;
+    busto.hidden = false;
+  }
+
+  function esconderBustos() {
+    npcNaConversa = null;
+    heroiNaConversa = false;
+    busto.hidden = true;
+    bustoTroca.hidden = true;
+    busto.removeAttribute('data-retrato');
+    busto.removeAttribute('data-npc');
+    bustoHeroi.hidden = true;
+    bustos.hidden = true;
+    bustos.className = 'cena-bustos';
+    painel.classList.remove('com-busto');
+  }
+
+  async function arrumarBustos(f: Fala) {
+    // Narração e pensamento: sem bustos (a conversa recomeça na próxima fala).
+    if (!f.quem || f.quem === 'pensamento') return esconderBustos();
+    const falaHeroi = f.quem === 'heroi';
+    if (falaHeroi) {
+      if (!p) return esconderBustos();
+      heroiNaConversa = true;
+    } else {
+      if (npcNaConversa && npcNaConversa !== f.quem) heroiNaConversa = false;
+      await mostrarNpc(f.quem, await retratoDe(f));
+      npcNaConversa = f.quem;
+    }
+    busto.hidden = !npcNaConversa;
+    if (busto.hidden) bustoTroca.hidden = true;
+    bustoHeroi.hidden = !heroiNaConversa;
+    const dois = !busto.hidden && !bustoHeroi.hidden;
+    bustos.hidden = false;
+    bustos.className = `cena-bustos${dois ? ' dois' : ''} fala-${falaHeroi ? 'heroi' : 'npc'}`;
+    busto.classList.toggle('apagado', falaHeroi);
+    bustoTroca.classList.toggle('apagado', falaHeroi);
+    bustoHeroi.classList.toggle('apagado', !falaHeroi);
+    painel.classList.add('com-busto');
+  }
+
+  async function mostrarFala(f: Fala): Promise<void> {
     const q = quemFala(f);
+    await arrumarBustos(f);
+    if (destruido) return;
     caixa.className = `cena-caixa ${q.classe}`;
     nome.hidden = !q.nome;
     nome.textContent = q.nome ?? '';
-    if (q.retrato) {
-      busto.src = src(q.retrato);
-      busto.dataset.retrato = q.retrato;
-      busto.alt = q.nome ?? '';
-      busto.hidden = false;
-      painel.classList.add('com-busto');
-    } else {
-      busto.hidden = true;
-      busto.removeAttribute('data-retrato');
-      painel.classList.remove('com-busto');
-    }
     const cheio = interpolar(f.texto);
     texto.textContent = '';
     caixa.dataset.quem = f.quem ?? 'narracao';
+    if (f.expressao) caixa.dataset.expressao = f.expressao; else delete caixa.dataset.expressao;
     return new Promise((ok) => {
       digitando = true;
       caixa.classList.remove('completa');
@@ -334,6 +409,7 @@ export function criarPalco(o: OpcoesPalco): Palco {
     for (const k of [...el.classList]) if (k.startsWith('visual-')) el.classList.remove(k);
     if (c.visual) el.classList.add(`visual-${c.visual}`);
     el.dataset.cena = c.id;
+    for (const f of c.falas ?? []) if (f.expressao && f.quem) void existeAssetCache(ASSETS.retratoNpc(f.quem, f.expressao), 'image');
     if (modo === 'falas') {
       aplicarEfeitos(c.aoEntrar);
       if (c.aoEntrar?.som) audio.sfx(c.aoEntrar.som as NomeSfx);

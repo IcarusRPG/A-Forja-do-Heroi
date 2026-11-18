@@ -2,6 +2,7 @@
   "id": "cap02",
   "numero": 2,
   "titulo": "O Templo de Sólem",
+  "lugar": "Templo de Sólem",
   "inicio": "c02-lamina",
   "proximoCapitulo": {
     "numero": 3,

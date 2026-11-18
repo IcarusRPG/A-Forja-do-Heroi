@@ -2,6 +2,7 @@
   "id": "cap01",
   "numero": 1,
   "titulo": "Amanhecer Tardio",
+  "lugar": "Füllmun",
   "inicio": "c01-quarto",
   "proximoCapitulo": {
     "numero": 2,
@@ -281,6 +282,7 @@
         },
         {
           "quem": "aylin",
+          "expressao": "chorando",
           "texto": "{nome}! Me ajuda!"
         },
         {
@@ -455,6 +457,7 @@
         },
         {
           "quem": "aylin",
+          "expressao": "chorando",
           "texto": "Agora estou, sim… Obrigada, {nome}."
         },
         {
@@ -519,8 +522,9 @@
       "id": "c01-aylin-poeira",
       "falas": [
         {
-          "texto": "Não tô chorando! …É poeira.",
-          "quem": "aylin"
+          "quem": "aylin",
+          "expressao": "chorando",
+          "texto": "Não tô chorando! …É poeira."
         }
       ],
       "fundo": "cena-chiqueiro",

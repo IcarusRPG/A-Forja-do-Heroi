@@ -66,6 +66,8 @@ export interface Efeitos {
 export interface Fala {
   /** Sem `quem`: narração. "pensamento": pensamento do herói. "heroi": fala do herói. Ou o id de um NPC. */
   quem?: string;
+  /** Expressão do NPC: usa npc-<id>-<expressao>.webp se existir; senão, o busto normal. */
+  expressao?: string;
   texto: string;
   requer?: Condicao;
   efeitos?: Efeitos;
@@ -160,6 +162,8 @@ export interface Capitulo {
   id: string;
   numero: number;
   titulo: string;
+  /** Lugar do capítulo, para os cards de save ("Füllmun", "Templo de Sólem"). */
+  lugar?: string;
   inicio: string;
   proximoCapitulo: { numero: number; titulo: string };
   resumo: (Condicao & { texto: string })[];

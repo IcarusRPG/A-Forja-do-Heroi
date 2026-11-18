@@ -146,7 +146,7 @@ test('criação completa: Azakar mulher, Sombra, Curandeiro, Paladina', async ({
   await avancar(page).click();
 
   await expect(page.locator('.tela-prologo')).toBeVisible({ timeout: 10_000 });
-  const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado') ?? '{}').personagem);
+  const salvo = await page.evaluate(() => ((a) => ({ ...(a?.jogo ?? {}), versaoSave: a?.versaoSave, config: JSON.parse(localStorage.getItem('fdg.opcoes') ?? '{}') }))(JSON.parse(localStorage.getItem('fdg.save.auto') ?? 'null')).personagem);
   expect(salvo).toMatchObject({
     nome: 'Lilith', genero: 'f', raca: 'azakar', variante: 'sombra', origem: 'curandeiro', classe: 'paladino',
     pvMax: 19, pmMax: 4, pedras: { tolerancia: false, egide: false, verdade: false, preco: false },
@@ -220,7 +220,7 @@ test('save antigo sem classe: Continuar retoma no passo Classe', async ({ page }
   await expect(page.locator('.revisao-classe')).toHaveText('Guerreiro');
   await avancar(page).click();
   await expect(page.locator('.tela-prologo')).toBeVisible({ timeout: 10_000 });
-  const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado') ?? '{}').personagem);
+  const salvo = await page.evaluate(() => ((a) => ({ ...(a?.jogo ?? {}), versaoSave: a?.versaoSave, config: JSON.parse(localStorage.getItem('fdg.opcoes') ?? '{}') }))(JSON.parse(localStorage.getItem('fdg.save.auto') ?? 'null')).personagem);
   expect(salvo).toMatchObject({ classe: 'guerreiro', pvMax: 21, pmMax: 3 });
 });
 
@@ -303,11 +303,14 @@ test('criação: Nyashi mulher Ladina e, depois do prólogo, o sonho', async ({ 
   await expect(page.locator('.revisao-classe')).toHaveText('Ladina');
   await expect(page.locator('.revisao-retrato')).toHaveAttribute('data-retrato', 'img/herois/nyashi-f-ladino.webp');
   await expect(page.locator('.passo-revisao')).toContainText('Nyashi (Tabaxi)');
+  // Busto do herói ao lado do resumo da ficha (Fase 4B)
+  await expect(page.locator('.revisao-busto')).toHaveAttribute('data-retrato', 'img/retratos/heroi-nyashi-f.webp');
+  await expect.poll(() => page.locator('.revisao-busto').evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
   await foto(page, info, 'nyashi-revisao');
   await avancar(page).click();
 
   await pularPrologoAteOSonho(page, () => foto(page, info, 'intro-fullmun'));
-  const estado = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado') ?? '{}'));
+  const estado = await page.evaluate(() => ((a) => ({ ...(a?.jogo ?? {}), versaoSave: a?.versaoSave, config: JSON.parse(localStorage.getItem('fdg.opcoes') ?? '{}') }))(JSON.parse(localStorage.getItem('fdg.save.auto') ?? 'null')));
   expect(estado.personagem).toMatchObject({ raca: 'nyashi', genero: 'f', classe: 'ladino', pvMax: 18, pmMax: 4 });
   expect(estado.sonho).toEqual({ concluido: false, ouvidas: [] });
 });
@@ -364,6 +367,6 @@ test('criação: Ayoran homem Arcanista recebe +1 PM (Sangue dos Primevos)', asy
   await foto(page, info, 'ayoran-revisao');
   await avancar(page).click();
   await expect(page.locator('.tela-prologo')).toBeVisible({ timeout: 10_000 });
-  const salvo = await page.evaluate(() => JSON.parse(localStorage.getItem('a-forja-do-heroi:estado') ?? '{}').personagem);
+  const salvo = await page.evaluate(() => ((a) => ({ ...(a?.jogo ?? {}), versaoSave: a?.versaoSave, config: JSON.parse(localStorage.getItem('fdg.opcoes') ?? '{}') }))(JSON.parse(localStorage.getItem('fdg.save.auto') ?? 'null')).personagem);
   expect(salvo).toMatchObject({ raca: 'ayoran', classe: 'arcanista', pvMax: 14, pmMax: 10 });
 });

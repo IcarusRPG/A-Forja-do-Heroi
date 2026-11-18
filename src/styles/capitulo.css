@@ -63,22 +63,47 @@
   align-items: stretch;
   max-height: calc(100dvh - max(64px, env(safe-area-inset-top) + 56px) - max(12px, env(safe-area-inset-bottom)));
 }
-.cena-busto {
-  align-self: flex-start;
-  width: auto;
-  height: clamp(110px, 30dvh, 340px);
-  max-width: 60%;
-  margin: 0 0 -18px 4px;
-  object-fit: contain;
-  object-position: left bottom;
-  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.6));
+/* Bustos: NPC à esquerda, herói à direita (olhando para o NPC). Quem fala fica aceso. */
+.cena-bustos {
   position: relative;
   z-index: 1;
-  animation: busto-entra 0.35s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: clamp(110px, 30dvh, 340px);
+  margin: 0 4px -18px;
+  pointer-events: none;
 }
-.cena-busto[hidden] { display: none; }
+.cena-bustos[hidden] { display: none; }
+.cena-busto-npc { position: relative; height: 100%; max-width: 60%; display: flex; align-items: flex-end; }
+.cena-busto,
+.cena-busto-troca,
+.cena-busto-heroi {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.6));
+  transition: filter 0.25s ease;
+}
+.cena-busto { object-position: left bottom; animation: busto-entra 0.35s ease; }
+.cena-busto.entra { animation: busto-entra 0.35s ease; }
+.cena-busto-troca { position: absolute; left: 0; bottom: 0; object-position: left bottom; opacity: 1; }
+.cena-busto-troca.sumindo { opacity: 0; transition: opacity 150ms linear, filter 0.25s ease; }
+.cena-busto-heroi { max-width: 60%; margin-left: auto; object-position: right bottom; animation: busto-entra-dir 0.35s ease; }
+.cena-busto[hidden], .cena-busto-troca[hidden], .cena-busto-heroi[hidden] { display: none; }
+/* Dois bustos: cada um com no máximo 30% da largura. */
+.cena-bustos.dois .cena-busto-npc,
+.cena-bustos.dois .cena-busto-heroi { max-width: 30%; }
+.cena-bustos .apagado { filter: brightness(0.5) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.6)); }
 @keyframes busto-entra { from { opacity: 0; transform: translateX(-12px); } }
-.cena-painel.com-escolhas .cena-busto { height: clamp(90px, 20dvh, 240px); }
+@keyframes busto-entra-dir { from { opacity: 0; transform: translateX(12px); } }
+.cena-painel.com-escolhas .cena-bustos { height: clamp(90px, 20dvh, 240px); }
+/* Celular estreito: se os dois não cabem, fica só o de quem fala. */
+@media (max-width: 359px) {
+  .cena-bustos.dois .apagado { display: none; }
+  .cena-bustos.dois .cena-busto-npc, .cena-bustos.dois .cena-busto-heroi { max-width: 60%; }
+}
 
 .cena-caixa {
   position: relative;
@@ -114,6 +139,7 @@
 .cena-caixa.pensamento .cena-texto::before { content: '“'; }
 .cena-caixa.pensamento .cena-texto::after { content: '”'; }
 .cena-caixa.heroi { border-color: var(--ouro); }
+.cena-caixa.heroi .cena-nome { text-align: right; }
 .cena-seta {
   position: absolute;
   right: 14px;
@@ -367,8 +393,9 @@
 
 /* ---------- Celular deitado: pouca altura ---------- */
 @media (max-height: 500px) {
-  .cena-busto { height: clamp(80px, 34dvh, 160px); max-width: 34%; }
-  .cena-painel.com-escolhas .cena-busto { display: none; }
+  .cena-bustos { height: clamp(80px, 34dvh, 160px); }
+  .cena-busto-npc, .cena-busto-heroi { max-width: 34%; }
+  .cena-painel.com-escolhas .cena-bustos { display: none; }
   .cena-caixa { min-height: 80px; padding: 0.6rem 1rem 0.9rem; }
   .cena-texto { font-size: 0.98rem; line-height: 1.45; }
   .cena-escolha { min-height: 46px; padding: 0.45rem 0.9rem; }

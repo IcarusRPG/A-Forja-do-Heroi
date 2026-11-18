@@ -21,7 +21,9 @@ export const ASSETS = {
   sfx: (nome: string) => `sfx/${nome}.wav`,
   musica: (id: string) => `music/${id}.mp3`,
   cena: (id: string) => `img/cenas/${id}.webp`,
-  retratoNpc: (id: string) => `img/retratos/npc-${id}.webp`,
+  retratoNpc: (id: string, expressao?: string) => `img/retratos/npc-${id}${expressao ? `-${expressao}` : ''}.webp`,
+  /** Busto do herói (olha para a esquerda; o Azakar usa o mesmo nas variantes Luz e Sombra). */
+  bustoHeroi: (raca: string, genero: Genero) => `img/retratos/heroi-${raca}-${genero}.webp`,
   ameaca: (id: string) => `img/ameacas/${id}.webp`,
   fundoBatalha: (id: string) => `img/batalha/fundos/${id}.png`,
   spriteBatalhaHeroi: (raca: string, genero: Genero) => `img/batalha/herois/${raca}-${genero}`,
@@ -52,6 +54,14 @@ export const SFX_FASE4 = [
 export type NomeSfx = (typeof SFX)[number] | (typeof SFX_SONHO)[number] | (typeof SFX_CAPITULO)[number] | (typeof SFX_FASE4)[number];
 
 /** O arquivo existe e é do tipo esperado? (No dev server do Vite, um arquivo ausente pode voltar como HTML.) */
+const existencias = new Map<string, Promise<boolean>>();
+/** existeAsset com cache (para trocas de expressão, que se repetem). */
+export function existeAssetCache(caminho: string, tipo: 'image' | 'audio' | 'video'): Promise<boolean> {
+  let r = existencias.get(caminho);
+  if (!r) existencias.set(caminho, (r = existeAsset(caminho, tipo)));
+  return r;
+}
+
 export async function existeAsset(caminho: string, tipo: 'image' | 'audio' | 'video'): Promise<boolean> {
   try {
     const r = await fetch(urlAsset(caminho), { method: 'HEAD', cache: 'no-store' });
