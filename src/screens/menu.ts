@@ -48,18 +48,6 @@ async function novoJogo(): Promise<void> {
   void irPara('criacao');
 }
 
-const CHAVE_AVISO_ENDERECO = 'fdg.avisoEndereco';
-/** true só na primeira vez (marca na hora de mostrar). Sem armazenamento, não mostra. */
-function primeiraAberturaSemSave(): boolean {
-  try {
-    if (localStorage.getItem(CHAVE_AVISO_ENDERECO)) return false;
-    localStorage.setItem(CHAVE_AVISO_ENDERECO, new Date().toISOString());
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export function telaMenu(): Tela {
   const t = textos.menu;
   const recente = maisRecente();
@@ -81,17 +69,7 @@ export function telaMenu(): Tela {
   if (!temAlgumSave()) {
     const importar = h('button', { type: 'button', class: 'saves-link menu-importar' }, textos.saves.importar);
     importar.addEventListener('click', () => abrirCopia(() => void irPara('menu', undefined, { duracao: 200 })));
-    // Mudança de endereço (o localStorage é por domínio): na primeira abertura sem save, avisa como
-    // trazer os saves do endereço antigo. Não bloqueia nada e aparece uma vez só.
-    if (primeiraAberturaSemSave()) {
-      const aviso = h('aside', { class: 'menu-aviso-endereco', role: 'note' }, h('p', {}, t.avisoEndereco));
-      const ok = h('button', { type: 'button', class: 'saves-link menu-aviso-ok' }, t.avisoEnderecoOk);
-      ok.addEventListener('click', () => aviso.remove());
-      aviso.append(h('div', { class: 'menu-aviso-acoes' }, importar, ok));
-      botoes.append(aviso);
-    } else {
-      botoes.append(importar);
-    }
+    botoes.append(importar);
   }
 
   const el = h('div', { class: 'tela-menu' },

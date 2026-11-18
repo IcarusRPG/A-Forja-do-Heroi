@@ -163,18 +163,3 @@
 /* Com o painel de saves aberto, o aviso ("Jogo salvo no Manual 1") desce para não cobrir o título. */
 body:has(.saves-fundo) .toasts { top: calc(max(10px, env(safe-area-inset-top)) + 64px); }
 
-/* Aviso de mudança de endereço (primeira abertura sem save) */
-.menu-aviso-endereco {
-  margin-top: 0.2rem;
-  padding: 0.6rem 0.8rem;
-  border: 1px solid var(--borda);
-  border-radius: 8px;
-  background: rgba(14, 11, 8, 0.78);
-  color: var(--marmore-suave);
-  font-size: 0.85rem;
-  line-height: 1.45;
-  text-align: left;
-}
-.menu-aviso-endereco p { margin: 0; }
-.menu-aviso-acoes { display: flex; justify-content: space-between; gap: 0.5rem; margin-top: 0.2rem; }
-.menu-aviso-acoes .saves-link { padding: 0 0.2rem; }
