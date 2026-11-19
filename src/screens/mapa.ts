@@ -15,12 +15,16 @@ import { ehToque, textos } from '../core/textos';
 import { botao, esperar, h } from '../core/ui';
 import { Controles } from '../exploracao/controles';
 import type { Motor } from '../exploracao/motor';
-import type { DadosMapa, Direcao } from '../exploracao/tipos';
+import { blocosDoChao, type DadosMapa, type Direcao } from '../exploracao/tipos';
 import { atende, type Condicao, type Efeitos } from '../narrativa/capitulo';
 import { aplicarEfeitos, criarPalco, tocarMusicaDaCena, type Palco } from '../narrativa/palco';
 import { abrirMenuPausa } from './pausa';
 import { abrirAjudaFullmun } from './tutorial';
 import { definirPausador, dica as dicaTutorial } from '../core/tutorial';
+import { mostrarCarregando } from '../core/carregando';
+import { verificarCaderno } from '../core/caderno';
+import { etapaDoCapitulo, garantirEtapa, itensDoMapa } from '../core/etapas';
+import NPCS from '../data/npcs.json';
 
 /**
  * Exploração de um mapa da história (Füllmun, salão do templo, biblioteca): o motor do sonho com
@@ -73,7 +77,14 @@ export interface DadosMapaJogo extends DadosMapa {
   espirros?: boolean;
   /** Onde o herói fica ao voltar de uma cena (id da cena aberta no mapa → ponto). */
   retornos?: Record<string, { x: number; y: number; direcao?: Direcao }>;
+  /**
+   * Destinos marcados no mapa (ex.: a porta da casa da Aylin enquanto ela segue o herói): um "!" que
+   * pula sobre o ponto e, quando ele sai da tela, uma seta na borda apontando para ele.
+   */
+  destinos?: Destino[];
 }
+export interface Destino { id: string; x: number; y: number; cor?: 'vermelho' | 'dourado'; requer?: Condicao }
+const CORES_DESTINO = { vermelho: '#e0262c', dourado: '#ffd25a' } as const;
 type Regra = { requer?: Condicao; cena?: string; tipo?: string | null };
 const CONV = CONVERSAS as Record<string, { conversas: Regra[]; marcadores?: Regra[] }>;
 const MAPAS = import.meta.glob<DadosMapaJogo>('../data/mapas/*.json', { eager: true, import: 'default' });
@@ -94,11 +105,17 @@ export function telaMapa(params?: unknown): Tela {
   const mapa: DadosMapaJogo = { ...base, interacoes: [], gatilhos: [] };
   const p = getEstado().personagem!;
   const toque = ehToque();
+  /** Tamanho dos personagens neste mapa (o motor usa o mesmo valor para o herói, os pés e a velocidade). */
+  const escala = base.escalaPersonagens ?? 1;
+  /** Raio das interações: cresce com a raiz da escala (o herói maior alcança um pouco mais longe). */
+  const alcance = Math.sqrt(escala);
+  const setaDestino = h('div', { class: 'seta-destino', hidden: true, 'aria-hidden': 'true' },
+    h('span', { class: 'seta-destino-ponta' }), h('span', { class: 'seta-destino-exclamacao' }, '!'));
 
   const palcoEl = h('div', { class: 'mapa-palco' });
   const hud = h('div', { class: 'mapa-hud', 'aria-live': 'polite' });
   const dica = h('p', { class: 'mapa-dica', hidden: true });
-  const el = h('div', { class: `tela-mapa mapa-${idMapa}` }, palcoEl, hud, dica);
+  const el = h('div', { class: `tela-mapa mapa-${idMapa}` }, palcoEl, hud, dica, setaDestino);
 
   let saiu = false;
   let motor: Motor | null = null;
@@ -155,11 +172,11 @@ export function telaMapa(params?: unknown): Tela {
         const m = vis ? marcadorDe(n.id) : null;
         reg.marcador.setText(m ?? '').setVisible(!!m);
       }
-      if (vis) inter.push({ id: `npc:${n.id}`, x: n.x, y: n.y + 8, raio: 58 });
+      if (vis) inter.push({ id: `npc:${n.id}`, x: n.x, y: n.y + 8 * escala, raio: 58 * alcance });
     }
     for (const [id, img] of objetosSprites) if (!objetosVisiveis().some((o) => o.id === id)) { img.destroy(); objetosSprites.delete(id); }
     for (const o of objetosVisiveis()) {
-      inter.push({ id: `obj:${o.id}`, x: o.interacao?.x ?? o.x, y: o.interacao?.y ?? o.y, raio: 52 });
+      inter.push({ id: `obj:${o.id}`, x: o.interacao?.x ?? o.x, y: o.interacao?.y ?? o.y, raio: 52 * alcance });
       if (!o.semIcone && !objetosSprites.has(o.id)) objetosSprites.set(o.id, criarObjeto(o));
       const marca = o.marcador?.find((r) => atende(r.requer))?.tipo ?? null;
       let txt = objetosMarcadores.get(o.id);
@@ -177,8 +194,9 @@ export function telaMapa(params?: unknown): Tela {
     for (const s of mapa.seguidores ?? []) {
       const ativo = atende(s.requer);
       if (ativo && !seguidores.has(s.id)) criarSeguidor(s.id);
-      if (!ativo && seguidores.has(s.id)) { seguidores.get(s.id)!.s.destroy(); seguidores.delete(s.id); }
+      if (!ativo && seguidores.has(s.id)) { seguidores.get(s.id)!.s.destroy(); seguidores.delete(s.id); motor.removerAtor(`seguidor:${s.id}`); }
     }
+    atualizarDestino();
     const d = (mapa.dicas ?? []).find((x) => atende(x.requer));
     dica.hidden = !d;
     dica.textContent = d?.texto ?? '';
@@ -228,20 +246,30 @@ export function telaMapa(params?: unknown): Tela {
   function criarNpc(n: NpcMapa) {
     const cena = motor!.cena;
     const chave = `npc-${n.id}`;
-    const s = cena.add.sprite(n.x, n.y, chave, quadro(n.direcao ?? 'baixo')).setOrigin(0.5, 46 / 48).setDepth(n.y);
+    nitido(chave);
+    const s = cena.add.sprite(n.x, n.y, chave, quadro(n.direcao ?? 'baixo')).setOrigin(0.5, 46 / 48).setDepth(n.y).setScale(escala);
     // Respiração leve por código.
-    cena.tweens.add({ targets: s, scaleY: 1.03, duration: 1400 + Math.random() * 400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    const marcador = cena.add.text(n.x, n.y - 60, '', { fontFamily: 'Cinzel, serif', fontSize: '22px', color: '#ffd25a', stroke: '#2a1a10', strokeThickness: 4 })
+    cena.tweens.add({ targets: s, scaleY: escala * 1.03, duration: 1400 + Math.random() * 400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    // Marcadores (! … ?) e nome: sempre na camada mais alta, acima de qualquer recorte.
+    const topo = n.y - 60 * escala;
+    const marcador = cena.add.text(n.x, topo, '', { fontFamily: 'Cinzel, serif', fontSize: '22px', color: '#ffd25a', stroke: '#2a1a10', strokeThickness: 4 })
       .setOrigin(0.5, 1).setDepth(150_000);
-    cena.tweens.add({ targets: marcador, y: n.y - 66, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    cena.tweens.add({ targets: marcador, y: topo - 6, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     s.setData('id', n.id);
     sprites.set(n.id, { s, marcador, npc: n });
+    motor!.registrarAtor(`npc:${n.id}`, s);
+  }
+
+  /** Nos mapas com escala, os pixels dos personagens ficam nítidos (sem borrar ao ampliar). */
+  function nitido(chave: string) {
+    if (escala !== 1 && phaser && motor?.cena.textures.exists(chave)) motor.cena.textures.get(chave).setFilter(phaser.Textures.FilterMode.NEAREST);
   }
 
   function criarObjeto(o: ObjetoMapa) {
     const cena = motor!.cena;
     const img = cena.add.image(o.x, o.y, `item-${o.item}`).setDepth(o.acao ? -60_000 : o.y);
-    const lado = o.acao === 'esfregar' && o.item === 'mancha' ? 40 : 30;
+    // Os ícones de poeira e mancha acompanham o tamanho dos personagens.
+    const lado = (o.acao === 'esfregar' && o.item === 'mancha' ? 40 : 30) * escala;
     img.setDisplaySize(lado, lado * (img.height / img.width));
     if (!o.acao) cena.tweens.add({ targets: img, alpha: 0.65, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     return img;
@@ -252,8 +280,11 @@ export function telaMapa(params?: unknown): Tela {
     const chave = `npc-${id}`;
     animsDe(chave);
     const h0 = motor!.posicao();
-    const s = cena.add.sprite(h0.x, h0.y + 30, chave, quadro('cima')).setOrigin(0.5, 46 / 48).setDepth(h0.y + 30);
+    nitido(chave);
+    const s = cena.add.sprite(h0.x, h0.y + 30 * escala, chave, quadro('cima')).setOrigin(0.5, 46 / 48).setDepth(h0.y + 30 * escala).setScale(escala);
     seguidores.set(id, { s, dir: 'cima' });
+    // Quem segue o herói também ganha a silhueta quando fica coberto.
+    motor!.registrarAtor(`seguidor:${id}`, s, { silhueta: true });
     rastro.length = 0;
   }
 
@@ -269,7 +300,7 @@ export function telaMapa(params?: unknown): Tela {
       // Ponto do rastro a ~40 px (por seguidor) do herói, medido ao longo do caminho.
       let dist = 0;
       let alvo = rastro[0] ?? hpos;
-      const atras = 40 * (k + 1);
+      const atras = 40 * escala * (k + 1);
       for (let i = rastro.length - 1; i > 0; i--) {
         dist += Math.hypot(rastro[i].x - rastro[i - 1].x, rastro[i].y - rastro[i - 1].y);
         if (dist >= atras) { alvo = rastro[i - 1]; break; }
@@ -277,7 +308,7 @@ export function telaMapa(params?: unknown): Tela {
       const dx = alvo.x - f.s.x, dy = alvo.y - f.s.y;
       const d = Math.hypot(dx, dy);
       if (d > 1.5) {
-        const passo = Math.min(d, 2.6);
+        const passo = Math.min(d, 2.6 * escala);
         f.s.x += (dx / d) * passo;
         f.s.y += (dy / d) * passo;
         f.dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'esquerda' : 'direita') : dy < 0 ? 'cima' : 'baixo';
@@ -296,11 +327,11 @@ export function telaMapa(params?: unknown): Tela {
     if (!motor) return;
     const alvo = seguidores.get(quem)?.s ?? sprites.get(quem)?.s;
     if (!alvo) return;
-    const t = motor.cena.add.text(alvo.x, alvo.y - 56, texto, {
+    const t = motor.cena.add.text(alvo.x, alvo.y - 56 * escala, texto, {
       fontFamily: 'Inter, sans-serif', fontSize: '13px', color: '#2a1a10', backgroundColor: '#f3eee5', padding: { x: 6, y: 4 },
       wordWrap: { width: 190 }, align: 'center',
     }).setOrigin(0.5, 1).setDepth(160_000);
-    const seguir = () => t.setPosition(alvo.x, alvo.y - 56);
+    const seguir = () => t.setPosition(alvo.x, alvo.y - 56 * escala);
     motor.cena.events.on('update', seguir);
     window.setTimeout(() => { motor?.cena.events.off('update', seguir); t.destroy(); }, 3800);
     ultimoBalao = texto;
@@ -317,6 +348,70 @@ export function telaMapa(params?: unknown): Tela {
     }
   }
 
+  /* ------------------------------------------------------------ nome do morador */
+
+  let rotuloNome: import('phaser').GameObjects.Text | null = null;
+  /** Ao chegar perto de um morador, o nome dele aparece acima da cabeça (camada mais alta). */
+  function mostrarNome(id: string | null) {
+    rotuloNome?.destroy();
+    rotuloNome = null;
+    const npc = id?.startsWith('npc:') ? sprites.get(id.slice(4)) : undefined;
+    if (!npc || !motor) return;
+    const nome = (NPCS as Record<string, { nome?: string }>)[npc.npc.id]?.nome ?? npc.npc.id;
+    rotuloNome = motor.cena.add.text(npc.s.x, npc.s.y - 48 * escala, nome, {
+      fontFamily: 'Inter, sans-serif', fontSize: '13px', color: '#fff6dc', backgroundColor: 'rgba(20,14,8,0.78)', padding: { x: 6, y: 3 },
+    }).setOrigin(0.5, 1).setDepth(155_000);
+  }
+
+  /* ------------------------------------------------------------ destino (casa da Aylin) */
+
+  let destino: { d: Destino; marca: import('phaser').GameObjects.Text; sombra: import('phaser').GameObjects.Ellipse } | null = null;
+
+  /** O destino que vale agora (o primeiro cuja condição é atendida), com o "!" que pula sobre ele. */
+  function atualizarDestino() {
+    if (!motor) return;
+    const d = (mapa.destinos ?? []).find((x) => atende(x.requer)) ?? null;
+    if (destino && destino.d.id === d?.id) return;
+    if (destino) { destino.marca.destroy(); destino.sombra.destroy(); destino = null; }
+    setaDestino.hidden = true;
+    if (!d) return;
+    const cena = motor.cena;
+    const cor = CORES_DESTINO[d.cor ?? 'vermelho'];
+    // 1,5× o "!" dourado das missões, com contorno escuro; sempre acima de recortes e telhados.
+    const marca = cena.add.text(d.x, d.y, '!', { fontFamily: 'Cinzel, serif', fontStyle: 'bold', fontSize: '34px', color: cor, stroke: '#2a0a0a', strokeThickness: 6 })
+      .setOrigin(0.5, 1).setDepth(150_001);
+    const sombra = cena.add.ellipse(d.x, d.y + 4, 22, 7, 0x000000, 0.35).setDepth(150_000);
+    // Pula 8 px num ciclo de ~0,8 s; achata um pouco ao tocar o ponto mais baixo; a sombra encolhe no alto.
+    cena.tweens.add({
+      targets: marca, y: d.y - 8, duration: 400, ease: 'Sine.easeOut', yoyo: true, repeat: -1,
+      onRepeat: () => { cena.tweens.add({ targets: marca, scaleX: 1.14, scaleY: 0.84, duration: 70, yoyo: true, ease: 'Quad.easeOut' }); },
+    });
+    cena.tweens.add({ targets: sombra, scaleX: 0.7, scaleY: 0.7, alpha: 0.2, duration: 400, ease: 'Sine.easeOut', yoyo: true, repeat: -1 });
+    destino = { d, marca, sombra };
+  }
+
+  /** Seta na borda da tela quando o destino está fora da área visível (move-se pela borda com o herói). */
+  function atualizarSetaDestino() {
+    if (!motor || !destino) { setaDestino.hidden = true; return; }
+    const v = motor.cena.cameras.main.worldView;
+    const { x, y } = destino.d;
+    const dentro = x > v.x + 8 && x < v.right - 8 && y - 30 > v.y && y < v.bottom - 8;
+    setaDestino.hidden = dentro || ocupado;
+    if (dentro || ocupado) return;
+    const w = el.clientWidth, hh = el.clientHeight;
+    const sx = ((x - v.x) / v.width) * w, sy = ((y - 20 - v.y) / v.height) * hh;
+    const cx = w / 2, cy = hh / 2;
+    const ang = Math.atan2(sy - cy, sx - cx);
+    // Ponto da borda (com margem) na direção do destino.
+    const margem = 34;
+    const kx = Math.abs(Math.cos(ang)) > 1e-6 ? (cx - margem) / Math.abs(Math.cos(ang)) : Infinity;
+    const ky = Math.abs(Math.sin(ang)) > 1e-6 ? (cy - margem) / Math.abs(Math.sin(ang)) : Infinity;
+    const k = Math.min(kx, ky);
+    setaDestino.style.left = `${cx + Math.cos(ang) * k}px`;
+    setaDestino.style.top = `${cy + Math.sin(ang) * k}px`;
+    setaDestino.style.setProperty('--ang', `${(ang * 180) / Math.PI}deg`);
+  }
+
   /* ------------------------------------------------------------ palco (conversas por cima do mapa) */
 
   function abrirCena(id: string) {
@@ -327,6 +422,7 @@ export function telaMapa(params?: unknown): Tela {
     motor.bloquear(true);
     controles.habilitar(false);
     controles.mostrarInteracao(false);
+    mostrarNome(null);
     el.classList.add('com-palco');
     palco?.destruir();
     palcoEl.replaceChildren();
@@ -469,8 +565,9 @@ export function telaMapa(params?: unknown): Tela {
 
   /** Painel de livro: duas colunas no computador, uma no celular, em pergaminho. */
   function abrirLivro(o: ObjetoMapa) {
-    // TODO(Adam): revisar lore — os textos dos livros estão em src/data/livros.json.
-    const l = (LIVROS as unknown as Record<string, { titulo: string; paragrafos: string[] }>)[o.livro!];
+    // Textos em src/data/livros.json (revisados com o Livro do Jogador). Cada livro marca a flag dele,
+    // que libera páginas e anotações no Caderno de estudos.
+    const l = (LIVROS as unknown as Record<string, { titulo: string; paragrafos: string[]; flag?: string }>)[o.livro!];
     if (!l || !motor) return;
     ocupado = true;
     motor.bloquear(true);
@@ -481,6 +578,7 @@ export function telaMapa(params?: unknown): Tela {
       motor?.bloquear(false);
       // Cada livro conta uma vez (o da guerra também conta quando a Nyme o mostra).
       aplicarEfeitos({ uma_vez: `livro-${o.livro}`, contador: { livros_lidos: 1 } });
+      if (l.flag) aplicarEfeitos({ flag: l.flag });
       aplicarEfeitos(o.coletar);
       atualizar();
       verificarContadores();
@@ -488,7 +586,7 @@ export function telaMapa(params?: unknown): Tela {
     const painel = h('div', { class: 'livro-fundo' },
       h('article', { class: 'livro', role: 'dialog', 'aria-label': l.titulo },
         h('h2', { class: 'livro-titulo' }, l.titulo),
-        h('div', { class: 'livro-texto' }, ...l.paragrafos.map((t) => h('p', {}, t))),
+        h('div', { class: 'livro-texto' }, ...l.paragrafos.map((t) => (/^\(.*\)$/.test(t) ? h('p', {}, h('em', {}, t)) : h('p', {}, t)))),
         fechar));
     el.append(painel);
     fechar.focus({ preventScroll: true });
@@ -575,6 +673,8 @@ export function telaMapa(params?: unknown): Tela {
   /** A cada segundo: herói dentro do mapa e fora de colisão? Controle ligado quando nada está aberto? */
   function vigiar() {
     if (!motor || saiu) return;
+    // O destino também acompanha mudanças feitas fora de uma cena (ex.: flag marcada por outro caminho).
+    atualizarDestino();
     const agora = performance.now();
     const algoAberto = ocupado || palco !== null || fecharPausa !== null || !!el.querySelector('.livro') || !!document.querySelector('.modal-fundo, .dica-tutorial, .ajuda-fullmun');
     if (!algoAberto && !motor.travado() && motor.foraDaArea()) {
@@ -597,7 +697,14 @@ export function telaMapa(params?: unknown): Tela {
 
   /* ------------------------------------------------------------ montagem */
 
+  /** Tela de carregamento do mapa: só sai quando o Phaser já tem o chão e os personagens. */
+  let telaCarregando: ReturnType<typeof mostrarCarregando> | null = null;
+
   async function montar() {
+    telaCarregando = mostrarCarregando(el, textos.loading.mapa);
+    await garantirEtapa(etapaDoCapitulo(), el, telaCarregando, itensDoMapa(idMapa));
+    if (saiu) return;
+    verificarCaderno();
     void audio.carregarEfeitos([...SFX_CAPITULO, ...SFX_FASE4, ...SFX_SONHO]);
     const raca = p.raca, genero = p.genero;
     const ids = new Set([...(mapa.npcs ?? []).map((n) => n.id), ...(mapa.seguidores ?? []).map((s) => s.id)]);
@@ -614,7 +721,7 @@ export function telaMapa(params?: unknown): Tela {
     const m = await criarMotor({
       container: el,
       mapa,
-      imagemUrl: src(base.imagem),
+      blocos: blocosDoChao(base).map((b) => ({ ...b, url: src(b.imagem) })),
       heroi: { raca, genero, spriteUrl: temSprite ? urlAsset(ASSETS.spriteChibi(raca, genero)) : null },
       entrada: () => controles.vetor(),
       debugPermitido: import.meta.env.DEV || new URLSearchParams(location.search).has('debug'),
@@ -626,19 +733,22 @@ export function telaMapa(params?: unknown): Tela {
         ...[...itens].map((id) => ({ chave: `item-${id}`, url: src(ASSETS.item(id)), tipo: 'imagem' as const })),
       ],
       aoProximidade: (id) => {
+        mostrarNome(ocupado ? null : id);
         controles.mostrarInteracao(id !== null && !ocupado);
         if (id !== null && !ocupado && !ajudaAberta) void dicaTutorial('interagir');
       },
       aoEntrarGatilho,
       aoSairGatilho: (id) => gatilhosDentro.delete(id),
       aoPasso: () => audio.sfx('step-marble', { taxa: 0.8 + Math.random() * 0.2, ganho: 0.3 }),
-      aoAtualizar: () => atualizarSeguidores(),
+      aoAtualizar: () => { atualizarSeguidores(); atualizarSetaDestino(); },
     });
     if (saiu) return m.destruir();
     motor = m;
     for (const n of mapa.npcs ?? []) criarNpc(n);
     atualizar();
     el.classList.add('pronto');
+    telaCarregando?.fechar();
+    telaCarregando = null;
     tocarMusicaDaCena(mapa.musica, 1500);
     if (idMapa === 'fullmun') audio.volumeRelativo(1);
     salvarPosicao();
@@ -717,6 +827,16 @@ export function telaMapa(params?: unknown): Tela {
         fora: motor?.foraDaArea() ?? null,
         heroiNaTela: motor ? motor.cena.cameras.main.worldView.contains(motor.heroi.x, motor.heroi.y) : null,
         ajudaAberta,
+        escala,
+        carregando: !!el.querySelector('.carregando-etapa'),
+        profundidade: motor?.estadoProfundidade() ?? null,
+        npcsCobertura: motor ? [...sprites.values()].filter((r) => r.s.visible).map((r) => ({ id: r.npc.id, x: r.npc.x, y: r.npc.y, coberto: Math.round(motor!.cobertura(r.s) * 100) / 100 })) : [],
+        heroiCobertura: motor ? Math.round(motor.cobertura(motor.heroi) * 100) / 100 : null,
+        heroiAltura: motor ? Math.round(motor.heroi.displayHeight) : null,
+        destinoMarcaY: destino?.marca.y ?? null,
+        destino: destino ? { id: destino.d.id, x: destino.d.x, y: destino.d.y, cor: destino.d.cor ?? 'vermelho', seta: !setaDestino.hidden } : null,
+        nomeVisivel: rotuloNome?.text ?? null,
+        marcadoresProfundidade: [...sprites.values()].filter((r) => r.marcador.visible).map((r) => r.marcador.depth),
       }),
     });
   }
@@ -725,6 +845,7 @@ export function telaMapa(params?: unknown): Tela {
     el,
     aoEntrar() {
       montar().catch((erro) => {
+        telaCarregando?.fechar();
         if (!ehErroDeModulo(erro)) { registrarErro(erro, { mensagem: 'O mapa não carregou' }); mostrarTelaDeErro(); }
       });
     },

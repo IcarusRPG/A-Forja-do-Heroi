@@ -18,8 +18,15 @@ export function pontoAndavel(camadas: CamadaColisao[], x: number, y: number): bo
   return andavel;
 }
 
-/** Meia largura e meia altura da "sombra" dos pés do herói, usada na colisão. */
-export const PES = { rx: 8, ry: 4 };
+/** Meia largura e meia altura da "sombra" dos pés do herói, usada na colisão (escala 1). */
+const PES_BASE = { rx: 8, ry: 4 };
+export const PES = { ...PES_BASE };
+
+/** Pés maiores nos mapas com `escalaPersonagens` (o motor chama ao criar o mapa). */
+export function escalarPes(k: number): void {
+  PES.rx = PES_BASE.rx * k;
+  PES.ry = PES_BASE.ry * k;
+}
 
 /** Os pés cabem nessa posição? Confere o centro e quatro pontos ao redor. */
 export function pesLivres(camadas: CamadaColisao[], x: number, y: number): boolean {

@@ -1,6 +1,6 @@
 // Ferramenta de ajuste: desenha colisões, interações e recortes (oclusores) sobre a imagem do mapa.
-// Uso: node scripts/ver-mapa.mjs [saida.png] [oclusores|colisoes|tudo]
-import { readFileSync } from 'node:fs';
+// Uso: node scripts/ver-mapa.mjs [saida.png] [oclusores|colisoes|tudo] [mapa (padrão: sonho)]
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -9,8 +9,11 @@ import { caixaDoContorno, mascaraRecorte } from '../src/exploracao/recorte.ts';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const saida = process.argv[2] || path.join(ROOT, 'tests', 'screenshots', 'mapa-sonho-ajuste.png');
 const modo = process.argv[3] || 'tudo';
-const mapa = JSON.parse(readFileSync(path.join(ROOT, 'src', 'data', 'mapas', 'sonho.json'), 'utf8'));
-const img = path.join(ROOT, 'public', 'assets', mapa.imagem);
+const idMapa = process.argv[4] || 'sonho';
+const mapa = JSON.parse(readFileSync(path.join(ROOT, 'src', 'data', 'mapas', `${idMapa}.json`), 'utf8'));
+// O original em assets-fonte/ (mapas em blocos), ou a imagem única do chão.
+const fonte = path.join(ROOT, 'assets-fonte', 'mapas', `${idMapa}.png`);
+const img = existsSync(fonte) ? fonte : path.join(ROOT, 'public', 'assets', mapa.chao?.imagem ?? mapa.imagem);
 const { data, info } = await sharp(img).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
 const W = info.width, H = info.height;
 const out = Buffer.from(data);
@@ -33,10 +36,17 @@ if (modo !== 'oclusores') {
     const cor = c.tipo === 'andavel' ? '#00e05a' : '#ff2030';
     svg += `<polygon points="${pts(c.pontos)}" fill="${cor}" fill-opacity="0.18" stroke="${cor}" stroke-width="2"/>`;
   }
-  for (const g of mapa.gatilhos) svg += `<polygon points="${pts(g.pontos)}" fill="#ffe000" fill-opacity="0.3" stroke="#ffe000" stroke-width="2"/>`;
-  for (const i of mapa.interacoes) svg += `<circle cx="${i.x}" cy="${i.y}" r="${i.raio}" fill="#00d0ff" fill-opacity="0.2" stroke="#00d0ff" stroke-width="2"/><text x="${i.x}" y="${i.y + 4}" font-size="14" text-anchor="middle" fill="#fff" stroke="#000" stroke-width="0.6">${i.id}</text>`;
+  for (const g of mapa.gatilhos ?? []) svg += `<polygon points="${pts(g.pontos)}" fill="#ffe000" fill-opacity="0.3" stroke="#ffe000" stroke-width="2"/>`;
+  for (const i of mapa.interacoes ?? []) svg += `<circle cx="${i.x}" cy="${i.y}" r="${i.raio}" fill="#00d0ff" fill-opacity="0.2" stroke="#00d0ff" stroke-width="2"/><text x="${i.x}" y="${i.y + 4}" font-size="14" text-anchor="middle" fill="#fff" stroke="#000" stroke-width="0.6">${i.id}</text>`;
 }
-if (modo !== 'colisoes') for (const oc of mapa.oclusores ?? []) svg += `<polygon points="${pts(oc.contorno)}" fill="none" stroke="#ff40ff" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+for (const n of mapa.npcs ?? []) svg += `<circle cx="${n.x}" cy="${n.y}" r="6" fill="#ffd040" stroke="#000"/><text x="${n.x}" y="${n.y - 10}" font-size="13" text-anchor="middle" fill="#ffd040" stroke="#000" stroke-width="0.5">${n.id}</text>`;
+for (const o of mapa.objetos ?? []) svg += `<rect x="${o.x - 5}" y="${o.y - 5}" width="10" height="10" fill="#40c0ff" stroke="#000"/>`;
+if (modo !== 'colisoes') for (const oc of mapa.oclusores ?? []) {
+  svg += `<polygon points="${pts(oc.contorno)}" fill="none" stroke="#ff40ff" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+  const xs = oc.contorno.map((p) => p[0]);
+  svg += `<line x1="${Math.min(...xs)}" y1="${oc.base}" x2="${Math.max(...xs)}" y2="${oc.base}" stroke="#ff40ff" stroke-width="1" stroke-opacity="0.7"/>`;
+  svg += `<text x="${Math.min(...xs) + 2}" y="${Math.min(...oc.contorno.map((p) => p[1])) + 11}" font-size="10" font-family="Arial" fill="#ffb0ff" stroke="#000" stroke-width="0.4">${oc.id}</text>`;
+}
 svg += '</svg>';
 await sharp(out, { raw: { width: W, height: H, channels: 4 } }).composite([{ input: Buffer.from(svg) }]).png().toFile(saida);
 console.log('ok:', saida);
