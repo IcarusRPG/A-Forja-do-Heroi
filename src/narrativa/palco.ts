@@ -1,4 +1,7 @@
+import { verificarCaderno } from '../core/caderno';
+import { abrirCaderno } from '../screens/caderno';
 import AMEACAS from '../data/ameacas.json';
+import { imagemPronta } from '../core/imagens';
 import NPCS from '../data/npcs.json';
 import { ASSETS, existeAsset, existeAssetCache, src, type NomeSfx } from '../core/assets';
 import { dica } from '../core/tutorial';
@@ -62,6 +65,7 @@ export function aplicarEfeitos(e: Efeitos | undefined): void {
   if (e.bestiario) encontrarCriatura(e.bestiario.id, e.bestiario.sabe);
   for (const c2 of e.condicional ?? []) if (atende(c2.requer)) aplicarEfeitos(c2.efeitos);
   verificarCompendio();
+  verificarCaderno();
 }
 
 export interface DestinoBatalha { batalha: string; vitoria: string; derrota: string; cenaOrigem: string | null }
@@ -131,18 +135,33 @@ export function criarPalco(o: OpcoesPalco): Palco {
     avancar = null;
   }
 
+  /**
+   * Troca o fundo da cena só depois de a imagem nova estar decodificada (até lá fica a anterior). Se a
+   * cena mudar de novo antes de a imagem chegar, ela é descartada.
+   */
+  let pedidoFundo = 0;
   function trocarFundo(id: string | undefined, lento = false) {
     el.classList.toggle('sem-fundo', !id);
     if (!id || id === fundoAtual) return;
     const primeira = !fundoAtual;
     fundoAtual = id;
-    const [visivel, outro] = fundoA.classList.contains('visivel') ? [fundoA, fundoB] : [fundoB, fundoA];
-    outro.src = src(ASSETS.cena(id));
-    outro.dataset.cena = id;
-    outro.classList.toggle('lento', lento);
-    if (primeira) { visivel.src = outro.src; visivel.dataset.cena = id; return; }
-    outro.classList.add('visivel');
-    visivel.classList.remove('visivel');
+    const pedido = ++pedidoFundo;
+    const url = src(ASSETS.cena(id));
+    void imagemPronta(url).then((ok) => {
+      if (!ok || pedido !== pedidoFundo || destruido) return;
+      const [visivel, outro] = fundoA.classList.contains('visivel') ? [fundoA, fundoB] : [fundoB, fundoA];
+      outro.src = url;
+      outro.dataset.cena = id;
+      outro.classList.toggle('lento', lento);
+      if (primeira && !visivel.getAttribute('src')) {
+        visivel.src = url;
+        visivel.dataset.cena = id;
+        visivel.classList.add('visivel');
+        return;
+      }
+      outro.classList.add('visivel');
+      visivel.classList.remove('visivel');
+    });
   }
 
   function quemFala(f: Fala): { nome: string | null; classe: string } {
@@ -165,13 +184,16 @@ export function criarPalco(o: OpcoesPalco): Palco {
   }
 
   /** Troca o busto do NPC; na troca de expressão do mesmo NPC, crossfade de 150 ms (sem piscar). */
-  async function mostrarNpc(id: string, retrato: string) {
+  /** Cada fala tem o seu busto: se a fala mudou enquanto a imagem carregava, ela é descartada. */
+  let pedidoBusto = 0;
+  async function mostrarNpc(id: string, retrato: string): Promise<'ok' | 'descartado' | 'falhou'> {
     const mesmo = npcNaConversa === id && !busto.hidden;
-    if (mesmo && busto.dataset.retrato === retrato) return;
+    if (mesmo && busto.dataset.retrato === retrato) return 'ok';
+    const pedido = ++pedidoBusto;
     const novo = src(retrato);
-    const img = new Image();
-    img.src = novo;
-    await img.decode().catch(() => {});
+    const pronta = await imagemPronta(novo);
+    if (pedido !== pedidoBusto || destruido) return 'descartado';
+    if (!pronta) return 'falhou';
     if (mesmo) {
       bustoTroca.src = busto.src;
       bustoTroca.classList.remove('sumindo');
@@ -189,9 +211,11 @@ export function criarPalco(o: OpcoesPalco): Palco {
     busto.dataset.npc = id;
     busto.alt = NOMES_NPC[id]?.nome ?? id;
     busto.hidden = false;
+    return 'ok';
   }
 
   function esconderBustos() {
+    pedidoBusto++;
     npcNaConversa = null;
     heroiNaConversa = false;
     busto.hidden = true;
@@ -205,6 +229,8 @@ export function criarPalco(o: OpcoesPalco): Palco {
   }
 
   async function arrumarBustos(f: Fala) {
+    // Fala nova: qualquer busto que ainda estava carregando para a fala anterior é descartado.
+    pedidoBusto++;
     // Narração e pensamento: sem bustos (a conversa recomeça na próxima fala).
     if (!f.quem || f.quem === 'pensamento') return esconderBustos();
     const falaHeroi = f.quem === 'heroi';
@@ -213,8 +239,10 @@ export function criarPalco(o: OpcoesPalco): Palco {
       heroiNaConversa = true;
     } else {
       if (npcNaConversa && npcNaConversa !== f.quem) heroiNaConversa = false;
-      await mostrarNpc(f.quem, await retratoDe(f));
-      npcNaConversa = f.quem;
+      const r = await mostrarNpc(f.quem, await retratoDe(f));
+      // A fala já mudou (o jogador avançou): este busto não vale mais, e a fala nova arruma os bustos.
+      if (r === 'descartado') return;
+      if (r === 'ok') npcNaConversa = f.quem;
     }
     busto.hidden = !npcNaConversa;
     if (busto.hidden) bustoTroca.hidden = true;
@@ -355,6 +383,10 @@ export function criarPalco(o: OpcoesPalco): Palco {
     aplicarEfeitos(e.efeitos);
     registrarCaminho({ cena: c.id, escolha: e.texto });
     if (e.fala) await mostrarFala({ quem: 'heroi', texto: e.fala });
+    if (e.caderno) {
+      await abrirCaderno({ aba: 'deuses', pagina: e.caderno });
+      if (destruido) return;
+    }
     ocupado = false;
     return seguir(e);
   }

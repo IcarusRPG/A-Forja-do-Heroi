@@ -6,6 +6,8 @@ import { conhecerEmSilencio } from '../core/progresso';
 import { irPara, type Tela } from '../core/telas';
 import { textos } from '../core/textos';
 import { botao, esperar, h } from '../core/ui';
+import { garantirEtapa } from '../core/etapas';
+import { imagemPronta } from '../core/imagens';
 import { interpolar } from '../narrativa/capitulo';
 import { tocarMusicaDaCena } from '../narrativa/palco';
 
@@ -53,9 +55,9 @@ export function telaIntroFullmun(): Tela {
   const origens = T.origens as Record<string, string>;
   const linhaOrigem = p?.origem && origens[p.origem] ? interpolar(origens[p.origem], p) : '';
 
-  const imagem = src(ASSETS.cena('intro-fullmun'));
-  const fundo = h('img', { class: 'intro-fullmun-fundo', src: imagem, alt: '', draggable: 'false' });
-  const fundoEscuro = h('img', { class: 'intro-fullmun-fundo intro-fullmun-fundo-escuro', src: imagem, alt: '', draggable: 'false' });
+  // A imagem entra depois do pré-carregamento da etapa (aoEntrar), já decodificada.
+  const fundo = h('img', { class: 'intro-fullmun-fundo', alt: '', draggable: 'false' });
+  const fundoEscuro = h('img', { class: 'intro-fullmun-fundo intro-fullmun-fundo-escuro', alt: '', draggable: 'false' });
   const frase = h('p', { class: 'intro-fullmun-frase', 'aria-live': 'polite' });
   const toque = h('span', { class: 'intro-fullmun-toque', 'aria-hidden': 'true' }, '◆');
   const busto = h('img', { class: 'intro-fullmun-busto', alt: '', draggable: 'false', hidden: true });
@@ -73,18 +75,32 @@ export function telaIntroFullmun(): Tela {
   let timers: number[] = [];
   const limparTimers = () => { timers.forEach(clearTimeout); timers = []; };
 
-  function mostrarBusto(k: number) {
+  /**
+   * O busto pertence ao passo dele (pelo índice). Só aparece depois de decodificado; se o jogador já
+   * avançou quando a imagem chega, ela é descartada (nunca aparece no passo seguinte). A moldura nunca
+   * fica vazia: o elemento só sai do `hidden` com a imagem dentro.
+   */
+  let pedidoBusto = 0;
+  async function mostrarBusto(k: number) {
+    const pedido = ++pedidoBusto;
     const id = BUSTOS[k];
     if (!id) {
       busto.classList.remove('visivel');
+      busto.hidden = true;
+      busto.removeAttribute('src');
+      delete busto.dataset.npc;
       return;
     }
-    busto.src = src(ASSETS.retratoNpc(id));
-    busto.dataset.npc = id;
-    busto.hidden = false;
-    requestAnimationFrame(() => busto.classList.add('visivel'));
     // O parágrafo 1 da ficha fica liberado no Compêndio, sem aviso.
     conhecerEmSilencio(id);
+    const url = src(ASSETS.retratoNpc(id));
+    if (!(await imagemPronta(url))) return;
+    if (pedido !== pedidoBusto || i !== k || saindo) return;
+    busto.src = url;
+    busto.dataset.npc = id;
+    busto.dataset.passo = String(k + 1);
+    busto.hidden = false;
+    requestAnimationFrame(() => { if (pedido === pedidoBusto) busto.classList.add('visivel'); });
   }
 
   async function mostrar(k: number) {
@@ -94,6 +110,7 @@ export function telaIntroFullmun(): Tela {
     if (i >= 0) {
       frase.classList.remove('visivel');
       frase.classList.add('saindo');
+      pedidoBusto++;
       busto.classList.remove('visivel');
       await esperar(SAIDA_MS);
       if (saindo) return;
@@ -117,7 +134,7 @@ export function telaIntroFullmun(): Tela {
     frase.classList.remove('saindo', 'completa');
     void frase.offsetWidth;
     frase.classList.add('visivel');
-    mostrarBusto(k);
+    void mostrarBusto(k);
     terminou = false;
     timers.push(window.setTimeout(() => completar(), ENTRADA_MS + total * MS_POR_PALAVRA));
     trocando = false;
@@ -169,6 +186,8 @@ export function telaIntroFullmun(): Tela {
       musica: audio.estadoMusica(),
       destaques: [...frase.querySelectorAll('.destaque')].map((d) => d.textContent),
       busto: busto.classList.contains('visivel') ? busto.dataset.npc ?? null : null,
+      bustoPasso: busto.hidden ? null : Number(busto.dataset.passo),
+      bustoVazio: !busto.hidden && !(busto.complete && busto.naturalWidth > 0),
       bloco: i >= BLOCO_2 ? 2 : 1,
       completa: terminou,
       compendio: [...getEstado().campanha.compendio.conhecidos],
@@ -178,11 +197,20 @@ export function telaIntroFullmun(): Tela {
   return {
     el,
     aoEntrar() {
-      audio.volumeRelativo(0.5);
-      tocarMusicaDaCena('fullmun', 2500);
       window.addEventListener('keydown', tecla);
-      requestAnimationFrame(() => el.classList.add('entrou'));
-      void mostrar(0);
+      void (async () => {
+        // Tudo da intro (ilustração e bustos) em memória antes da primeira frase.
+        await garantirEtapa('intro', el);
+        const imagem = src(ASSETS.cena('intro-fullmun'));
+        await imagemPronta(imagem);
+        if (saindo) return;
+        fundo.src = imagem;
+        fundoEscuro.src = imagem;
+        audio.volumeRelativo(0.5);
+        tocarMusicaDaCena('fullmun', 2500);
+        requestAnimationFrame(() => el.classList.add('entrou'));
+        void mostrar(0);
+      })();
     },
     aoSair() {
       saindo = true;
