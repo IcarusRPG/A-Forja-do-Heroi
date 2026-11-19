@@ -116,6 +116,8 @@ export interface Escolha {
   voltar?: boolean;
   /** Fala do herói ao escolher (aparece antes do destino). */
   fala?: string;
+  /** Abre o Caderno de estudos nesta página; ao fechar, segue para o destino da escolha. */
+  caderno?: string;
 }
 
 /** O que acontece depois da última fala de uma cena sem escolhas. */

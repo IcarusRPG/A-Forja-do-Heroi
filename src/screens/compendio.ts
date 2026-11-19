@@ -1,3 +1,4 @@
+import { abrirCaderno } from './caderno';
 import { ASSETS, src } from '../core/assets';
 import { audio } from '../core/audio';
 import { getEstado } from '../core/estado';
@@ -84,7 +85,7 @@ export function abrirCompendio(aba: 'personagens' | 'bestiario' | 'vozes' = 'per
       if (!lib) return item(T().desconhecido, '', silhueta(), true);
       const img = h('img', { class: 'ci-img', src: src(ASSETS.retratoNpc(f.id)), alt: '', draggable: 'false' });
       const b = item(f.nome, f.papel, img, false, () => abrirFicha([
-        h('img', { class: 'ficha-busto', src: src(ASSETS.retratoNpc(f.id)), alt: f.nome, draggable: 'false' }),
+        h('img', { class: 'ficha-busto', src: src(ASSETS.retratoNpc(f.id)), 'data-retrato': ASSETS.retratoNpc(f.id), alt: f.nome, draggable: 'false' }),
         h('h3', { class: 'ficha-nome' }, f.nome),
         h('p', { class: 'ficha-meta' }, `${f.raca} · ${f.papel}`),
         seloRelacao(f.id),
@@ -128,7 +129,12 @@ export function abrirCompendio(aba: 'personagens' | 'bestiario' | 'vozes' = 'per
           h('p', { class: 'voz-frase' }, `“${V[v.id]?.mensagem ?? ''}”`),
           h('p', { class: 'voz-nome' }, v.nomeDivindade ?? T().nomeNaForja))
       : h('div', { class: 'compendio-voz bloqueado', role: 'listitem' }, h('p', { class: 'voz-titulo' }, T().desconhecido)));
-    lista.replaceChildren(...itens);
+    // O Compêndio é o registro objetivo; o que o herói estudou sobre os deuses fica no caderno.
+    const link = getEstado().personagem
+      ? h('button', { type: 'button', class: 'compendio-link-caderno' }, textos.caderno.verDeuses)
+      : null;
+    link?.addEventListener('click', () => void abrirCaderno({ aba: 'deuses' }));
+    lista.replaceChildren(...itens, ...(link ? [h('div', { class: 'compendio-rodape', role: 'listitem' }, link)] : []));
   }
 
   const ABAS = { personagens: [T().personagens, personagens], bestiario: [T().bestiario, bestiario], vozes: [T().vozes, vozes] } as const;

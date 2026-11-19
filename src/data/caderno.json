@@ -1,0 +1,116 @@
+{
+  "_sobre": "Caderno de estudos do herói (Fase 4E). Cada página, anotação e pergunta tem um gatilho: { \"inicio\": true }, { \"flag\": \"...\" }, { \"cena\": \"...\" } ou { \"capituloMin\": n }. Os textos aceitam {nome} e {a|b} (masculino|feminino); **negrito** e __sublinhado__.",
+  "paginas": [
+    {
+      "id": "abertura",
+      "titulo": "Alfars e Baldurs",
+      "gatilho": { "inicio": true },
+      "texto": [
+        "No começo havia só o vazio. Então surgiu **Orun**, a Divindade Primordial, e criou Icarus: bruto, selvagem, com montanhas que tocavam o céu e mares que nunca se acalmavam.",
+        "Para domar esse mundo, Orun criou os **Baldurs**. Eles acalmaram os mares, abriram cavernas nas montanhas, espalharam bosques e planícies. Os Baldurs **andam pelo mundo** e vivem o que criam.",
+        "Depois, Orun criou os **Alfars**, nascidos do **Núcleo**, no coração da terra. Os Alfars **não caminham entre nós**: sussurram de longe, aos corações de quem acredita neles.",
+        "Juntos, criaram as primeiras raças. E então Orun desapareceu. Morreu? Partiu? Nunca existiu? Cada livro diz uma coisa.",
+        "Até agora estudei sete deles. Os livros do templo citam outros nomes, mas Artho diz que \"cada coisa tem seu tempo\"."
+      ],
+      "margem": { "texto": "Os Alfars e os Baldurs já guerrearam. Quando? Por quê? Os livros não dizem. Artho sempre muda de assunto.", "sublinhado": 3 }
+    },
+    {
+      "id": "solem",
+      "deus": { "nome": "Sólem", "grupo": "alfar", "dominio": "O Deus-Sol: luz, proteção e justiça" },
+      "imagem": "solem",
+      "gatilho": { "inicio": true },
+      "texto": ["O deus do templo de Artho, e o meu de certa forma, porque cresci sob o sino dele. Os livros o pintam com cabelos dourados que queimam como o sol nascendo. Artho diz que a luz de Sólem banha igualmente todos os caminhos; por isso o templo nunca fecha a porta para ninguém."],
+      "margem": { "texto": "Nas preces mais antigas, Artho fala de uma \"barreira do Núcleo\". Nunca explica o que é." }
+    },
+    {
+      "id": "justar",
+      "deus": { "nome": "Justar", "grupo": "alfar", "dominio": "O Equilíbrio e a Ordem" },
+      "imagem": "justar",
+      "gatilho": { "inicio": true },
+      "texto": ["Os livros dizem que os olhos dele refletem todas as balanças do mundo. Empunha um machado de duas mãos, flamejante, forjado no próprio Núcleo. Os devotos se chamam Guardadores do Equilíbrio, e os santuários ficam em pedreiras e cavernas, onde dá para pensar no peso de cada decisão."]
+    },
+    {
+      "id": "ardor",
+      "deus": { "nome": "Ardor", "grupo": "baldur", "dominio": "A Liberdade e a Ambição" },
+      "imagem": "ardor",
+      "gatilho": { "inicio": true },
+      "texto": ["Dizem que aparece como um halfling, e que adora quando o subestimam. É o deus de quem luta contra correntes e de quem sonha alto demais. Eu gosto dele."]
+    },
+    {
+      "id": "expiria",
+      "deus": { "nome": "Expiria", "grupo": "baldur", "dominio": "Os mares e os últimos instantes" },
+      "imagem": "expiria",
+      "gatilho": { "inicio": true },
+      "texto": ["Todas as águas são dela, dos riachos ao fundo do oceano, onde estaria o maior cemitério do mundo. Quase nunca interfere em nada. Quase. Dizem que, às vezes, devolve alguém que ainda não devia partir… e que essa pessoa volta com o mar nos olhos."]
+    },
+    {
+      "id": "eternus",
+      "deus": { "nome": "Eternus", "grupo": "baldur", "dominio": "A Ressurreição e a Profecia" },
+      "imagem": "eternus",
+      "gatilho": { "inicio": true },
+      "texto": ["O arquiteto das segundas chances: oferece recomeço até a quem errou feio. Foi ele quem criou os Nyashi. Galhos quebrados, névoa repentina, um corvo que levanta voo: para os devotos, tudo isso é a voz dele."],
+      "extra": { "raca": "nyashi", "texto": "Meu povo veio dele. Às vezes sinto isso nos ossos." }
+    },
+    {
+      "id": "mentis",
+      "deus": { "nome": "Mentis", "grupo": "baldur", "dominio": "O Tempo e os Ciclos" },
+      "imagem": "mentis",
+      "gatilho": { "inicio": true },
+      "texto": ["Guardião do tempo, respeitado e temido em silêncio. Os livros dizem que foi ele quem ensinou os Ogbari a pensar e a medir o tempo. O Kobanu jura que é verdade. Há uma cantiga sobre um \"Primogênito do Tempo\", mas não achei isso em livro nenhum."]
+    },
+    {
+      "id": "irae",
+      "deus": { "nome": "Irae", "grupo": "baldur", "dominio": "A Fúria e as Tempestades" },
+      "imagem": "irae",
+      "gatilho": { "inicio": true },
+      "texto": ["Não tem templo: o campo de batalha é o templo dele. Para os devotos, a raiva é a oração mais sincera, e a tempestade anuncia o fim e o começo de tudo. Artho fica sério quando eu pergunto sobre ele."]
+    },
+    {
+      "id": "bellica",
+      "deus": { "nome": "Béllica", "grupo": "alfar", "dominio": "O Conflito, a espada e o escudo" },
+      "imagem": "bellica",
+      "gatilho": { "flag": "leu_livro_guerra" },
+      "texto": ["O livro diz que todas as armas e armaduras nasceram dela, moldadas com o próprio sangue. Foi uma das que marcharam na guerra antiga. Por quê? O livro não diz."]
+    },
+    {
+      "id": "odincia",
+      "deus": { "nome": "Odincia", "grupo": "alfar", "dominio": "(domínio desconhecido)" },
+      "imagem": null,
+      "gatilho": { "flag": "leu_livro_guerra" },
+      "texto": ["O nome aparece ao lado de Béllica e Nocturna, à frente da marcha contra os seguidores dos Baldurs. É só isso. Nenhum desenho, nenhuma prece. Como se alguém quisesse que ela fosse esquecida."]
+    },
+    {
+      "id": "nocturna",
+      "deus": { "nome": "Nocturna", "grupo": "alfar", "dominio": "O véu do desconhecido" },
+      "imagem": "nocturna",
+      "gatilho": { "flag": "leu_livro_guerra" },
+      "texto": ["Uma silhueta de sombras, dizem, com olhos de brasa. Guardiã dos segredos antigos. Também marchou na guerra. Só de ler o nome, a biblioteca pareceu mais fria."]
+    },
+    {
+      "id": "draconara",
+      "deus": { "nome": "Draconara", "grupo": "baldur", "dominio": "Os Dragões, a Soberania e a Conquista" },
+      "imagem": "draconara",
+      "gatilho": { "flag": "leu_livro_povos" },
+      "texto": ["Criadora dos primeiros dragões. Quer tudo, até o que pertence aos outros deuses. É cultuada quase só por um povo dracônico do leste, que eu nunca vi. Dizem que nem todos eles concordam com ela."]
+    }
+  ],
+  "anotacoes": [
+    { "id": "sonho", "data": "Manhã, dia do sonho", "gatilho": { "inicio": true }, "texto": "Sonhei de novo. Sete estátuas sem rosto, sete vozes. Serão os deuses que eu estudo? Não consigo dizer quem é quem." },
+    { "id": "trinco", "data": "Manhã, a caminho do templo", "gatilho": { "flag": "pista_trinco" }, "texto": "O trinco do chiqueiro do Gerulf foi arrebentado, não esquecido aberto. O Mirtilo não tem força pra isso. Então quem?" },
+    { "id": "fim-cap01", "data": "Manhã, na porta do templo", "gatilho": { "capituloMin": 2 }, "texto": "Salvei a Aylin de um porco azul. {Atrasado|Atrasada} de novo, mas valeu a pena." },
+    { "id": "livro-guerra", "data": "Tarde, na biblioteca do templo", "gatilho": { "flag": "leu_livro_guerra" }, "texto": "Finalmente: a guerra existiu. Devotos de Béllica, Odincia e Nocturna marcharam contra os seguidores dos Baldurs. As páginas seguintes foram arrancadas." },
+    { "id": "livro-povos", "data": "Tarde, na biblioteca do templo", "gatilho": { "flag": "leu_livro_povos" }, "texto": "Cada povo tem um deus por trás. Os Nyashi, Eternus. Os Ogbari, Mentis. Os dragões, Draconara." },
+    { "id": "livro-solem", "data": "Tarde, na biblioteca do templo", "gatilho": { "flag": "leu_livro_solem" }, "texto": "Depois de uma guerra antiga, Sólem fortaleceu uma barreira no Núcleo. A mesma barreira das preces do Artho?" },
+    { "id": "alcapao", "data": "Tarde, na biblioteca do templo", "gatilho": { "flag": "artho_alcapao" }, "texto": "\"Quando você estiver {pronto|pronta}.\" Pronto pra quê, Artho?" },
+    { "id": "fim-cap02", "sozinha": true, "gatilho": { "flag": "fim_capitulo_02" }, "texto": "Não consigo escrever sobre hoje." }
+  ],
+  "perguntas": [
+    { "id": "guerra", "gatilho": { "inicio": true }, "texto": "Por que os Alfars e os Baldurs guerrearam?" },
+    { "id": "alcapao", "gatilho": { "inicio": true }, "texto": "O que há debaixo do alçapão?" },
+    { "id": "vozes", "gatilho": { "inicio": true }, "texto": "De quem são as sete vozes do sonho?" },
+    { "id": "trinco", "gatilho": { "flag": "pista_trinco" }, "texto": "Quem arrebentou o trinco do chiqueiro?" },
+    { "id": "paginas", "gatilho": { "flag": "leu_livro_guerra" }, "texto": "Por que arrancaram as páginas do livro da guerra?" },
+    { "id": "barreira", "gatilho": { "flag": "leu_livro_solem" }, "texto": "O que é a barreira do Núcleo?" },
+    { "id": "ataque", "gatilho": { "flag": "fim_capitulo_02" }, "texto": "Quem atacou Füllmun?" }
+  ]
+}

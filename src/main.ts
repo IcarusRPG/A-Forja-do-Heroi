@@ -2,6 +2,8 @@ import '@fontsource/cinzel/400.css';
 import '@fontsource/cinzel/700.css';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/600.css';
+import '@fontsource/kalam/400.css';
+import '@fontsource/kalam/700.css';
 import './styles/base.css';
 import './styles/telas.css';
 import './styles/criacao.css';
@@ -11,6 +13,8 @@ import './styles/batalha.css';
 import './styles/fase4.css';
 import './styles/saves.css';
 import './styles/fase4d.css';
+import './styles/fase4f.css';
+import './styles/caderno.css';
 
 import { instalarProtecoes } from './core/carregar';
 import { definirConstrutorLocal, iniciarEstado } from './core/estado';

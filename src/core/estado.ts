@@ -92,6 +92,8 @@ export interface Campanha {
   /** Pontos de relação por personagem. */
   relacoes: Record<string, number>;
   compendio: ProgressoCompendio;
+  /** Caderno de estudos (Fase 4E): o que já foi anunciado e se há novidade. Ausente em saves antigos. */
+  caderno?: { anunciados: string[]; novidade: boolean };
   /** Itens de mapa já recolhidos e pontos já usados (ids únicos: "fullmun:lenco", "salao:mancha-3"…). */
   coletados: string[];
   /** Contadores livres (abóboras quebradas, manchas limpas, estantes…). */

@@ -1,3 +1,5 @@
+import { verificarCaderno } from '../core/caderno';
+import { etapaDoCapitulo, garantirEtapa } from '../core/etapas';
 import { SFX_CAPITULO, SFX_FASE4 } from '../core/assets';
 import { audio } from '../core/audio';
 import { atualizarCampanha, getEstado, marcarFlag } from '../core/estado';
@@ -95,6 +97,11 @@ export function telaCapitulo(params?: unknown): Tela {
     aoEntrar() {
       void audio.carregarEfeitos([...SFX_CAPITULO, ...SFX_FASE4]);
       void (async () => {
+        // Cenas, bustos, mapas e batalhas do capítulo em memória antes da primeira cena.
+        await garantirEtapa(etapaDoCapitulo(), el);
+        if (saiu) return;
+        // Caderno de estudos: saves antigos e jogo novo começam coerentes (sem aviso do que já existe).
+        verificarCaderno();
         const c = getEstado().campanha;
         if (prm.cena) return palco.entrar(prm.cena, 'falas');
         if (!c.cena || c.cena === 'inicio') {

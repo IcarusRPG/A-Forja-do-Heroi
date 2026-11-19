@@ -72,7 +72,7 @@ export function atrasoFinal(): number {
 
 // ---------------------------------------------------------------- inventário
 
-export interface DefItem { nome: string; tipo: 'cura' | 'chave' | 'missao'; cura?: string; icone: string; texto?: string; grupo?: string; total?: number; missao?: string; contador?: { rotulo: string; total: number } }
+export interface DefItem { nome: string; tipo: 'cura' | 'chave' | 'missao'; /** Item-chave que nunca sai do inventário (Caderno de estudos). */ permanente?: boolean; cura?: string; icone: string; texto?: string; grupo?: string; total?: number; missao?: string; contador?: { rotulo: string; total: number } }
 export const ITENS_DEF = ITENS as Record<string, DefItem>;
 export const qtdItem = (id: string): number => getEstado().campanha.inventario[id] ?? 0;
 

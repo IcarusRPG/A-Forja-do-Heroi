@@ -1,4 +1,5 @@
 {
+  "caderno": { "nome": "Caderno de estudos", "tipo": "chave", "permanente": true, "icone": "livro", "texto": "O que você estudou e anotou. Não sai do inventário." },
   "pao-de-mel": { "nome": "Pão de mel da Vó Hulda", "tipo": "cura", "cura": "1d4", "icone": "pao", "texto": "Recupera 1d4 PV." },
   "bandagem": { "nome": "Bandagem", "tipo": "cura", "cura": "1d4", "icone": "bandagem", "texto": "Recupera 1d4 PV." },
   "unguento": { "nome": "Unguento de Selene", "tipo": "cura", "cura": "1d4+1", "icone": "unguento", "texto": "Recupera 1d4+1 PV." },

@@ -10,6 +10,8 @@ import { classePorId, nomeDaClasse } from '../core/classes';
 import { racaPorId } from '../core/regras';
 import { fmt } from '../core/textos';
 import { abrirCompendio } from './compendio';
+import { abrirCaderno } from './caderno';
+import { cadernoTemNovidade } from '../core/caderno';
 import { abrirOpcoes } from './opcoes';
 import { abrirSalvar } from './saves';
 
@@ -26,7 +28,7 @@ function cabecalhoHeroi(): HTMLElement | null {
     raca: racaPorId(p.raca)?.nome ?? p.raca, classe: classe ? nomeDaClasse(classe, p.genero) : '', pv: pvAtual(), pvMax: pvMaxAtual(),
   });
   return h('div', { class: 'pausa-heroi' },
-    h('img', { class: 'pausa-busto', src: src(ASSETS.bustoHeroi(p.raca, p.genero)), alt: '', draggable: 'false' }),
+    h('img', { class: 'pausa-busto', src: src(ASSETS.bustoHeroi(p.raca, p.genero)), 'data-retrato': ASSETS.bustoHeroi(p.raca, p.genero), alt: '', draggable: 'false' }),
     h('div', {}, h('p', { class: 'pausa-nome' }, p.nome), h('p', { class: 'pausa-linha' }, linha)));
 }
 
@@ -47,6 +49,9 @@ export function abrirMenuPausa(o: {
   const btnCompendio = botao(textos.compendio.titulo, () => abrirCompendio());
   if (novidade) btnCompendio.append(h('span', { class: 'ponto-novidade', 'aria-label': 'novidade' }));
   btnCompendio.classList.add('btn-compendio');
+  // Caderno de estudos: atalho próprio, logo abaixo de Itens, com o ponto dourado quando há novidade.
+  const btnCaderno = getEstado().personagem ? botao(textos.caderno.atalho, () => { void abrirCaderno(); btnCaderno?.querySelector('.ponto-novidade')?.remove(); }, { classe: 'btn-caderno' }) : null;
+  if (btnCaderno && cadernoTemNovidade()) btnCaderno.append(h('span', { class: 'ponto-novidade', 'aria-label': 'novidade' }));
   const btnSalvar = botao(textos.saves.salvar, () => abrirSalvar(), { desabilitado: o.emBatalha, classe: 'btn-salvar' });
   const dicaSalvar = o.emBatalha ? h('p', { class: 'pausa-dica', id: 'dica-salvar' }, textos.saves.semBatalha) : null;
   if (dicaSalvar) btnSalvar.setAttribute('aria-describedby', 'dica-salvar');
@@ -55,6 +60,7 @@ export function abrirMenuPausa(o: {
     botao(textos.cenas.continuar, () => fechar(), { classe: 'btn-principal' }),
     btnSalvar, dicaSalvar,
     o.emBatalha ? null : botao(textos.progresso.itens, () => abrirItens({ aoMudarPv: o.aoMudarPv })),
+    btnCaderno,
     btnCompendio,
     botao(textos.cenas.diario.titulo, () => abrirDiario()),
     o.ajuda ? botao(o.ajuda.rotulo, () => { fechar(); o.ajuda!.abrir(); }, { classe: 'btn-ajuda-fullmun' }) : null,
@@ -95,6 +101,15 @@ export function abrirItens(o: { aoMudarPv?: (recuperou: number) => void } = {}):
         const g = grupos.get(def.grupo) ?? { atual: 0, total: def.total ?? 0, icone: def.icone };
         g.atual += n;
         grupos.set(def.grupo, g);
+        continue;
+      }
+      if (def.permanente) {
+        // Item-chave permanente (Caderno de estudos): sempre na lista, com "Abrir"; não se descarta.
+        if (!getEstado().personagem) continue;
+        linhas.push(h('div', { class: 'item-linha item-permanente', 'data-item': id },
+          h('img', { class: 'item-icone', src: src(ASSETS.item(def.icone)), alt: '', draggable: 'false' }),
+          h('div', { class: 'item-info' }, h('p', { class: 'item-nome' }, def.nome), h('p', { class: 'item-texto' }, def.texto ?? '')),
+          botao(textos.caderno.abrir, () => void abrirCaderno(), { classe: 'btn-discreto item-usar item-abrir-caderno' })));
         continue;
       }
       if (n <= 0) continue;

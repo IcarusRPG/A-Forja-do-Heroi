@@ -5,6 +5,8 @@ import { avisosRecentes } from './toasts';
 import { darItem, definirMissao, somarAtraso } from './progresso';
 import { definirRelogio, listarSlots } from './saves';
 import { estadoTutorial } from './tutorial';
+import { estadoCaderno } from './caderno';
+import { estadoEtapas } from './etapas';
 
 /**
  * Ganchos de teste (só com ?test=1), comuns a todas as telas do jogo. Cada tela acrescenta os seus
@@ -31,7 +33,16 @@ export function estadoProgresso() {
     musica: audio.estadoMusica(),
     tutorial: estadoTutorial(),
     erro: !!document.querySelector('.tela-erro'),
+    caderno: { ...estadoCaderno(), tela: telaCaderno() },
+    etapas: estadoEtapas(),
   };
+}
+
+/** O caderno aberto na tela (aba e páginas visíveis), ou null. */
+function telaCaderno() {
+  const f = document.querySelector<HTMLElement>('.caderno-fundo:not(.saindo)');
+  if (!f) return null;
+  return { aba: f.dataset.aba ?? null, paginas: (f.dataset.pagina ?? '').split(' ').filter(Boolean), imagemCheia: !!f.querySelector('.caderno-imagem-cheia') };
 }
 
 /** Saves (Fase 4B): metadados dos 3 slots e o relógio simulado (para o "há 3 dias"). */

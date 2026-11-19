@@ -24,8 +24,12 @@ Abra `http://localhost:5174/aforjadoheroi/`.
 | `npm run sfx` | Regera os efeitos sonoros provisórios em `public/assets/sfx` |
 | `npm run sprites` | Gera as folhas de caminhada (heróis e NPCs) e as folhas de batalha (ver abaixo). Caminhada: gera as folhas do herói (`public/assets/sprites/chibi-<raca>-<m\|f>.png`) a partir das folhas 2 × 2 de vistas paradas em `assets-src/sprites/<raca>-<m\|f>.png`; prévias 6× e GIFs em `tests/screenshots/sprites/`. Batalha (`scripts/build-battle-sprites.mjs`): folhas 3 × 2 de poses paradas em `assets-src/batalha/` viram folhas horizontais de 6 quadros alinhadas pelos pés + JSON em `public/assets/img/batalha/`; prévias em `tests/screenshots/batalha/` |
 | `node scripts/conferir-mapa.mjs [saida.png]` | Confere o mapa do sonho: tudo alcançável a pé a partir da escada, caminho até o altar de cada estátua e largura das passagens |
-| `node scripts/ver-mapa.mjs [saida.png]` | Desenha colisões, áreas de interação e recortes de profundidade sobre a imagem do mapa |
-| `npm run test:unit` | Testes de unidade (`node --test`): simula deploys seguidos e confere que os assets do deploy anterior continuam publicados (`scripts/manter-assets.mjs`) |
+| `node scripts/ver-mapa.mjs [saida.png] [tudo\|colisoes\|oclusores] [mapa]` | Desenha colisões, interações, moradores e recortes (com id e linha da base) sobre a imagem do mapa |
+| `node scripts/grade-mapa.mjs <mapa> <x> <y> <largura> <altura> <zoom> <saida.png>` | Recorte ampliado do mapa com grade de coordenadas, para ajustar colisões e recortes à mão |
+| `node scripts/oclusores.mjs [mapa]` | Completa os recortes de oclusão a partir de `retangulo` + `baseY` (+ `poligono` opcional) escritos no JSON do mapa |
+| `node scripts/comprimir-imagens.mjs` | Mapas e fundos de batalha (originais em `assets-fonte/`) → WebP; mapa acima de 800 KB vira blocos de 1024 px; escreve `docs/pesos-assets.md` |
+| `node scripts/build-panteao.mjs [pasta]` | Imagens do panteão (`Documents/FdG/img/panteão/{Alfars,Baldurs}`) → `public/assets/img/panteao/<id>.webp`, sem fundo |
+| `npm run test:unit` | Testes de unidade (`node --test`): deploys seguidos mantêm os assets anteriores; a grade de cada mapa não tem ponto andável ilhado e tudo (moradores, itens, gatilhos) está ao alcance |
 | `npm run test:mobile` | Testes e2e (Playwright) da criação de personagem e do sonho dos deuses em Pixel 7, iPhone 13 e paisagem 844×390; screenshots em `tests/screenshots/`. Na primeira vez: `npx playwright install chromium webkit`. Para testar o site publicado em vez do build local: `BASE_URL=https://game.icarusrpg.com.br/aforjadoheroi/ npm run test:mobile` |
 
 Os originais da pasta `FdG` nunca são movidos nem alterados. Para recodificar o vídeo mesmo que já exista uma versão otimizada, use `FORCAR_VIDEO=1 npm run assets`.
@@ -55,11 +59,27 @@ Todo texto visível ao jogador está em `src/data/textos.json` (com flexão de g
 - **Modo de ajuste:** abra o jogo com `?debug=1` (ou aperte F2 no `npm run dev`) para ver as colisões (verde/vermelho), as áreas de interação (azul), os gatilhos (amarelo) e os recortes de profundidade (magenta). Um clique no mapa mostra a coordenada daquele ponto.
 - **Ganchos de teste:** com `?test=1`, `window.__fdg.teleport(id | "x,y")`, `__fdg.walkTo("x,y")`, `__fdg.interact()`, `__fdg.tremor()` e `__fdg.state()`.
 
+### Mapas em camadas, profundidade e escala (Fase 4F)
+
+- Cada mapa (`src/data/mapas/*.json`) tem as camadas `chao` (imagem inteira ou `blocos`), `objetos`, `oclusores`, `colisoes`, `interacoes` e `npcs`. Quando a ilustração virar "chão + sprites", só os dados mudam.
+- **Oclusores:** copas, telhados, toldos e postes recortados da ilustração. Quem tem os pés acima de `baseY` fica atrás; o recorte fica a 45% enquanto alguém está atrás (150 ms). Coberto mais de 40%, o herói (e quem o segue) ganha a silhueta dourada.
+- **Modo F2** (ou `?debug=1`): colisões com nome, recortes com id e base, e as coordenadas do ponto tocado.
+- **`escalaPersonagens`** (padrão 1): tamanho do herói, moradores e seguidores, dos pés, das interações e da velocidade. Salão 2,5× (porta de 175 px), biblioteca 4× (porta de 310 px).
+- **`destinos`**: `{ "id", "x", "y", "cor": "vermelho", "requer" }` mostra o "!" que pula sobre o ponto e a seta na borda da tela quando ele está fora de vista.
+
+### Carregamento por etapa
+
+`src/core/etapas.ts` monta o manifesto de cada etapa (intro, sonho, Capítulo 01, Capítulo 02) a partir dos dados. Ao começar uma etapa, o que falta é baixado com a tela de carregamento; a próxima vem em segundo plano, com prioridade baixa. Imagens HTML só trocam depois de `decode()`; o mapa só aparece (com joystick e HUD) com o Phaser pronto.
+
 ## Capítulos e cenas narrativas
 
 - **Roteiro em dados:** cada capítulo é um JSON em `src/data/capitulos/` com a lista de cenas: `fundo`, `musica` (`"fullmun"` é a playlist da vila; o resto é o nome do arquivo em `music/`), `falas` (`quem`: vazio = narração, `"pensamento"`, `"heroi"` ou o id de um NPC de `src/data/npcs.json`) e `escolhas` (`requer` por origem/flag/semFlag/gênero, `uma_vez`, `efeitos`, `teste` de perícia com `sucesso`/`falha`, `batalha` com `vitoria`/`derrota`). Texto: `{nome}` e `{homem|mulher}`.
 - **Testes de perícia:** d20 + atributo + 2 da origem (se for a perícia dela) + bônus raciais + bônus do próximo teste. Antes da Forja, o treino de classe não conta.
 - **Save:** 1 slot automático (`fdg.save.auto`) e 2 manuais (`fdg.save.manual1`, `fdg.save.manual2`) no localStorage; opções em `fdg.opcoes`. Salvar no menu de pausa, Carregar e Continuar (o mais recente) no menu inicial, cópia de segurança em .json na tela Carregar. O localStorage é separado por domínio: saves de outro endereço só passam para cá exportando lá e importando aqui.
+
+### Caderno de estudos (Fase 4E)
+
+`src/data/caderno.json` tem as páginas dos deuses, as anotações e as perguntas, cada uma com um gatilho (`inicio`, `flag`, `cena`, `capituloMin`). O caderno é calculado do progresso (por isso saves antigos já abrem coerentes); no save ficam só o que já foi anunciado e o ponto de novidade. Abre pelos Itens, pelo atalho "Caderno" da pausa, pela escolha das anotações no quarto (`"caderno": "abertura"` numa escolha) e pelo link da aba Vozes do Compêndio. Os livros da biblioteca (`src/data/livros.json`) marcam a flag `leu_livro_*` de cada um.
 
 ## Batalha (estilo Final Fantasy VI)
 

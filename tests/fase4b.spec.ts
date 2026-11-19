@@ -156,12 +156,12 @@ test('menu de pausa: busto pequeno, nome, raça, classe e PV', async ({ page }, 
   await continuar(page);
   await expect.poll(async () => (await st(page)).cena, { timeout: 20_000 }).toBe('c01-aylin');
   await page.locator('.cena-btn-pausa').click();
-  await expect(page.locator('.pausa-busto')).toHaveAttribute('src', /img\/retratos\/heroi-ayoran-m\.webp$/);
+  await expect(page.locator('.pausa-busto')).toHaveAttribute('data-retrato', /img\/retratos\/heroi-ayoran-m\.webp$/);
   await expect.poll(() => carregada(page, '.pausa-busto')).toBe(true);
   await expect(page.locator('.pausa-nome')).toHaveText('Thaelion');
   await expect(page.locator('.pausa-linha')).toHaveText('Ayoran · Arcanista (Mago) · PV 9/12');
   const nomes = await page.locator('.pausa-botoes > .btn').allTextContents();
-  expect(nomes.map((n) => n.trim())).toEqual(['Continuar', 'Salvar', 'Itens', 'Compêndio', 'Diário', 'Opções', 'Voltar ao menu']);
+  expect(nomes.map((n) => n.trim())).toEqual(['Continuar', 'Salvar', 'Itens', 'Caderno', 'Compêndio', 'Diário', 'Opções', 'Voltar ao menu']);
   await foto(page, info.project.name, 'pausa');
 });
 
@@ -190,7 +190,7 @@ test('expressão: a Aylin chora em C01-05 e em C01-07, volta ao normal (crossfad
   await page.locator('.cena-btn-pausa').click();
   await page.locator('.btn-compendio').click();
   await page.locator('[data-ficha="aylin"]').click();
-  await expect(page.locator('.compendio-ficha .ficha-busto')).toHaveAttribute('src', /npc-aylin\.webp$/);
+  await expect(page.locator('.compendio-ficha .ficha-busto')).toHaveAttribute('data-retrato', /npc-aylin\.webp$/);
 });
 
 test('expressão inexistente cai no busto normal, sem erro', async ({ page }) => {

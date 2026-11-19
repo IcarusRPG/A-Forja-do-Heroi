@@ -36,7 +36,10 @@
   "loading": {
     "carregando": "Carregando",
     "comecar": "Clique para começar",
-    "comecarToque": "Toque para começar"
+    "comecarToque": "Toque para começar",
+    "falhou": "Não foi possível carregar. Verifique sua conexão.",
+    "tentarDeNovo": "Tentar de novo",
+    "mapa": "Preparando o mapa"
   },
   "video": {
     "pular": "Clique na tela para pular a apresentação",
@@ -496,5 +499,24 @@
     "entendi": "Entendi",
     "depois": "Ver de novo depois",
     "menu": "Ajuda: tarefas de Füllmun"
+  },
+  "caderno": {
+    "titulo": "Caderno de estudos",
+    "atalho": "Caderno",
+    "atualizado": "Caderno atualizado",
+    "abas": { "deuses": "Os deuses", "anotacoes": "Anotações", "perguntas": "Perguntas" },
+    "alfar": "ALFAR",
+    "baldur": "BALDUR",
+    "fechar": "Fechar o caderno",
+    "anterior": "Página anterior",
+    "proxima": "Próxima página",
+    "pagina": "Página {n} de {total}",
+    "abrir": "Abrir",
+    "itemTexto": "O que você estudou e anotou. Não sai do inventário.",
+    "verDeuses": "Ver o que você estudou sobre os deuses →",
+    "verEmCores": "Ver {nome} em cores",
+    "fecharImagem": "Fechar a imagem",
+    "semImagem": "Nenhum desenho de {nome}",
+    "perguntasDica": "◇ ainda sem resposta"
   }
 }
