@@ -6,6 +6,8 @@ import { ehToque, textos } from '../core/textos';
 import { h } from '../core/ui';
 import { criarElementoVideo } from '../core/video';
 import { rotaAtual } from '../core/rotas';
+import { getEstado } from '../core/estado';
+import { modoTeste } from '../core/ganchos';
 
 const KB = 1024;
 const MB = KB * KB;
@@ -56,6 +58,8 @@ export function telaLoading(): Tela {
     window.removeEventListener('keydown', tecla);
     // Para conferir telas soltas: ?tela=gameover (ou #/gameover).
     if (rotaAtual() === 'gameover') return void irPara('gameOver', undefined, { som: false, duracao: 700 });
+    // Só nos testes (?test=1&tela=intro-fullmun): a intro de Füllmun direto, com o herói do save.
+    if (modoTeste() && rotaAtual() === 'intro-fullmun' && getEstado().personagem) return void irPara('introFullmun', undefined, { som: false, duracao: 300 });
     const video = criarElementoVideo(src(ASSETS.videoIntro));
     video.play().catch(() => {});
     void irPara('intro', { video }, { som: false, duracao: 700 });

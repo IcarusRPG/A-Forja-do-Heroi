@@ -6,6 +6,7 @@ import { atualizarCampanha, getEstado, marcarFlag, temFlag, type EstadoMissao } 
 import { pvAntesDaForjaDe } from './pericias';
 import { textos } from './textos';
 import { avisar } from './toasts';
+import { dica } from './tutorial';
 
 /**
  * Progresso da Fase 4: relações, relógio do atraso, inventário e Reais, missões e Compêndio.
@@ -39,6 +40,7 @@ export function mudarRelacao(id: string, delta: number): void {
   atualizarCampanha({ relacoes: { ...c.relacoes, [id]: depois } });
   const sinal = delta > 0 ? `♥ +${delta}` : `♡ −${Math.abs(delta)}`;
   avisar(`${nomeDe(id)} ${sinal}`, delta > 0 ? 'toast-mais' : 'toast-menos', delta > 0 ? 'coracao-mais' : 'coracao-menos');
+  void dica('relacao');
   const nAntes = nivelRelacao(antes), nDepois = nivelRelacao(depois);
   if (nAntes !== nDepois) avisar(T().agoraE.replace('{nome}', nomeDe(id)).replace('{nivel}', nomeNivel(nDepois)), 'toast-nivel');
 }
@@ -174,6 +176,17 @@ export function conhecer(id: string): void {
   verificarCompendio();
 }
 
+/** Conhece o personagem sem aviso (intro de Füllmun): o que já está liberado conta como visto. */
+export function conhecerEmSilencio(id: string): void {
+  const comp = getEstado().campanha.compendio;
+  if (comp.conhecidos.includes(id)) return;
+  const f = COMPENDIO_DADOS.personagens.find((x) => x.id === id);
+  const conhecidos = [...comp.conhecidos, id];
+  atualizarCampanha({ compendio: { ...comp, conhecidos } });
+  const n = f ? (paragrafosLiberados(f) ?? []).filter(Boolean).length : 0;
+  atualizarCampanha({ compendio: { ...getEstado().campanha.compendio, vistos: { ...getEstado().campanha.compendio.vistos, [id]: n } } });
+}
+
 export function encontrarCriatura(id: string, sabe = false): void {
   const comp = getEstado().campanha.compendio;
   const atual = comp.bestiario[id];
@@ -181,6 +194,7 @@ export function encontrarCriatura(id: string, sabe = false): void {
   atualizarCampanha({ compendio: { ...comp, bestiario: { ...comp.bestiario, [id]: { sabe: sabe || !!atual?.sabe } } } });
   const nome = COMPENDIO_DADOS.bestiario.find((b) => b.id === id)?.nome ?? id;
   avisar(T().compendioAtualizado.replace('{nome}', nome), 'toast-compendio', 'compendio');
+  void dica('compendio');
   atualizarCampanha({ compendio: { ...getEstado().campanha.compendio, novidade: true } });
 }
 
@@ -197,6 +211,7 @@ export function verificarCompendio(): void {
       vistos[f.id] = n;
       mudou = true;
       avisar(T().compendioAtualizado.replace('{nome}', f.nome), 'toast-compendio', 'compendio');
+      void dica('compendio');
     }
   }
   if (mudou) atualizarCampanha({ compendio: { ...getEstado().campanha.compendio, vistos, novidade: true } });
