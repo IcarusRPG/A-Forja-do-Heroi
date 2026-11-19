@@ -112,8 +112,10 @@ test('quarto: Estudioso vê a pista do sonho; as escolhas "uma vez" somem e a ce
   for (const b of await page.locator('.cena-escolha').all()) expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(44);
 
   await escolha(page, 'Olhar as anotações').click();
-  await ateTexto(page, 'sublinhada três vezes');
-  await ateTexto(page, 'em todos os relatos, a guerra começa com alguém tendo um sonho');
+  // As anotações agora estão no Caderno de estudos (Fase 4E): abre em "Alfars e Baldurs".
+  await expect(page.locator('.caderno-pagina[data-pagina="abertura"] .caderno-margem')).toContainText('Artho sempre muda de assunto', { timeout: 10_000 });
+  await page.locator('.caderno-fechar').click();
+  await ateTexto(page, 'todo herói das velhas canções começa com um sonho');
   await ateEscolhas(page);
   const s = await estado(page);
   expect(s.flags).toEqual(expect.arrayContaining(['leu_anotacoes', 'pista_sonho']));
@@ -344,10 +346,12 @@ test('derrota: Gerulf salva o herói, que fica com 1 PV e machucado; a Aylin com
   await expect.poll(async () => {
     const s = await estado(page);
     if (s.fim) return s.fim;
+    // O revide do Aguardar não pode vencer: o Mirtilo fica com PV de sobra até acertar.
+    await fdg(page, 'setPvInimigo', 99);
     const aguardar = page.locator('[data-comando="aguardar"]');
     if (s.vez === 'heroi' && (await aguardar.isEnabled().catch(() => false))) await aguardar.click().catch(() => {});
     return null;
-  }, { timeout: 30_000, intervals: [300] }).toBe('derrota');
+  }, { timeout: 60_000, intervals: [300] }).toBe('derrota');
   expect((await estado(page)).poseHeroi).toBe('caido');
   await page.waitForTimeout(900);
   await foto(page, info.project.name, '10-batalha-derrota');

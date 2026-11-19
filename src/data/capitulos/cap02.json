@@ -765,10 +765,18 @@
         }
       ],
       "aoEntrar": {
-        "uma_vez": "livro-primeira-guerra",
-        "contador": {
-          "livros_lidos": 1
-        }
+        "flag": "leu_livro_guerra",
+        "condicional": [
+          {
+            "requer": {},
+            "efeitos": {
+              "uma_vez": "livro-primeira-guerra",
+              "contador": {
+                "livros_lidos": 1
+              }
+            }
+          }
+        ]
       },
       "escolhas": [
         {
@@ -780,7 +788,7 @@
           "voltar": true
         },
         {
-          "texto": "“Em todos os relatos, a guerra começa com alguém tendo um sonho…”",
+          "texto": "Todo herói das velhas canções começa com um sonho…",
           "requer": {
             "flag": "pista_sonho"
           },
@@ -942,6 +950,9 @@
     },
     {
       "id": "t-alcapao-artho",
+      "aoEntrar": {
+        "flag": "artho_alcapao"
+      },
       "falas": [
         {
           "texto": "Artho observa a Nyme sair, em silêncio, como se esperasse exatamente por isso. Quando volta a olhar para você, o olhar é sério, quase pesaroso."
@@ -993,6 +1004,9 @@
     },
     {
       "id": "c02-tragedia",
+      "aoEntrar": {
+        "flag": "fim_capitulo_02"
+      },
       "falas": [
         {
           "texto": "Vocês empurram a porta da biblioteca ao mesmo tempo, e o tempo parece desacelerar.",

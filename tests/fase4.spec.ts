@@ -615,7 +615,7 @@ test('biblioteca: falas da Nyme na ordem, os 3 livros (Artho +1), pista do sonho
     if (i === 3) {
       await ateTexto(page, 'Será que isso realmente aconteceu?');
       expect(await ateEscolhas(page)).toHaveLength(3);
-      await escolher(page, 'Em todos os relatos');
+      await escolher(page, 'Todo herói das velhas canções');
       await ateTexto(page, 'Você anda lendo demais, Thaelion.');
     }
     if (i === 2) {

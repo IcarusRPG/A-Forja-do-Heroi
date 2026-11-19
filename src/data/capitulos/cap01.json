@@ -36,7 +36,7 @@
     },
     {
       "flag": "pista_sonho",
-      "texto": "Você lembrou que, nos relatos, a guerra sempre começa com alguém tendo um sonho."
+      "texto": "Você lembrou que todo herói das velhas canções começa com um sonho."
     },
     {
       "flag": "prece",
@@ -114,6 +114,7 @@
           "efeitos": {
             "flag": "leu_anotacoes"
           },
+          "caderno": "abertura",
           "vai_para": "c01-quarto-anotacoes"
         },
         {
@@ -153,16 +154,13 @@
       "musica": "fullmun",
       "falas": [
         {
-          "texto": "Entre os rabiscos, uma frase sublinhada três vezes: “Os Alfars e os Baldurs já guerrearam antes. Os livros não dizem por quê.”"
-        },
-        {
           "requer": {
             "origem": "estudioso"
           },
           "efeitos": {
             "flag": "pista_sonho"
           },
-          "texto": "Você lembra de um detalhe que quase ninguém nota: em todos os relatos, a guerra começa com alguém tendo um sonho."
+          "texto": "Você lembra de um detalhe que quase ninguém nota: todo herói das velhas canções começa com um sonho. Coincidência?"
         }
       ],
       "retorna": "c01-quarto"
