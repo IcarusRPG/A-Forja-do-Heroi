@@ -2,6 +2,7 @@ import { audio } from './audio';
 import { esperar } from './ui';
 import { contarTempo, limparInicioCena } from './estado';
 import { registrarGanchosBase } from './ganchos';
+import { definirTelaAtual } from './erros';
 
 /** Máquina de telas: uma tela visível por vez, com fade entre elas. */
 
@@ -49,6 +50,7 @@ export async function irPara(nome: NomeTela, params?: unknown, opcoes: OpcoesTro
       await esperar(duracao);
       atual.el.remove();
     }
+    definirTelaAtual(nome);
     const fabrica = fabricas.get(nome);
     if (!fabrica) throw new Error(`Tela desconhecida: ${nome}`);
     // Tempo de jogo só conta jogando (não no menu, na criação nem nas telas de abertura).

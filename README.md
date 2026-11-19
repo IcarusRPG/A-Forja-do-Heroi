@@ -25,6 +25,7 @@ Abra `http://localhost:5174/aforjadoheroi/`.
 | `npm run sprites` | Gera as folhas de caminhada (heróis e NPCs) e as folhas de batalha (ver abaixo). Caminhada: gera as folhas do herói (`public/assets/sprites/chibi-<raca>-<m\|f>.png`) a partir das folhas 2 × 2 de vistas paradas em `assets-src/sprites/<raca>-<m\|f>.png`; prévias 6× e GIFs em `tests/screenshots/sprites/`. Batalha (`scripts/build-battle-sprites.mjs`): folhas 3 × 2 de poses paradas em `assets-src/batalha/` viram folhas horizontais de 6 quadros alinhadas pelos pés + JSON em `public/assets/img/batalha/`; prévias em `tests/screenshots/batalha/` |
 | `node scripts/conferir-mapa.mjs [saida.png]` | Confere o mapa do sonho: tudo alcançável a pé a partir da escada, caminho até o altar de cada estátua e largura das passagens |
 | `node scripts/ver-mapa.mjs [saida.png]` | Desenha colisões, áreas de interação e recortes de profundidade sobre a imagem do mapa |
+| `npm run test:unit` | Testes de unidade (`node --test`): simula deploys seguidos e confere que os assets do deploy anterior continuam publicados (`scripts/manter-assets.mjs`) |
 | `npm run test:mobile` | Testes e2e (Playwright) da criação de personagem e do sonho dos deuses em Pixel 7, iPhone 13 e paisagem 844×390; screenshots em `tests/screenshots/`. Na primeira vez: `npx playwright install chromium webkit`. Para testar o site publicado em vez do build local: `BASE_URL=https://game.icarusrpg.com.br/aforjadoheroi/ npm run test:mobile` |
 
 Os originais da pasta `FdG` nunca são movidos nem alterados. Para recodificar o vídeo mesmo que já exista uma versão otimizada, use `FORCAR_VIDEO=1 npm run assets`.
@@ -91,4 +92,20 @@ Todo texto visível ao jogador está em `src/data/textos.json` (com flexão de g
 
 ## Publicação
 
-Cada push na `main` dispara o workflow `.github/workflows/deploy.yml`, que faz o build e publica no GitHub Pages.
+Cada push na `main` dispara o workflow `.github/workflows/deploy.yml`, que faz o build, roda os testes de unidade e publica no GitHub Pages.
+
+- **Um deploy por vez:** `concurrency` com `cancel-in-progress: false`; o segundo espera o primeiro terminar.
+- **Assets anteriores continuam no ar por 7 dias.** O Pages serve tudo com `Cache-Control: max-age=600`: por até 10 minutos depois de um deploy (ou numa aba aberta há horas) o jogo em execução ainda é o do build antigo e pede pedaços com o hash antigo. Antes de publicar, `scripts/manter-assets.mjs` baixa do site os arquivos de `assets/` do deploy anterior e junta com os novos; o manifesto `assets-manifest.json` (publicado junto) guarda a última vez que cada arquivo esteve num build, e o que saiu de uso há mais de 7 dias é descartado.
+- **No jogo:** cada `import()` dinâmico tenta de novo até 2 vezes (500 ms e 1500 ms, com uma query nova), recarrega a página uma vez (marcado no `sessionStorage`) e, se ainda falhar, mostra "O jogo foi atualizado ou a conexão falhou." com o botão Recarregar (`src/core/carregar.ts`). O erro técnico nunca aparece para o jogador. Service workers antigos com o escopo do jogo são desregistrados.
+
+## Registro de erros (PocketBase)
+
+Com `VITE_PB_URL` definida, o jogo envia os erros para a coleção `erros` (no máximo 5 por sessão): mensagem, pilha (até 4 KB), endereço da página sem a query, navegador, versão do jogo (hash do commit, que também aparece no rodapé de Opções) e a tela em que o jogador estava. Nada pessoal: sem e-mail, sem nome do herói, sem save. Sem `VITE_PB_URL`, o envio fica desligado (`src/core/erros.ts`).
+
+Para criar a coleção:
+
+1. Entre no painel do PocketBase (`https://api.icarusrpg.com.br/_/`) como superusuário.
+2. **Settings → Import collections → Load from JSON file** e escolha `pocketbase/colecao-erros.json` (formato do PocketBase 0.23 ou mais novo).
+3. **Marque "Merge with the existing collections"**. Sem essa opção, o PocketBase apaga as coleções que não estão no arquivo. Na prévia, só a coleção `erros` deve aparecer, como nova. Clique em **Review → Confirm and import**.
+4. Regras: **create** público, limitado pelo tamanho de cada campo; **list, view, update e delete** vazios (nulos), ou seja, só superusuário.
+5. Para testar: abra o jogo, rode no console `setTimeout(() => { throw new Error('teste') })` e veja o registro em **Collections → erros**.
