@@ -1,6 +1,6 @@
 {
  "id": "sonho",
- "imagem": "img/mapas/sonho-templo-branco.webp",
+ "chao": { "imagem": "img/mapas/sonho-templo-branco.webp" },
  "largura": 1254,
  "altura": 1254,
  "inicio": {

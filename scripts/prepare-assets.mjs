@@ -20,6 +20,8 @@ import sharp from 'sharp';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = process.argv[2] || process.env.FDG_DIR || 'C:\\Users\\AdamPauloCarrijoNeve\\Documents\\FdG';
+/** Originais grandes (mapas, fundos de batalha) fora do public/: só os WebP comprimidos vão para o site. */
+const FONTE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'assets-fonte');
 const OUT = path.join(ROOT, 'public', 'assets');
 const MB = 1024 * 1024;
 
@@ -212,10 +214,11 @@ async function capitulo01() {
   const ameacas = await pasta('ameacas');
   for (const f of (await readdir(ameacas)).filter((n) => /\.png$/i.test(n)))
     await converter(path.join(ameacas, f), path.join(OUT, 'img', 'ameacas', `${chave(path.parse(f).name)}.webp`), { largura: 900 });
-  // Fundo de batalha (pixel art: PNG sem perda)
+  // Fundo de batalha: o original vai para assets-fonte/ e o comprimir-imagens.mjs gera o WebP do site.
   const batalha = await pasta('batalha');
+  await ensureDir(path.join(FONTE, 'batalha-fundos'));
   for (const f of (await readdir(batalha)).filter((n) => /^fundo-.*\.png$/i.test(n)))
-    await converter(path.join(batalha, f), path.join(OUT, 'img', 'batalha', 'fundos', `${chave(f).replace(/^fundo-/, '')}`), { png: true });
+    await converter(path.join(batalha, f), path.join(FONTE, 'batalha-fundos', `${chave(f).replace(/^fundo-/, '')}`), { png: true });
   // Game over
   const wall = await pasta('wallpapers');
   const go = (await readdir(wall)).find((n) => chave(n).startsWith('game-over'));
@@ -230,9 +233,11 @@ async function mapas() {
   await ensureDir(outDir);
   for (const f of (await readdir(dir)).filter((n) => /\.png$/i.test(n))) {
     const nome = nfc(f).toLowerCase().replace(/(\.png)+$/, '').replace(/^mapa-/, '');
-    // O sonho é pintado (WebP); os mapas de pixel art da Fase 4 ficam em PNG sem perda.
+    // O sonho vai direto em WebP; os mapas da Fase 4 ficam em PNG em assets-fonte/ (o comprimir-imagens.mjs
+    // gera o WebP q90, em blocos se passar de 800 KB).
     const png = nome !== 'sonho-templo-branco';
-    const out = path.join(outDir, `${nome}.${png ? 'png' : 'webp'}`);
+    if (png) await ensureDir(path.join(FONTE, 'mapas'));
+    const out = png ? path.join(FONTE, 'mapas', `${nome}.png`) : path.join(outDir, `${nome}.webp`);
     const s = sharp(path.join(dir, f));
     await (png ? s.png({ compressionLevel: 9, palette: false }) : s.webp({ quality: 88 })).toFile(out);
     const { width, height } = await sharp(out).metadata();
@@ -302,6 +307,7 @@ console.log('Logos…'); await logos();
 console.log('Favicon…'); await favicon();
 console.log('Wallpaper…'); await wallpaper();
 console.log('Mapas…'); await mapas();
+console.log('Compressão (mapas e fundos de batalha)…'); spawnSync(process.execPath, [path.join(path.dirname(fileURLToPath(import.meta.url)), 'comprimir-imagens.mjs')], { stdio: 'inherit' });
 console.log('Música…'); await musica();
 console.log('Capítulo 01…'); await capitulo01();
 console.log('Vídeo…'); await video();

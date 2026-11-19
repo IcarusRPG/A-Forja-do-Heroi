@@ -25,12 +25,12 @@ export const ASSETS = {
   /** Busto do herói (olha para a esquerda; o Azakar usa o mesmo nas variantes Luz e Sombra). */
   bustoHeroi: (raca: string, genero: Genero) => `img/retratos/heroi-${raca}-${genero}.webp`,
   ameaca: (id: string) => `img/ameacas/${id}.webp`,
-  fundoBatalha: (id: string) => `img/batalha/fundos/${id}.png`,
+  /** Fundos de batalha em WebP (originais em assets-fonte/batalha-fundos; scripts/comprimir-imagens.mjs). */
+  fundoBatalha: (id: string) => `img/batalha/fundos/${id}.webp`,
   spriteBatalhaHeroi: (raca: string, genero: Genero) => `img/batalha/herois/${raca}-${genero}`,
   spriteBatalhaInimigo: (id: string) => `img/batalha/inimigos/${id}`,
   gameOver: 'img/telas/game-over.webp',
   item: (id: string) => `img/itens/${id}.png`,
-  mapa: (id: string) => `img/mapas/${id}.png`,
   chibi: (id: string) => `sprites/chibi-${id}.png`,
 } as const;
 

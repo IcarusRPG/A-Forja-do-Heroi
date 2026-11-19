@@ -1,0 +1,82 @@
+/* ===================== Fase 4F: carregamento por etapa, mapa só aparece pronto ===================== */
+
+/* Tela de carregamento por cima de uma tela (mapa, intro, sonho, capítulo). */
+.carregando-etapa {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  padding: 16px;
+  background: radial-gradient(ellipse at center, #1a1510 0%, var(--fundo) 70%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+body > .carregando-etapa { position: fixed; }
+.carregando-etapa.visivel { opacity: 1; pointer-events: auto; }
+.carregando-etapa.saindo { pointer-events: none; }
+.carregando-titulo {
+  font-family: var(--fonte-titulo);
+  letter-spacing: 0.12em;
+  color: var(--ouro-claro);
+  font-size: clamp(16px, 2.2vw, 20px);
+  margin: 0;
+}
+.carregando-msg {
+  max-width: 32ch;
+  text-align: center;
+  color: var(--texto, #f3eee5);
+  font-size: 17px;
+  line-height: 1.45;
+  margin: 0;
+}
+.carregando-tentar { min-height: 44px; min-width: 44px; }
+
+/* O mapa não aparece (nem o joystick, o HUD e a pausa) antes de estar pronto: só a tela de carregamento. */
+.tela-mapa:not(.pronto) > canvas,
+.tela-mapa:not(.pronto) > .joystick,
+.tela-mapa:not(.pronto) > .btn-interagir,
+.tela-mapa:not(.pronto) > .btn-pausa,
+.tela-mapa:not(.pronto) > .mapa-hud,
+.tela-mapa:not(.pronto) > .mapa-dica,
+.tela-mapa:not(.pronto) > .seta-destino { visibility: hidden; }
+
+/* Seta de borda do destino (casa da Aylin): fica na borda da tela, apontando para ele. */
+.seta-destino {
+  position: absolute;
+  z-index: 5;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
+}
+.seta-destino[hidden] { display: none; }
+.seta-destino-ponta {
+  position: absolute;
+  inset: 0;
+  background: #d8262c;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 20% 100%, 20% 0);
+  border-radius: 6px;
+  transform: rotate(var(--ang, 0deg));
+  transform-origin: 50% 50%;
+}
+.seta-destino-exclamacao {
+  position: relative;
+  font-family: Cinzel, serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #fff;
+  text-shadow: 0 0 2px #3a0a0a, 0 1px 0 #3a0a0a;
+}
+
+/* O sonho também: nada de joystick e pausa sobre a tela vazia. */
+.tela-sonho:not(.pronto) > .joystick,
+.tela-sonho:not(.pronto) > .btn-interagir,
+.tela-sonho:not(.pronto) > .btn-pausa { visibility: hidden; }

@@ -1,3 +1,4 @@
+import { garantirEtapa } from '../core/etapas';
 import { ASSETS, SFX_SONHO, existeAsset, src, urlAsset } from '../core/assets';
 import { audio } from '../core/audio';
 import { ehErroDeModulo, importar, mostrarTelaDeErro } from '../core/carregar';
@@ -8,7 +9,7 @@ import { irPara, type Tela } from '../core/telas';
 import { ehToque, fmt, textos } from '../core/textos';
 import { botao, esperar, h } from '../core/ui';
 import MAPA_JSON from '../data/mapas/sonho.json';
-import type { DadosMapa } from '../exploracao/tipos';
+import { blocosDoChao, type DadosMapa } from '../exploracao/tipos';
 import { CaixaFala } from '../exploracao/caixaFala';
 import { Controles } from '../exploracao/controles';
 import type { EstatuaSonho } from '../exploracao/efeitosSonho';
@@ -385,6 +386,9 @@ export function telaSonho(): Tela {
   }
 
   async function montar() {
+    // O mapa do sonho e o herói em memória antes de o Phaser começar (com a barra, se precisar baixar).
+    await garantirEtapa('sonho', el);
+    if (saiu) return;
     void audio.carregarEfeitos(SFX_SONHO);
     const raca = p?.raca ?? 'arake';
     const genero = p?.genero ?? 'm';
@@ -400,7 +404,7 @@ export function telaSonho(): Tela {
     const m = await criarMotor({
       container: palco,
       mapa: MAPA,
-      imagemUrl: src(MAPA.imagem),
+      blocos: blocosDoChao(MAPA).map((b) => ({ ...b, url: src(b.imagem) })),
       heroi: { raca, genero, spriteUrl: temSprite ? urlAsset(ASSETS.spriteChibi(raca, genero)) : null },
       entrada: () => controles.vetor(),
       debugPermitido: import.meta.env.DEV || debug,
