@@ -1,3 +1,4 @@
+import { dica } from '../core/tutorial';
 import { audio } from '../core/audio';
 import { comSinal } from '../core/dados';
 import type { ParteBonus } from '../core/pericias';
@@ -60,6 +61,8 @@ function dado(): { el: HTMLElement; numero: HTMLElement } {
 }
 
 export async function mostrarRolagem(raiz: HTMLElement, o: OpcoesRolagem): Promise<ResultadoRolagem> {
+  // Tutorial: o primeiro teste explica o d20 + bônus contra a CD (antes de rolar).
+  await dica('teste');
   const r = avaliar(o.d20, o.partes, o.alvo);
   const { el: d20, numero } = dado();
   const conta = h('p', { class: 'rolagem-conta' });

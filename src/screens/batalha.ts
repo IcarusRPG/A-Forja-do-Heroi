@@ -13,6 +13,7 @@ import { carregarFolha, SpriteBatalha } from '../batalha/sprite';
 import { INIMIGOS, batalhaPorId, type AtaqueDados, type DadosBatalha, type DadosInimigo } from '../batalha/inimigos';
 import { avaliar, mostrarRolagem } from '../narrativa/rolagem';
 import { abrirMenuPausa } from './pausa';
+import { dica as dicaTutorial } from '../core/tutorial';
 
 /**
  * Batalha no estilo Final Fantasy VI: até 3 inimigos à esquerda (em formação escalonada, virados para a
@@ -73,7 +74,6 @@ export function telaBatalha(params?: unknown): Tela {
   let vez: string | null = null;
   let causouDano = false;
   const log: string[] = [];
-  const dicasVistas = new Set<string>();
   let ordem: { id: string; nome: string; valor: number }[] = [];
   let inimigos: Inimigo[] = [];
   let saiu = false;
@@ -190,17 +190,16 @@ export function telaBatalha(params?: unknown): Tela {
     setTimeout(() => img.remove(), 1300);
   }
 
-  // ---- dicas de tutorial (uma vez cada; o jogador toca para fechar) ----
+  // ---- dicas de tutorial: as mesmas do resto do jogo (src/data/tutorial.json), uma vez cada ----
   async function dicaDe(quando: string) {
-    const d = def.dicas?.find((x) => x.quando === quando);
-    if (!d || dicasVistas.has(quando) || saiu) return;
-    dicasVistas.add(quando);
-    await new Promise<void>((ok) => {
-      const fechar = botao(T.entendi, () => { balao.remove(); ok(); }, { classe: 'btn-principal batalha-dica-ok' });
-      const balao = h('div', { class: 'batalha-tutorial', role: 'dialog', 'aria-live': 'polite' }, h('p', {}, d.texto), fechar);
-      arena.append(balao);
-      fechar.focus({ preventScroll: true });
-    });
+    if (saiu) return;
+    const comRasteira = (def.comandosExtras ?? []).includes('rasteira');
+    const id = quando === 'inicio' ? 'batalha-turnos'
+      : quando === 'primeiroTurnoHeroi' ? (comRasteira ? 'rasteira' : 'batalha-atacar')
+      : quando === 'aposAtaqueInimigo' ? 'batalha-aguardar'
+      : quando === 'aposAcao:defender' && comRasteira ? 'rasteira-defesa'
+      : null;
+    if (id) await dicaTutorial(id);
   }
 
   // ---- iniciativa ----
@@ -251,13 +250,49 @@ export function telaBatalha(params?: unknown): Tela {
       const b = botao(rotulo, () => void aoComando(id), { classe: 'batalha-cmd', som: 'ui-confirm' });
       b.dataset.comando = id;
       b.dataset.liberado = ok ? '1' : '0';
-      if (!ok && (id === 'intimidar' || id === 'acalmar')) {
-        b.title = T.furiosoDemais;
-        b.setAttribute('aria-description', T.furiosoDemais);
-      }
+      const ajuda = (T.ajudaComandos as Record<string, string>)[id];
+      if (!ok && (id === 'intimidar' || id === 'acalmar')) b.setAttribute('aria-description', T.furiosoDemais);
+      else if (ajuda) b.setAttribute('aria-description', ajuda);
+      if (ajuda) ajudaDoComando(b, !ok && (id === 'intimidar' || id === 'acalmar') ? T.furiosoDemais : ajuda);
       return b;
     }));
     dica.textContent = !semConversa && !conversa ? T.furiosoDemais : '';
+  }
+
+  /**
+   * Ajuda sempre disponível (mesmo sem tutorial): passar o mouse ou segurar o dedo num comando mostra a
+   * descrição de uma linha. Segurar não executa o comando.
+   */
+  let balaoAjuda: HTMLElement | null = null;
+  function mostrarAjuda(b: HTMLElement, texto: string) {
+    esconderAjuda();
+    const r = b.getBoundingClientRect();
+    const a = arena.getBoundingClientRect();
+    balaoAjuda = h('div', { class: 'batalha-cmd-ajuda', role: 'tooltip' }, texto);
+    arena.append(balaoAjuda);
+    const w = balaoAjuda.offsetWidth;
+    balaoAjuda.style.left = `${Math.min(Math.max(6, r.left - a.left + r.width / 2 - w / 2), a.width - w - 6)}px`;
+    balaoAjuda.style.top = `${Math.max(6, r.top - a.top - balaoAjuda.offsetHeight - 8)}px`;
+  }
+  function esconderAjuda() {
+    balaoAjuda?.remove();
+    balaoAjuda = null;
+  }
+  function ajudaDoComando(b: HTMLButtonElement, texto: string) {
+    let timer = 0;
+    let segurou = false;
+    b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') mostrarAjuda(b, texto); });
+    b.addEventListener('pointerleave', () => { clearTimeout(timer); esconderAjuda(); });
+    b.addEventListener('pointerdown', (e) => {
+      segurou = false;
+      if (e.pointerType === 'mouse') return;
+      timer = window.setTimeout(() => { segurou = true; mostrarAjuda(b, texto); }, 450);
+    });
+    b.addEventListener('pointerup', () => { clearTimeout(timer); if (segurou) window.setTimeout(esconderAjuda, 1400); });
+    b.addEventListener('pointercancel', () => { clearTimeout(timer); esconderAjuda(); });
+    b.addEventListener('contextmenu', (e) => e.preventDefault());
+    // Segurou para ler: o toque não vira comando.
+    b.addEventListener('click', (e) => { if (segurou) { segurou = false; e.stopImmediatePropagation(); } }, { capture: true });
   }
 
   const temItensDeCura = () => Object.entries(ITENS_DEF).some(([id, d]) => d.tipo === 'cura' && qtdItem(id) > 0);
@@ -588,6 +623,7 @@ export function telaBatalha(params?: unknown): Tela {
     }
     msg(fmt(T.vezDoHeroi, p.genero, { nome: p.nome }));
     await dicaDe('primeiroTurnoHeroi');
+    if (pvHeroi <= metade(pvMax) && temItensDeCura()) await dicaTutorial('batalha-item');
     habilitarComandos(true);
     const escolha = await new Promise<{ cmd: Comando; alvo?: Inimigo; item?: string }>((ok) => { escolher = ok; });
     escolher = null;

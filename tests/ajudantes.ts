@@ -15,6 +15,14 @@ export async function irAteMenu(page: Page, caminho = './'): Promise<void> {
   await expect(menu).toBeVisible();
 }
 
+/** "Novo Jogo" e a pergunta do tutorial (aparece só na primeira vez): "Não" por padrão. */
+export async function novoJogo(page: Page, dicas = false): Promise<void> {
+  await page.getByRole('button', { name: 'Novo Jogo' }).click();
+  const pergunta = page.locator('.pergunta-tutorial');
+  await expect(pergunta.or(page.locator('.tela-criacao'))).toBeVisible({ timeout: 10_000 });
+  if (await pergunta.isVisible()) await page.locator(dicas ? '.tutorial-sim' : '.tutorial-nao').click();
+}
+
 export const avancar = (page: Page): Locator => page.locator('.criacao-rodape .btn-principal');
 
 /** O elemento está inteiro dentro do cartão do passo (não vazou para fora nem ficou escondido). */

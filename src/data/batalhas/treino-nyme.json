@@ -32,15 +32,5 @@
         "treino_feito"
       ]
     }
-  },
-  "dicas": [
-    {
-      "quando": "primeiroTurnoHeroi",
-      "texto": "Rasteira é uma manobra: você rola Luta, a Nyme rola Fortitude. Quem tirar mais vence. Se ela cair, o treino acaba."
-    },
-    {
-      "quando": "aposAcao:defender",
-      "texto": "Ela está se defendendo. A Rasteira não olha a Defesa…"
-    }
-  ]
+  }
 }

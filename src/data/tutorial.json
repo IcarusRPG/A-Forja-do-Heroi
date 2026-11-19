@@ -1,0 +1,119 @@
+[
+  {
+    "id": "criacao",
+    "gatilho": "Abrir a criação",
+    "texto": "Escolha quem você é. Toque em cada opção para ler sobre ela antes de decidir."
+  },
+  {
+    "id": "atributos",
+    "gatilho": "Passo de atributos",
+    "texto": "Você tem 10 pontos. Cada atributo soma nos testes que usam ele; toque no nome para ver em quais.",
+    "alvo": ".pontos-valor"
+  },
+  {
+    "id": "cena-texto",
+    "gatilho": "Primeira cena narrativa",
+    "texto": "Toque para o texto aparecer inteiro. Toque de novo para continuar."
+  },
+  {
+    "id": "escolha",
+    "gatilho": "Primeiras escolhas",
+    "texto": "Suas escolhas mudam a história e o que as pessoas pensam de você.",
+    "alvo": ".cena-escolha"
+  },
+  {
+    "id": "teste",
+    "gatilho": "Primeiro teste de perícia",
+    "texto": "Um teste é d20 + seus bônus. Se igualar ou passar a CD, você consegue."
+  },
+  {
+    "id": "andar",
+    "gatilho": "Primeiro mapa (sonho)",
+    "texto": "Ande com o joystick (celular) ou WASD/setas (computador).",
+    "alvo": ".joystick:not([hidden])"
+  },
+  {
+    "id": "interagir",
+    "gatilho": "Primeira área de interação",
+    "texto": "Quando aparecer este botão, toque nele (ou aperte E/Espaço) para conversar ou examinar.",
+    "alvo": ".btn-interagir:not([hidden])"
+  },
+  {
+    "id": "missao",
+    "gatilho": "Primeiro NPC com !",
+    "texto": "Um ! dourado indica que a pessoa tem algo para te pedir.",
+    "suprimida": true
+  },
+  {
+    "id": "relogio",
+    "gatilho": "Entrar no mapa de Füllmun",
+    "texto": "Este é o relógio do atraso. Cada tarefa feita custa tempo, e Artho vai notar.",
+    "alvo": ".mapa-hud",
+    "suprimida": true
+  },
+  {
+    "id": "item-mapa",
+    "gatilho": "Primeiro item no chão",
+    "texto": "Itens brilhando podem ser recolhidos. Veja-os em Menu → Itens."
+  },
+  {
+    "id": "relacao",
+    "gatilho": "Primeiro toast de relação",
+    "texto": "As pessoas lembram de como você as trata. Veja as relações no Compêndio.",
+    "alvo": ".toast"
+  },
+  {
+    "id": "compendio",
+    "gatilho": "Primeira ficha liberada",
+    "texto": "O Compêndio guarda quem você conheceu, as criaturas e as vozes do sonho.",
+    "alvo": ".toast"
+  },
+  {
+    "id": "menu",
+    "gatilho": "Primeiro mapa com menu disponível",
+    "texto": "No menu você salva, usa itens, abre o Compêndio e ajusta as opções.",
+    "alvo": ".btn-pausa"
+  },
+  {
+    "id": "salvar",
+    "gatilho": "Primeira vez no mapa de Füllmun",
+    "texto": "O jogo salva sozinho, mas você também tem 2 espaços de save manual no menu.",
+    "alvo": ".btn-pausa"
+  },
+  {
+    "id": "batalha-turnos",
+    "gatilho": "Início da primeira batalha",
+    "texto": "A ordem dos turnos sai da Iniciativa: d20 + Destreza.",
+    "alvo": ".batalha-turnos"
+  },
+  {
+    "id": "batalha-atacar",
+    "gatilho": "Primeiro turno do herói",
+    "texto": "Bicuda: d20 + Luta contra a Defesa do inimigo.",
+    "alvo": "[data-comando=\"bicuda\"]"
+  },
+  {
+    "id": "batalha-aguardar",
+    "gatilho": "Primeiro ataque inimigo",
+    "texto": "Aguardar prepara um golpe que acerta antes do próximo ataque inimigo.",
+    "alvo": "[data-comando=\"aguardar\"]"
+  },
+  {
+    "id": "batalha-item",
+    "gatilho": "Herói com 50% dos PV ou menos, com itens",
+    "texto": "Com pouca vida? O comando Item usa uma cura e gasta o turno.",
+    "alvo": "[data-comando=\"item\"]"
+  },
+  {
+    "id": "rasteira",
+    "gatilho": "Primeiro turno no treino com a Nyme",
+    "texto": "Rasteira é uma manobra: sua Luta contra a Fortitude dela. Se ela cair, o treino acaba.",
+    "alvo": "[data-comando=\"rasteira\"]"
+  },
+  {
+    "id": "rasteira-defesa",
+    "gatilho": "A Nyme se defende no treino",
+    "texto": "Ela está se defendendo. A Rasteira não olha a Defesa…",
+    "alvo": "[data-comando=\"rasteira\"]"
+  }
+]

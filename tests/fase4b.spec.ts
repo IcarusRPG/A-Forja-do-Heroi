@@ -19,7 +19,7 @@ function semear(page: Page, campanha: Record<string, unknown>, heroi: Record<str
     sessionStorage.setItem('semeado', '1');
     localStorage.setItem('a-forja-do-heroi:estado', JSON.stringify({
       versao: 1, versaoSave: 4,
-      config: { musica: 0.7, efeitos: 0.8, mudo: false },
+      config: { musica: 0.7, efeitos: 0.8, mudo: false, ajudaFullmunVista: true },
       personagem: { ...op.heroi, ...op.extra },
       sonho: { concluido: true, ouvidas: ['solem', 'justar', 'irae'] },
       campanha: { capitulo: 1, cena: null, modo: 'falas', flags: [], caminho: [], usadas: [], pvAtual: null, bonusProximoTeste: 0, cenaAntesDaBatalha: null, ...op.campanha },
@@ -49,6 +49,8 @@ function semearSlots(page: Page, slots: Partial<Record<Slot, unknown>>) {
     if (sessionStorage.getItem('semeado')) return;
     sessionStorage.setItem('semeado', '1');
     for (const [k, v] of Object.entries(s)) localStorage.setItem(`fdg.save.${k}`, typeof v === 'string' ? v : JSON.stringify(v));
+    // A ajuda de Füllmun (Fase 4D) já foi vista: estes testes são dos saves.
+    if (!localStorage.getItem('fdg.opcoes')) localStorage.setItem('fdg.opcoes', JSON.stringify({ musica: 0.7, efeitos: 0.8, mudo: false, ajudaFullmunVista: true }));
   }, slots);
 }
 const diasAtras = (n: number, h = 15) => { const d = new Date(); d.setDate(d.getDate() - n); d.setHours(h, 20, 0, 0); return d.toISOString(); };
@@ -350,6 +352,8 @@ test('novo jogo: aviso, desistir mantém o automático, e só o primeiro autosav
   // Começa e desiste no meio da criação: nada muda
   await page.locator('.btn-novo-jogo').click();
   await page.locator('.aviso-novo-jogo').getByRole('button', { name: 'Começar nova aventura' }).click();
+  // Primeira vez: a pergunta do tutorial (Fase 4D); na segunda, não aparece mais.
+  await page.locator('.tutorial-nao').click();
   await page.locator('.card-genero', { hasText: 'Mulher' }).click();
   await avancar(page).click();
   await page.getByRole('button', { name: 'Menu', exact: true }).click();

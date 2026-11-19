@@ -13,7 +13,7 @@ function semearHeroi(page: Page, sonho = { concluido: false, ouvidas: [] as stri
     sessionStorage.setItem('semeado', '1');
     localStorage.setItem('a-forja-do-heroi:estado', JSON.stringify({
       versao: 1,
-      config: { musica: 0.7, efeitos: 0.8, mudo: false },
+      config: { musica: 0.7, efeitos: 0.8, mudo: false, ajudaFullmunVista: true },
       personagem: {
         nome: 'Thaelion', genero: g, raca: r, variante: null, origem: 'estudioso',
         atributosComprados: { FOR: 0, DES: 2, CON: 2, INT: 3, SAB: 1, CAR: 1 }, bonusArake: [],

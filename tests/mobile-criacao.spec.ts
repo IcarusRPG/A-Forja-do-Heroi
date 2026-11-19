@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { avancar, cartaoComConteudo, dentroDoCartao, fimDoPassoVisivel, foto, irAteMenu, quadrosPvPmNaoVazam, rodapeAlcancavel, telaEstreita } from './ajudantes';
+import { avancar, novoJogo, cartaoComConteudo, dentroDoCartao, fimDoPassoVisivel, foto, irAteMenu, quadrosPvPmNaoVazam, rodapeAlcancavel, telaEstreita } from './ajudantes';
 import NOMES from '../src/data/nomes.json' with { type: 'json' };
 
 const titulo = (page: Page, texto: string) => page.getByRole('heading', { name: texto });
@@ -23,7 +23,7 @@ async function comprar(page: Page, compras: Record<string, number>) {
 
 test('criação completa: Azakar mulher, Sombra, Curandeiro, Paladina', async ({ page }, info) => {
   await irAteMenu(page);
-  await page.getByRole('button', { name: 'Novo Jogo' }).click();
+  await novoJogo(page);
 
   // 1. Gênero
   await inicioDoPasso(page, 'Quem atende ao chamado?');
@@ -155,7 +155,7 @@ test('criação completa: Azakar mulher, Sombra, Curandeiro, Paladina', async ({
 
 test('Araké homem Mago: o +1 de Araké em INT entra no PM', async ({ page }, info) => {
   await irAteMenu(page);
-  await page.getByRole('button', { name: 'Novo Jogo' }).click();
+  await novoJogo(page);
   await page.locator('.card-genero', { hasText: 'Homem' }).click();
   await avancar(page).click();
   await page.locator('.card-raca', { hasText: 'Araké' }).click();
@@ -197,7 +197,7 @@ test('save antigo sem classe: Continuar retoma no passo Classe', async ({ page }
     sessionStorage.setItem('semeado', '1');
     localStorage.setItem('a-forja-do-heroi:estado', JSON.stringify({
       versao: 1,
-      config: { musica: 0.7, efeitos: 0.8, mudo: false },
+      config: { musica: 0.7, efeitos: 0.8, mudo: false, ajudaFullmunVista: true },
       personagem: {
         nome: 'Feliks', genero: 'm', raca: 'arake', variante: null, origem: 'guarda',
         atributosComprados: { FOR: 4, DES: 2, CON: 1, INT: 1, SAB: -1, CAR: 0 }, bonusArake: ['FOR', 'CAR', 'SAB'],
@@ -236,7 +236,8 @@ async function pularPrologoAteOSonho(page: Page, foto?: () => Promise<void>) {
   const intro = page.locator('.tela-intro-fullmun');
   await expect(intro).toBeVisible({ timeout: 15_000 });
   await expect(page.locator('.intro-fullmun-frase')).toHaveText(/Füllmun é um vilarejo pequeno/, { timeout: 5000 });
-  await page.waitForTimeout(600);
+  // Toque no meio da animação mostra a frase inteira; com o ◆ pulsando, o toque seguinte avança.
+  await expect(page.locator('.intro-fullmun-toque.visivel')).toBeVisible({ timeout: 5000 });
   await intro.click({ position: { x: 40, y: 200 } });
   await expect(page.locator('.intro-fullmun-frase')).toHaveText(/Seus moradores vivem do que plantam/, { timeout: 5000 });
   await expect(intro).toHaveAttribute('data-frase', '2');
@@ -247,7 +248,7 @@ async function pularPrologoAteOSonho(page: Page, foto?: () => Promise<void>) {
 
 test('raças: Nyashi e Ayoran jogáveis; as outras quatro continuam indisponíveis', async ({ page }) => {
   await irAteMenu(page);
-  await page.getByRole('button', { name: 'Novo Jogo' }).click();
+  await novoJogo(page);
   await page.locator('.card-genero', { hasText: 'Homem' }).click();
   await avancar(page).click();
   expect(await page.locator('.card-raca .card-titulo').allTextContents())
@@ -258,7 +259,7 @@ test('raças: Nyashi e Ayoran jogáveis; as outras quatro continuam indisponíve
 
 test('criação: Nyashi mulher Ladina e, depois do prólogo, o sonho', async ({ page }, info) => {
   await irAteMenu(page);
-  await page.getByRole('button', { name: 'Novo Jogo' }).click();
+  await novoJogo(page);
   await page.locator('.card-genero', { hasText: 'Mulher' }).click();
   await avancar(page).click();
 
@@ -317,7 +318,7 @@ test('criação: Nyashi mulher Ladina e, depois do prólogo, o sonho', async ({ 
 
 test('criação: Ayoran homem Arcanista recebe +1 PM (Sangue dos Primevos)', async ({ page }, info) => {
   await irAteMenu(page);
-  await page.getByRole('button', { name: 'Novo Jogo' }).click();
+  await novoJogo(page);
   await page.locator('.card-genero', { hasText: 'Homem' }).click();
   await avancar(page).click();
 

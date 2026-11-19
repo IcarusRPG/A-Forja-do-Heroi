@@ -65,7 +65,11 @@
     "efeitos": "Volume dos efeitos",
     "mudo": "Sem som",
     "tremores": "Tremores de tela",
-    "fechar": "Fechar"
+    "fechar": "Fechar",
+    "dicas": "Dicas de tutorial",
+    "reverDicas": "Rever todas as dicas",
+    "dicasZeradas": "Pronto: as dicas vão aparecer de novo.",
+    "versao": "versão {v}"
   },
   "creditos": {
     "titulo": "Créditos",
@@ -323,7 +327,15 @@
     "treinoRasteira": "{inimigo} vai ao chão! Fim do treino.",
     "treinoVitoria": "Você vence o treino nos pontos!",
     "treinoDerrota": "{inimigo} vence o treino.",
-    "aparecemVarios": "{inimigo}s atacam a plantação!"
+    "aparecemVarios": "{inimigo}s atacam a plantação!",
+    "ajudaComandos": {
+      "bicuda": "Ataque básico: d20 + Luta contra a Defesa do alvo.",
+      "aguardar": "Prepara uma Bicuda que acerta antes do próximo ataque inimigo.",
+      "item": "Usa um item de cura. Gasta o turno.",
+      "rasteira": "Manobra: sua Luta contra a Fortitude do alvo. Se vencer, ele cai.",
+      "intimidar": "Teste de Intimidação contra a CD: se passar, o inimigo foge.",
+      "acalmar": "Teste de Adestramento contra a CD: se passar, o animal se acalma."
+    }
   },
   "gameOver": {
     "texto": "Sua jornada termina aqui…",
@@ -375,19 +387,33 @@
     "semVozes": "Nenhuma voz ouvida ainda."
   },
   "mapa": {
-    "carregando": "Füllmun…"
+    "carregando": "Füllmun…",
+    "destravar": "Destravar personagem"
   },
   "introFullmun": {
     "pular": "Pular",
     "toque": "Toque para continuar",
     "avancar": "Avançar",
     "frases": [
-      "Füllmun é um vilarejo pequeno, cercado de campos e colinas, onde a vida segue o ritmo do sol.",
+      "**Füllmun** é um vilarejo pequeno, cercado de campos e colinas, onde a vida segue o ritmo do sol.",
       "Seus moradores vivem do que plantam, dos animais que criam e do comércio que movimenta a pequena praça do mercado.",
-      "Além dos agricultores, Füllmun guarda talentos que muitas cidades invejariam: curandeiros habilidosos, que conhecem cada erva das colinas, e armeiros talentosos, cujo trabalho atende de lavradores a viajantes.",
+      "Além dos agricultores, **Füllmun** guarda talentos que muitas cidades invejariam: curandeiros habilidosos, que conhecem cada erva das colinas, e armeiros talentosos, cujo trabalho atende de lavradores a viajantes.",
       "Ali, todos se conhecem pelo nome. Ali, nada de grave jamais aconteceu.",
-      "É nessa vila que você cresceu."
-    ]
+      "Você não nasceu em **Füllmun**. Ainda bebê, foi {acolhido|acolhida} por Bran e Liessa, guardas da vila, que lhe deram um lar e um nome: **{nome}**.",
+      "Hoje eles servem longe, na cidade de Vön Bicken. Quem cuida de você é **Artho**, o velho clérigo do Templo de **Sólem**. Avô de consideração, mestre de verdade.",
+      "Em **Füllmun**, você é conhecid{o|a} por duas coisas: chegar sempre {atrasado|atrasada}… e fazer perguntas demais.",
+      "A maior das suas perguntas mora na biblioteca do templo: um **alçapão** fechado a cadeado, cuja chave só **Artho** possui. Ele nunca disse o que há lá embaixo.",
+      "E há **Nyme**. Meia-elfa, guarda da vila, sua melhor amiga desde que vocês dois aprenderam a segurar uma espada.",
+      "Os mais velhos de **Füllmun** cochicham que vocês nasceram um para o outro. Vocês fingem não ouvir.",
+      "Naquela noite, você foi dormir tarde, entre livros sobre deuses antigos. E sonhou."
+    ],
+    "origens": {
+      "estudioso": "Suas noites são de livros e mapas antigos.",
+      "religioso": "Mesmo {atrasado|atrasada}, você nunca deixa de saudar o sol de **Sólem**.",
+      "campones": "Você conhece cada bicho da vila pelo nome.",
+      "curandeiro": "As ervas das colinas já fecharam mais de um corte pelas suas mãos.",
+      "guarda": "Bran e Liessa te ensinaram a reparar em tudo. Você nunca perdeu o costume."
+    }
   },
   "saves": {
     "salvar": "Salvar",
@@ -429,5 +455,46 @@
     "importarOk": "Saves importados.",
     "invalido": "Arquivo de save inválido",
     "importarVazio": "(vazio no arquivo)"
+  },
+  "tutorial": {
+    "perguntaTitulo": "Primeira vez em Icarus?",
+    "perguntaTexto": "Podemos mostrar dicas rápidas enquanto você joga: como andar, conversar, fazer testes, lutar e salvar.",
+    "sim": "Sim, quero as dicas",
+    "nao": "Não, já sei jogar",
+    "entendi": "Entendi",
+    "pularTodas": "Pular todas as dicas",
+    "rotulo": "Dica"
+  },
+  "ajudaFullmun": {
+    "titulo": "Füllmun desperta",
+    "itens": [
+      {
+        "icone": "missao",
+        "texto": "Moradores com **!** têm uma **tarefa opcional** para você. Elas não são obrigatórias, mas ajudam a vila e rendem recompensas."
+      },
+      {
+        "icone": "andamento",
+        "texto": "Tarefa aceita, ainda em andamento."
+      },
+      {
+        "icone": "entregar",
+        "texto": "Tarefa pronta para entregar. Volte e fale com a pessoa."
+      },
+      {
+        "icone": "relogio",
+        "texto": "Cada tarefa concluída **custa tempo**. Você já está atrasad{o|a}, e Artho vai perceber. Ajudar a vila ou chegar mais cedo: a escolha é sua."
+      },
+      {
+        "icone": "coracao",
+        "texto": "Ajudar, ou destratar, muda o que as pessoas pensam de você. Isso vai importar mais à frente."
+      },
+      {
+        "icone": "templo",
+        "texto": "Seu destino é o **Templo de Sólem**, no alto da vila."
+      }
+    ],
+    "entendi": "Entendi",
+    "depois": "Ver de novo depois",
+    "menu": "Ajuda: tarefas de Füllmun"
   }
 }

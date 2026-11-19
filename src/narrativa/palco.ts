@@ -1,6 +1,7 @@
 import AMEACAS from '../data/ameacas.json';
 import NPCS from '../data/npcs.json';
 import { ASSETS, existeAsset, existeAssetCache, src, type NomeSfx } from '../core/assets';
+import { dica } from '../core/tutorial';
 import { audio } from '../core/audio';
 import { rolarD20 } from '../core/dados';
 import { atualizarCampanha, getEstado, limparInicioCena, marcarFlag, marcarInicioCena, tremoresLigados } from '../core/estado';
@@ -315,6 +316,7 @@ export function criarPalco(o: OpcoesPalco): Palco {
     escolhas.classList.add('visivel');
     (escolhas.querySelector('button') as HTMLButtonElement | null)?.focus({ preventScroll: true });
     requestAnimationFrame(() => escolhas.scrollIntoView({ block: 'end', behavior: 'smooth' }));
+    void dica('escolha');
   }
 
   function mostrarSeguir(s: Seguir) {
@@ -423,6 +425,11 @@ export function criarPalco(o: OpcoesPalco): Palco {
         window.setTimeout(() => !destruido && tocarMusicaDaCena(c.musica, 1500), c.silencioAntes);
       } else {
         tocarMusicaDaCena(c.musica, c.fadeMusica ?? 1500);
+      }
+      // Tutorial: a primeira cena narrativa explica como o texto avança (antes da primeira fala).
+      if (c.falas.some((f) => atende(f.requer))) {
+        await dica('cena-texto');
+        if (destruido || cena !== c) return;
       }
       const grupos: Record<string, number> = {};
       for (const f of c.falas) {

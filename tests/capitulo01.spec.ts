@@ -9,7 +9,7 @@ function semear(page: Page, o: { origem?: string; genero?: 'm' | 'f'; campanha?:
     const g = op.genero ?? 'm';
     localStorage.setItem('a-forja-do-heroi:estado', JSON.stringify({
       versao: 1,
-      config: { musica: 0.7, efeitos: 0.8, mudo: false },
+      config: { musica: 0.7, efeitos: 0.8, mudo: false, ajudaFullmunVista: true },
       personagem: {
         nome: g === 'f' ? 'Lilith' : 'Thaelion', genero: g, raca: 'ayoran', variante: null, origem: op.origem ?? 'campones',
         atributosComprados: { FOR: 1, DES: 1, CON: 2, INT: 2, SAB: 1, CAR: 1 }, bonusArake: [],
@@ -247,6 +247,13 @@ test('Mirtilo: acalmar falha → batalha contra o enfurecido; a Investida pode d
   await expect.poll(async () => (await estado(page)).cena).toBe('c01-acalmar-falhou');
   await escolher(page, 'Enfrentar o Mirtilo');
   await expect.poll(async () => (await estado(page)).tela, { timeout: 20_000 }).toBe('batalha');
+  // Guarda cada mensagem da batalha (o "Levantando…" fica só 1 s na tela).
+  await page.evaluate(() => {
+    const w = window as unknown as { __msgs: string[] };
+    w.__msgs = [];
+    const el = document.querySelector('.batalha-mensagem')!;
+    new MutationObserver(() => w.__msgs.push(el.textContent ?? '')).observe(el, { childList: true, characterData: true, subtree: true });
+  });
   // Porco age primeiro (iniciativa 20), Investida acerta (15 + 6) e a Fortitude falha (1).
   await fdg(page, 'forceRoll', [1, 20, 15, 1]);
   await expect.poll(async () => (await estado(page)).heroiCaido, { timeout: 30_000 }).toBe(true);
@@ -259,7 +266,7 @@ test('Mirtilo: acalmar falha → batalha contra o enfurecido; a Investida pode d
   await expect(page.locator('.batalha-status')).toContainText('Caído');
   await foto(page, info.project.name, '08-batalha-investida-caido');
   // O próximo turno do herói começa com "Levantando…"
-  await expect(page.locator('.batalha-mensagem')).toHaveText('Levantando…', { timeout: 15_000 });
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __msgs: string[] }).__msgs), { timeout: 15_000 }).toContain('Levantando…');
   await expect.poll(async () => (await estado(page)).heroiCaido, { timeout: 10_000 }).toBe(false);
 });
 

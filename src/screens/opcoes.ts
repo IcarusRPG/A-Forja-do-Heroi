@@ -1,7 +1,9 @@
 import { audio } from '../core/audio';
 import { atualizarConfig, getEstado, tremoresLigados, type Config } from '../core/estado';
 import { textos } from '../core/textos';
-import { abrirModal, h } from '../core/ui';
+import { abrirModal, botao, h } from '../core/ui';
+import { VERSAO_JOGO } from '../core/erros';
+import { definirTutorial, tutorialLigado, zerarDicas } from '../core/tutorial';
 
 function controleVolume(rotulo: string, chave: 'musica' | 'efeitos', aoMudar?: () => void): HTMLElement {
   const id = `vol-${chave}`;
@@ -39,11 +41,24 @@ export function abrirOpcoes(): void {
     atualizarConfig({ tremores: tremores.checked });
     audio.sfx('ui-click');
   });
+  const dicas = h('input', { id: 'opcao-dicas', type: 'checkbox', class: 'interruptor', checked: tutorialLigado() });
+  dicas.addEventListener('change', () => {
+    definirTutorial(dicas.checked);
+    audio.sfx('ui-click');
+  });
+  const aviso = h('p', { class: 'opcao-aviso', role: 'status' });
+  const rever = botao(t.reverDicas, () => {
+    zerarDicas();
+    aviso.textContent = t.dicasZeradas;
+  }, { classe: 'btn-discreto opcao-rever-dicas' });
   const corpo = h('div', { class: 'opcoes' },
     controleVolume(t.musica, 'musica'),
     controleVolume(t.efeitos, 'efeitos', testarEfeito),
     h('div', { class: 'opcao opcao-linha' }, h('label', { for: 'opcao-mudo' }, t.mudo), mudo),
     h('div', { class: 'opcao opcao-linha' }, h('label', { for: 'opcao-tremores' }, t.tremores), tremores),
+    h('div', { class: 'opcao opcao-linha' }, h('label', { for: 'opcao-dicas' }, t.dicas), dicas),
+    h('div', { class: 'opcao' }, rever, aviso),
+    h('p', { class: 'opcoes-versao' }, t.versao.replace('{v}', VERSAO_JOGO)),
   );
   abrirModal(t.titulo, corpo, t.fechar);
 }

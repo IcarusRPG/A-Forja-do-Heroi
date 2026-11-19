@@ -10,6 +10,8 @@ import { abrirOpcoes } from './opcoes';
 import { abrirCompendio } from './compendio';
 import { CAPITULOS } from '../narrativa/capitulo';
 import { abrirCarregar, abrirCopia, nomeCapitulo, resumoContinuar } from './saves';
+import { tutorialRespondido } from '../core/tutorial';
+import { perguntarTutorial } from './tutorial';
 
 /** Retoma o jogo que está em memória (recém-carregado de um slot) no ponto em que foi salvo. */
 export function retomarJogo(): void {
@@ -45,6 +47,8 @@ async function novoJogo(): Promise<void> {
     });
     if (!sim) return;
   }
+  // Primeira vez em Icarus? Perguntado só uma vez (vale para todas as aventuras).
+  if (!tutorialRespondido()) await perguntarTutorial();
   void irPara('criacao');
 }
 

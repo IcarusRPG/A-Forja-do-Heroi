@@ -1,5 +1,6 @@
 import { ASSETS, src, type Genero } from '../core/assets';
 import { audio } from '../core/audio';
+import { dica } from '../core/tutorial';
 import { ATRIBUTOS, salvarPersonagem, type Atributo, type MapaAtributos, type Personagem } from '../core/estado';
 import {
   CUSTO, MAX, RACAS, atributosFinais, bonusAEscolher, modificadoresRaciais, podeAumentar, podeDiminuir,
@@ -131,6 +132,7 @@ export function telaCriacao(params?: unknown): Tela {
     if (som) audio.sfx(som);
     passo = novo;
     renderizar(true);
+    if (IDS[passo] === 'atributos') void dica('atributos');
     conteudo.scrollTop = 0;
     corpo.scrollTop = 0;
     conteudo.focus({ preventScroll: true });
@@ -610,6 +612,7 @@ export function telaCriacao(params?: unknown): Tela {
     aoEntrar() {
       // A mesma faixa do menu: se já estiver tocando, continua sem reiniciar.
       audio.tocarMusica(ASSETS.musicaMenu, 2000);
+      void dica('criacao');
     },
     aoSair() {
       medirRodape.disconnect();

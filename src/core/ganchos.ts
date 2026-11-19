@@ -4,6 +4,7 @@ import { atualizarCampanha, getEstado, type EstadoMissao } from './estado';
 import { avisosRecentes } from './toasts';
 import { darItem, definirMissao, somarAtraso } from './progresso';
 import { definirRelogio, listarSlots } from './saves';
+import { estadoTutorial } from './tutorial';
 
 /**
  * Ganchos de teste (só com ?test=1), comuns a todas as telas do jogo. Cada tela acrescenta os seus
@@ -28,6 +29,8 @@ export function estadoProgresso() {
     local: { ...c.local },
     toasts: avisosRecentes(),
     musica: audio.estadoMusica(),
+    tutorial: estadoTutorial(),
+    erro: !!document.querySelector('.tela-erro'),
   };
 }
 

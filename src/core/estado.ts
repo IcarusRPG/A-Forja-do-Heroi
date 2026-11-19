@@ -43,6 +43,12 @@ export interface Config {
    * pede menos movimento (prefers-reduced-motion).
    */
   tremores?: boolean;
+  /** Dicas de tutorial (Fase 4D). Sem valor = ainda não perguntado (saves antigos: sem dicas). */
+  tutorial?: boolean;
+  /** Ids das dicas já mostradas (valem para todas as aventuras). */
+  dicasVistas?: string[];
+  /** A tela de ajuda de Füllmun já apareceu sozinha uma vez. */
+  ajudaFullmunVista?: boolean;
 }
 
 /** Progresso do sonho dos deuses (primeira cena de exploração). */

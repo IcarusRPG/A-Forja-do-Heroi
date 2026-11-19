@@ -1,0 +1,189 @@
+/* ==========================================================================
+   Fase 4D: tela de erro, dicas de tutorial, ajuda de Füllmun, ajuda dos comandos e Opções.
+   ========================================================================== */
+
+/* ---------- Tela de erro (nunca o erro técnico) ---------- */
+.tela-erro {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: radial-gradient(ellipse at center, rgba(30, 22, 14, 0.96), rgba(5, 4, 3, 0.99));
+}
+.tela-erro-caixa {
+  width: min(420px, 100%);
+  padding: clamp(22px, 5vw, 34px);
+  text-align: center;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(48, 36, 24, 0.96), rgba(20, 15, 11, 0.98));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+}
+.tela-erro-texto { margin: 0 0 1.2rem; font-family: var(--fonte-titulo); font-size: 1.15rem; line-height: 1.45; color: var(--marmore); }
+.tela-erro-recarregar { min-height: 48px; min-width: 180px; }
+
+/* ---------- Dicas de tutorial ---------- */
+.dica-tutorial {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(5, 4, 3, 0.35);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.dica-tutorial.visivel { opacity: 1; }
+.dica-tutorial.saindo { opacity: 0; pointer-events: none; }
+.dica-balao {
+  position: relative;
+  width: min(360px, calc(100vw - 24px));
+  padding: 14px 16px 12px;
+  border: 2px solid var(--ouro);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(52, 39, 25, 0.98), rgba(24, 18, 12, 0.99));
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(242, 212, 138, 0.15) inset, 0 0 22px rgba(214, 169, 74, 0.25);
+  animation: subir 0.25s ease;
+}
+.dica-balao.com-alvo { position: fixed; }
+.dica-corpo { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: start; }
+.dica-icone svg { width: 32px; height: 32px; display: block; }
+.dica-texto { margin: 0; color: var(--marmore); font-size: 0.98rem; line-height: 1.45; }
+.dica-texto .destaque { color: var(--ouro-claro); }
+.dica-botoes { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+.dica-ok { min-height: 44px; min-width: 120px; }
+.dica-pular-todas {
+  min-height: 44px;
+  padding: 0 6px;
+  border: 0;
+  background: none;
+  color: var(--texto-suave);
+  font: inherit;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.dica-pular-todas:hover { color: var(--marmore); }
+.dica-seta {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  background: rgba(40, 30, 20, 0.99);
+  border: 2px solid var(--ouro);
+  transform: rotate(45deg);
+}
+.dica-balao.abaixo .dica-seta { top: -10px; border-right: 0; border-bottom: 0; }
+.dica-balao.acima .dica-seta { bottom: -10px; border-left: 0; border-top: 0; }
+
+/* ---------- Pergunta do tutorial ---------- */
+.pergunta-tutorial { text-align: center; }
+.pergunta-tutorial .modal-titulo { margin-bottom: 0.6rem; }
+.pergunta-tutorial-selo { font-size: 1.6rem; color: var(--ouro); line-height: 1; margin-bottom: 0.4rem; }
+.pergunta-tutorial-texto { margin: 0 0 1.2rem; color: var(--marmore); line-height: 1.5; }
+.pergunta-tutorial-acoes { display: grid; gap: 0.6rem; }
+.pergunta-tutorial-acoes .btn { min-height: 48px; width: 100%; }
+
+/* ---------- Ajuda de Füllmun ---------- */
+.ajuda-fullmun-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+  background: rgba(5, 4, 3, 0.72);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.ajuda-fullmun-fundo.visivel { opacity: 1; }
+.ajuda-fullmun-fundo.saindo { opacity: 0; pointer-events: none; }
+.ajuda-fullmun {
+  display: flex;
+  flex-direction: column;
+  width: min(620px, 100%);
+  max-height: calc(100dvh - 24px);
+  border: 2px solid var(--ouro);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(52, 39, 25, 0.98), rgba(20, 15, 11, 0.99));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
+  animation: subir 0.3s ease;
+  overflow: hidden;
+}
+.ajuda-fullmun-titulo { padding: 18px 18px 6px; text-align: center; color: var(--ouro-claro); font-size: 1.45rem; }
+.ajuda-fullmun-lista {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 18px;
+  list-style: none;
+  overflow: auto;
+}
+.ajuda-fullmun-item {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+}
+.ajuda-fullmun-item p { margin: 0; font-size: 0.92rem; line-height: 1.4; color: var(--marmore); }
+.ajuda-fullmun-item .destaque { color: var(--ouro-claro); }
+.ajuda-icone { display: grid; place-items: center; width: 42px; height: 42px; }
+.ajuda-icone svg { width: 38px; height: 38px; }
+.ajuda-marca {
+  font-family: Cinzel, serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: #ffd25a;
+  -webkit-text-stroke: 1px #2a1a10;
+  text-shadow: 0 2px 0 #2a1a10, 0 0 10px rgba(255, 210, 90, 0.5);
+}
+.ajuda-marca-andamento { color: #f3eee5; text-shadow: 0 2px 0 #2a1a10; }
+.ajuda-fullmun-acoes {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 12px 18px 16px;
+  border-top: 1px solid var(--borda);
+  background: rgba(15, 11, 8, 0.96);
+}
+.ajuda-fullmun-acoes .btn { min-height: 48px; }
+.ajuda-entendi { min-width: 160px; }
+@media (max-width: 640px), (max-height: 520px) {
+  .ajuda-fullmun-lista { grid-template-columns: 1fr; }
+  .ajuda-fullmun-titulo { font-size: 1.2rem; padding-top: 12px; }
+  .ajuda-fullmun-item { padding: 8px; }
+  .ajuda-fullmun-item p { font-size: 0.88rem; }
+  /* "Entendi" sempre visível: a lista rola, os botões ficam fixos embaixo. */
+  .ajuda-fullmun-acoes { flex-direction: column-reverse; position: sticky; bottom: 0; }
+  .ajuda-fullmun-acoes .btn { width: 100%; }
+}
+
+/* ---------- Ajuda dos comandos de batalha (mouse em cima ou dedo segurado) ---------- */
+.batalha-cmd-ajuda {
+  position: absolute;
+  z-index: 30;
+  max-width: min(280px, 80vw);
+  padding: 6px 10px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 6px;
+  background: rgba(20, 15, 11, 0.97);
+  color: var(--marmore);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+.batalha-cmd { -webkit-touch-callout: none; user-select: none; }
+
+/* ---------- Opções ---------- */
+.opcao-rever-dicas { justify-self: start; }
+.opcao-aviso { margin: 0.3rem 0 0; min-height: 1.2em; font-size: 0.82rem; color: var(--ouro-claro); }
+.opcoes-versao { margin: 0.6rem 0 0; text-align: right; font-size: 0.72rem; color: var(--texto-suave); opacity: 0.75; letter-spacing: 0.04em; }

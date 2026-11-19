@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { irAteMenu } from './ajudantes';
+import DICAS from '../src/data/tutorial.json' with { type: 'json' };
 
 /* Fase 4: Füllmun explorável, missões, relações, Compêndio, inventário, batalhas novas e Capítulo 02. */
 
@@ -18,7 +19,7 @@ function semear(page: Page, campanha: Record<string, unknown>, o: { origem?: str
     sessionStorage.setItem('semeado', '1');
     const dados: Record<string, unknown> = {
       versao: 1,
-      config: { musica: 0.7, efeitos: 0.8, mudo: false, ...(op.config ?? {}) },
+      config: { musica: 0.7, efeitos: 0.8, mudo: false, ajudaFullmunVista: true, ...(op.config ?? {}) },
       personagem: { ...op.heroi, origem: op.origem ?? op.heroi.origem },
       sonho: { concluido: true, ouvidas: op.ouvidas ?? ['solem', 'justar', 'irae'] },
       campanha: { capitulo: 1, cena: null, modo: 'falas', flags: [], caminho: [], usadas: [], pvAtual: null, bonusProximoTeste: 0, cenaAntesDaBatalha: null, ...op.campanha },
@@ -27,6 +28,10 @@ function semear(page: Page, campanha: Record<string, unknown>, o: { origem?: str
     localStorage.setItem('a-forja-do-heroi:estado', JSON.stringify(dados));
   }, { campanha, heroi: HEROI, ...o });
 }
+/** O "Entendi" da dica aberta (não o da que está saindo, que some no meio do clique). */
+const DICA_OK = '.dica-tutorial:not(.saindo) .dica-ok';
+/** Tutorial ligado só com as dicas pedidas (as outras contam como já vistas). */
+const soDicas = (...ids: string[]) => ({ tutorial: true, dicasVistas: (DICAS as { id: string }[]).map((d) => d.id).filter((id) => !ids.includes(id)) });
 const MAPA = (mapa: string, extra: Record<string, unknown> = {}) => ({ cena: 'c01-soleira', modo: 'escolhas', local: { tela: 'mapa', mapa }, ...extra });
 
 const st = (page: Page): Promise<Estado> => page.evaluate(() => (window as unknown as { __fdg?: { state(): Estado } }).__fdg?.state() ?? {});
@@ -49,7 +54,7 @@ async function escolher(page: Page, texto: string) {
     const s = await st(page);
     const lista: string[] = s.escolhas ?? [];
     if (lista.some((e) => e.includes(texto))) return true;
-    if (await page.locator('.batalha-dica-ok').isVisible()) await page.locator('.batalha-dica-ok').click();
+    if (await page.locator(DICA_OK).isVisible()) await page.locator(DICA_OK).click({ timeout: 2000 }).catch(() => {});
     else if (!lista.length) await f(page, 'avancar');
     else if (lista.length === 1) await page.locator('.cena-escolha').first().click().catch(() => {});
     return false;
@@ -97,7 +102,7 @@ async function falarCom(page: Page, alvo: string) {
 /** Fecha dicas de tutorial e espera a vez do herói com o comando liberado. */
 async function vezDoHeroi(page: Page, cmd = 'bicuda') {
   await expect.poll(async () => {
-    if (await page.locator('.batalha-dica-ok').isVisible()) await page.locator('.batalha-dica-ok').click();
+    if (await page.locator(DICA_OK).isVisible()) await page.locator(DICA_OK).click({ timeout: 2000 }).catch(() => {});
     const s = await st(page);
     if (s.fim) return true;
     return s.tela === 'batalha' && s.vez === 'heroi' && !(await page.locator(`[data-comando="${cmd}"]`).isDisabled().catch(() => true));
@@ -227,7 +232,7 @@ for (const [nome, escolha, roll, reais, relacao, flag] of [
 }
 
 test('Kobanu: zombar dá −2 (Ressentido); ratazanas com 3 inimigos, alvo, dicas e nenhuma abóbora quebrada', async ({ page }, info) => {
-  await semear(page, MAPA('fullmun'));
+  await semear(page, MAPA('fullmun'), { config: soDicas('batalha-turnos', 'batalha-atacar', 'batalha-aguardar') });
   await noMapa(page, 'fullmun');
   await falarCom(page, 'npc:kobanu');
   await escolher(page, 'presas tortas');
@@ -239,10 +244,10 @@ test('Kobanu: zombar dá −2 (Ressentido); ratazanas com 3 inimigos, alvo, dica
   await escolher(page, 'Eu ajudo');
   await expect.poll(async () => (await st(page)).tela, { timeout: 30_000 }).toBe('batalha');
   // Dica do início
-  await expect(page.locator('.batalha-tutorial')).toContainText('A ordem dos turnos é decidida pela Iniciativa', { timeout: 15_000 });
+  await expect(page.locator('.dica-tutorial')).toContainText('A ordem dos turnos sai da Iniciativa', { timeout: 15_000 });
   await page.waitForTimeout(400);
   await foto(page, info.project.name, 'ratazanas-dica');
-  await page.locator('.batalha-dica-ok').click();
+  await page.locator('.dica-ok').click();
   await vezDoHeroi(page);
   s = await st(page);
   expect(s.inimigos).toHaveLength(3);
@@ -295,7 +300,7 @@ test('Kobanu: derrota nas ratazanas (1 PV, bandagem dada, sem abóbora para o Ar
   await falarCom(page, 'npc:kobanu');
   await escolher(page, 'Deixa as ratazanas comigo');
   await expect.poll(async () => {
-    if (await page.locator('.batalha-dica-ok').isVisible()) await page.locator('.batalha-dica-ok').click();
+    if (await page.locator(DICA_OK).isVisible()) await page.locator(DICA_OK).click({ timeout: 2000 }).catch(() => {});
     return (await st(page)).fim ?? null;
   }, { timeout: 40_000 }).toBe('derrota');
   await expect.poll(async () => (await st(page)).cena, { timeout: 30_000 }).toBe('f-kobanu-derrota');
@@ -517,14 +522,14 @@ for (const [atraso, cesto, final, fala, castigo, manchas] of [
 }
 
 test('treino com Nyme: a Rasteira vence o teste oposto e encerra o treino; os PV voltam ao valor de antes', async ({ page }, info) => {
-  await semear(page, { capitulo: 2, cena: 'c02-nyme', modo: 'falas', pvAtual: 1, flags: ['machucado'], local: { tela: 'capitulo' } });
+  await semear(page, { capitulo: 2, cena: 'c02-nyme', modo: 'falas', pvAtual: 1, flags: ['machucado'], local: { tela: 'capitulo' } }, { config: soDicas('rasteira') });
   await continuar(page);
   await escolher(page, 'Vamos lá');
   await expect.poll(async () => (await st(page)).tela, { timeout: 30_000 }).toBe('batalha');
   await f(page, 'forceRoll', [15, 1, 18, 2]);
-  await expect(page.locator('.batalha-tutorial')).toContainText('Rasteira é uma manobra', { timeout: 20_000 });
+  await expect(page.locator('.dica-tutorial')).toContainText('Rasteira é uma manobra', { timeout: 20_000 });
   expect((await st(page)).pvHeroi).toBe(12);
-  await page.locator('.batalha-dica-ok').click();
+  await page.locator('.dica-ok').click();
   await vezDoHeroi(page, 'rasteira');
   await page.locator('[data-comando="rasteira"]').click();
   await expect(page.locator('.rolagem-oposta')).toContainText('ELA CAI!', { timeout: 10_000 });
