@@ -1,7 +1,7 @@
 {
  "id": "templo-salao",
  "nome": "Templo de Sólem — Salão principal",
- "imagem": "img/mapas/templo-salao.png",
+ "chao": { "imagem": "img/mapas/templo-salao.webp" },
  "largura": 1430,
  "altura": 1100,
  "inicio": {
@@ -9,7 +9,8 @@
   "y": 812,
   "direcao": "cima"
  },
- "alturasDeTela": 1.35,
+ "alturasDeTela": 1.15,
+ "escalaPersonagens": 2.5,
  "musica": "templo",
  "hud": {
   "contador": "manchas",
@@ -421,6 +422,10 @@
    ],
    "coletar": {
     "flag": "polir_altar"
+   },
+   "interacao": {
+    "x": 586,
+    "y": 462
    }
   },
   {
@@ -430,7 +435,11 @@
    "y": 730,
    "semIcone": true,
    "fica": true,
-   "cena": "t-porta-biblioteca"
+   "cena": "t-porta-biblioteca",
+   "interacao": {
+    "x": 1040,
+    "y": 700
+   }
   }
  ],
  "seguidores": [

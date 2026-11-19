@@ -1,7 +1,7 @@
 {
  "id": "templo-biblioteca",
  "nome": "Templo de Sólem — Biblioteca",
- "imagem": "img/mapas/templo-biblioteca.png",
+ "chao": { "imagem": "img/mapas/templo-biblioteca.webp" },
  "largura": 1536,
  "altura": 1024,
  "inicio": {
@@ -9,7 +9,8 @@
   "y": 610,
   "direcao": "direita"
  },
- "alturasDeTela": 1.35,
+ "alturasDeTela": 1.0,
+ "escalaPersonagens": 4,
  "musica": "templo",
  "hud": {
   "contador": "estantes",
@@ -98,6 +99,16 @@
     [1462, 712],
     [1386, 712]
    ]
+  },
+  {
+   "id": "fresta-balde",
+   "tipo": "bloqueado",
+   "pontos": [
+    [186, 480],
+    [254, 480],
+    [254, 500],
+    [186, 500]
+   ]
   }
  ],
  "interacoes": [],
@@ -173,7 +184,11 @@
    "x": 360,
    "y": 505,
    "acao": "esfregar",
-   "contador": "estantes"
+   "contador": "estantes",
+   "interacao": {
+    "x": 366,
+    "y": 510
+   }
   },
   {
    "id": "estante-2",
@@ -222,7 +237,7 @@
    "x": 1060,
    "y": 640,
    "acao": "ler",
-   "livro": "alfars-baldurs",
+   "livro": "baldurs-povos",
    "fica": true
   },
   {
@@ -249,7 +264,11 @@
      },
      "tipo": "!"
     }
-   ]
+   ],
+   "interacao": {
+    "x": 826,
+    "y": 510
+   }
   }
  ],
  "seguidores": [
