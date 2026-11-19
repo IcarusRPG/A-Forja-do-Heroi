@@ -10,7 +10,9 @@ import './styles/capitulo.css';
 import './styles/batalha.css';
 import './styles/fase4.css';
 import './styles/saves.css';
+import './styles/fase4d.css';
 
+import { instalarProtecoes } from './core/carregar';
 import { definirConstrutorLocal, iniciarEstado } from './core/estado';
 import { localDoJogo } from './core/lugar';
 import { irPara, registrarTela } from './core/telas';
@@ -28,6 +30,9 @@ import { telaFimCapitulo } from './screens/fimCapitulo';
 import { telaGameOver } from './screens/gameOver';
 import { telaMapa } from './screens/mapa';
 import { telaIntroFullmun } from './screens/introFullmun';
+
+// Antes de tudo: pedaço que não veio depois de um deploy, erros não tratados e service workers antigos.
+instalarProtecoes();
 
 registrarTela('loading', telaLoading);
 registrarTela('intro', telaIntro);

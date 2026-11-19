@@ -10,9 +10,10 @@ permissions:
   pages: write
   id-token: write
 
+# Um deploy nunca pega o outro pela metade: o segundo espera o primeiro terminar.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -29,7 +30,12 @@ jobs:
         env:
           # Endereço do PocketBase (Settings → Secrets and variables → Actions → Variables).
           VITE_PB_URL: ${{ vars.VITE_PB_URL }}
-      - uses: actions/configure-pages@v5
+      - run: npm run test:unit
+      - id: pages
+        uses: actions/configure-pages@v5
+      # Junta os assets do deploy anterior (até 7 dias) aos novos: quem ainda está com o index.html
+      # antigo (cache de 10 min do Pages ou aba aberta) continua achando os pedaços que ele pede.
+      - run: node scripts/manter-assets.mjs --dist dist --site "${{ steps.pages.outputs.base_url }}/"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

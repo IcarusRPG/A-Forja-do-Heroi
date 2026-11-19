@@ -1,4 +1,16 @@
 import { defineConfig, type Plugin } from 'vite';
+// Sem @types/node no projeto: o vite.config roda no Node, então o import funciona; só os tipos faltam.
+// @ts-expect-error tipos do Node não instalados
+import { execSync } from 'node:child_process';
+
+/** Versão do jogo = hash curto do commit (aparece em Opções e vai junto de cada erro registrado). */
+function versaoDoJogo(): string {
+  try {
+    return String(execSync('git rev-parse --short=7 HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })).trim() || 'dev';
+  } catch {
+    return 'dev';
+  }
+}
 
 /**
  * O jogo é servido em https://game.icarusrpg.com.br/aforjadoheroi/ (GitHub Pages do repositório
@@ -44,11 +56,12 @@ function paginaDe404(): Plugin {
 export default defineConfig({
   base: BASE,
   plugins: [paginaDe404()],
+  define: { __VERSAO_JOGO__: JSON.stringify(versaoDoJogo()) },
   build: {
     target: 'es2020',
     assetsInlineLimit: 0,
     // O Phaser (~1,5 MB) fica num pedaço próprio, baixado só ao entrar na exploração.
-    chunkSizeWarningLimit: 1600,
+    chunkSizeWarningLimit: 1700,
   },
   server: { port: 5174 },
   preview: { port: 4174 },

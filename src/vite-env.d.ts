@@ -9,3 +9,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** Hash curto do commit do build (vite.config.ts → define). */
+declare const __VERSAO_JOGO__: string;
