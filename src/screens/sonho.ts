@@ -1,5 +1,8 @@
 import { ASSETS, SFX_SONHO, existeAsset, src, urlAsset } from '../core/assets';
 import { audio } from '../core/audio';
+import { ehErroDeModulo, importar, mostrarTelaDeErro } from '../core/carregar';
+import { registrarErro } from '../core/erros';
+import { definirPausador, dica } from '../core/tutorial';
 import { concluirSonho, getEstado, ouvirVoz, tremoresLigados } from '../core/estado';
 import { irPara, type Tela } from '../core/telas';
 import { ehToque, fmt, textos } from '../core/textos';
@@ -48,8 +51,8 @@ export function telaSonho(): Tela {
   const palco = h('div', { class: 'sonho-palco' });
   const carregando = h('p', { class: 'sonho-carregando' }, T.carregando);
   const contador = h('div', { class: 'sonho-contador', 'aria-live': 'polite' });
-  const dica = h('p', { class: 'sonho-dica' }, toque ? T.dicaToque : T.dicaTeclado);
-  const hud = h('div', { class: 'sonho-hud' }, contador, dica);
+  const dicaSonho = h('p', { class: 'sonho-dica' }, toque ? T.dicaToque : T.dicaTeclado);
+  const hud = h('div', { class: 'sonho-hud' }, contador, dicaSonho);
   const clarao = h('div', { class: 'sonho-clarao' });
   const pularClimax = h('div', { class: 'dica-pular sonho-pular' }, toque ? T.pularClimaxToque : T.pularClimax);
   const el = h('div', { class: 'tela-sonho' }, palco, carregando, hud, pularClimax, clarao);
@@ -57,6 +60,7 @@ export function telaSonho(): Tela {
   let saiu = false;
   let pausado = false;
   let emClimax = false;
+  let desfazerPausador = () => {};
   /** O herói está indo sozinho até o altar (depois da 7ª voz). */
   let emCaminhada = false;
   let tremoresFeitos = 0;
@@ -124,6 +128,7 @@ export function telaSonho(): Tela {
     for (const e of MAPA.estatuas) efeitos?.perto(e.id, e.id === id);
     if (id) audio.sfx('statue-glow', { ganho: 0.8 });
     controles.mostrarInteracao(id !== null && !caixa.aberta && !emClimax && !emCaminhada);
+    if (id !== null && !caixa.aberta && !emClimax && !emCaminhada) void dica('interagir');
   }
 
   /** Antes das sete vozes, pisar no altar não faz nada. Com as sete, o clímax começa. */
@@ -205,6 +210,7 @@ export function telaSonho(): Tela {
         h('div', { class: 'pausa-botoes' },
           continuar,
           botao(T.opcoes, () => abrirOpcoes()),
+          botao(textos.mapa.destravar, () => { fecharPausa(); void destravar('destravado pelo jogador', false); }, { classe: 'btn-destravar', som: 'ui-back' }),
           botao(T.voltarMenu, () => {
             fecharPausa(false);
             void irPara('menu');
@@ -225,6 +231,28 @@ export function telaSonho(): Tela {
       motor?.pausar(false);
       controles.habilitar(true);
     }
+  }
+
+  /* ----------------------------- vigia (herói fora da área) ----------------------------- */
+
+  /** Leva o herói ao ponto andável mais próximo, com fade rápido, e devolve o controle. */
+  async function destravar(motivo: string, registrar = true) {
+    if (!motor || emClimax || emCaminhada) return;
+    const m = motor;
+    const de = m.posicao();
+    const alvo = m.pontoSeguro();
+    m.pararMovimento();
+    await m.piscar(() => m.teleportar(alvo.x, alvo.y));
+    m.seguirCamera();
+    if (!caixa.aberta) { m.bloquear(false); controles.habilitar(true); }
+    if (registrar) registrarErro(new Error(`Herói ${motivo} no sonho (${Math.round(de.x)}, ${Math.round(de.y)})`), { mensagem: 'Vigia do mapa' });
+  }
+  let foraDesde = 0;
+  function vigiar() {
+    if (!motor || saiu || pausado || emClimax || emCaminhada || caixa.aberta || document.querySelector('.dica-tutorial') || motor.travado()) { foraDesde = 0; return; }
+    if (!motor.foraDaArea()) { foraDesde = 0; return; }
+    if (!foraDesde) foraDesde = performance.now();
+    else if (performance.now() - foraDesde >= 1000) { foraDesde = 0; void destravar('fora da área'); }
   }
 
   /* ----------------------------- clímax ----------------------------- */
@@ -360,10 +388,8 @@ export function telaSonho(): Tela {
     void audio.carregarEfeitos(SFX_SONHO);
     const raca = p?.raca ?? 'arake';
     const genero = p?.genero ?? 'm';
-    const [{ criarMotor }, { EfeitosSonho }, { ClimaSonho }, temSprite, faixa] = await Promise.all([
-      import('../exploracao/motor'),
-      import('../exploracao/efeitosSonho'),
-      import('../exploracao/climaSonho'),
+    const [{ criarMotor, EfeitosSonho, ClimaSonho }, temSprite, faixa] = await Promise.all([
+      importar(() => import('../exploracao/pacote')),
       existeAsset(ASSETS.spriteChibi(raca, genero), 'image'),
       musicaDoSonho(),
     ]);
@@ -402,7 +428,14 @@ export function telaSonho(): Tela {
     el.classList.add('pronto');
     if (musica) audio.tocarMusica(musica, 2000);
     else audio.tocarAmbiente(2000);
-    depois(6000, () => dica.classList.add('some'));
+    depois(6000, () => dicaSonho.classList.add('some'));
+    timers.push(window.setInterval(vigiar, 1000));
+    desfazerPausador = definirPausador((sim) => {
+      if (!motor || pausado) return;
+      motor.pausar(sim);
+      controles.habilitar(!sim);
+    });
+    void dica('andar').then(() => dica('menu'));
     ganchosDeTeste();
     agendarTremor();
     // Recarregou com as sete vozes e o sonho não terminou: o herói já vai sozinho até o altar.
@@ -413,13 +446,16 @@ export function telaSonho(): Tela {
     el,
     aoEntrar() {
       montar().catch((erro) => {
-        console.error('O sonho não carregou.', erro);
-        carregando.textContent = String(erro);
+        // Nunca o erro técnico na tela: pedaço que não veio já foi tratado no importar() (recarga ou
+        // tela de erro); o resto vai para o registro e o jogador vê a tela amigável.
+        if (!ehErroDeModulo(erro)) { registrarErro(erro, { mensagem: 'O sonho não carregou' }); mostrarTelaDeErro(); }
       });
     },
     aoSair() {
       saiu = true;
       timers.forEach(clearTimeout);
+      timers.forEach(clearInterval);
+      desfazerPausador();
       controles.destruir();
       caixa.destruir();
       menuPausa?.remove();

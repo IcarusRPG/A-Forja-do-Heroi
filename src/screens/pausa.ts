@@ -33,7 +33,13 @@ function cabecalhoHeroi(): HTMLElement | null {
 /**
  * `emBatalha`: o Salvar aparece desabilitado (com a dica) e os Itens ficam no comando Item da batalha.
  */
-export function abrirMenuPausa(o: { aoFechar?: () => void; aoMudarPv?: (recuperou: number) => void; emBatalha?: boolean } = {}): () => void {
+export function abrirMenuPausa(o: {
+  aoFechar?: () => void; aoMudarPv?: (recuperou: number) => void; emBatalha?: boolean;
+  /** Só nos mapas: "Destravar personagem" (leva o herói ao ponto seguro mais próximo). */
+  destravar?: () => void;
+  /** Só no mapa de Füllmun: "Ajuda: tarefas de Füllmun". */
+  ajuda?: { rotulo: string; abrir: () => void };
+} = {}): () => void {
   audio.sfx('ui-click');
   let fecharModal = () => {};
   const fechar = () => fecharModal();
@@ -51,7 +57,9 @@ export function abrirMenuPausa(o: { aoFechar?: () => void; aoMudarPv?: (recupero
     o.emBatalha ? null : botao(textos.progresso.itens, () => abrirItens({ aoMudarPv: o.aoMudarPv })),
     btnCompendio,
     botao(textos.cenas.diario.titulo, () => abrirDiario()),
+    o.ajuda ? botao(o.ajuda.rotulo, () => { fechar(); o.ajuda!.abrir(); }, { classe: 'btn-ajuda-fullmun' }) : null,
     botao(textos.sonho.opcoes, () => abrirOpcoes()),
+    o.destravar ? botao(textos.mapa.destravar, () => o.destravar!(), { classe: 'btn-destravar', som: 'ui-back' }) : null,
     botao(textos.sonho.voltarMenu, () => { fechar(); void irPara('menu'); }, { som: 'ui-back' }),
   );
   fecharModal = abrirModal(textos.cenas.pausa, corpo, textos.cenas.fechar, () => o.aoFechar?.());

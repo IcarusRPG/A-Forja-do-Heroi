@@ -59,6 +59,9 @@ export class Controles {
     this.ouvir(this.joystick, 'pointermove', (e: PointerEvent) => this.joyMove(e));
     this.ouvir(this.joystick, 'pointerup', (e: PointerEvent) => this.joyFim(e));
     this.ouvir(this.joystick, 'pointercancel', (e: PointerEvent) => this.joyFim(e));
+    // Se o navegador tirar o dedo do joystick sem pointerup (o joystick some atrás de uma conversa, no
+    // iOS), o joystick não pode ficar "apertado" para sempre.
+    this.ouvir(this.joystick, 'lostpointercapture', (e: PointerEvent) => this.joyFim(e));
     // Se a pessoa tocar na tela num aparelho híbrido, o joystick aparece.
     this.ouvir(window, 'touchstart', () => { this.joystick.hidden = false; }, { passive: true, once: true });
   }
@@ -94,6 +97,8 @@ export class Controles {
 
   private joyMove(e: PointerEvent) {
     if (e.pointerId !== this.ponteiroJoy) return;
+    // Com o controle desligado (conversa aberta), o dedo que continua no joystick não guarda direção.
+    if (!this.habilitado) return;
     const r = this.joystick.getBoundingClientRect();
     const raio = r.width / 2;
     let dx = (e.clientX - (r.left + raio)) / raio;
@@ -133,12 +138,18 @@ export class Controles {
   /** Durante cenas sem controle (clímax), tudo fica desligado. */
   habilitar(sim: boolean) {
     this.habilitado = sim;
-    if (!sim) {
-      this.apertadas.clear();
-      this.joy = { x: 0, y: 0 };
-      this.pino.style.transform = '';
-    }
+    // Ao desligar e ao religar, zera tudo: nenhuma tecla ou dedo de antes da conversa continua andando.
+    this.apertadas.clear();
+    this.joy = { x: 0, y: 0 };
+    this.ponteiroJoy = null;
+    this.pino.style.transform = '';
+    this.joystick.classList.remove('ativo');
     this.o.raiz.classList.toggle('sem-controle', !sim);
+  }
+
+  /** O jogador tem o controle agora? */
+  get ativo(): boolean {
+    return this.habilitado;
   }
 
   destruir() {

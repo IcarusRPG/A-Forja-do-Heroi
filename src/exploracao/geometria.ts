@@ -32,6 +32,33 @@ export function pesLivres(camadas: CamadaColisao[], x: number, y: number): boole
   );
 }
 
+/**
+ * Ponto andável mais próximo de `de` (busca em anéis de `passo` px até `raio`), dentro do mapa.
+ * Devolve o próprio ponto se ele já estiver livre; null se não houver nada por perto.
+ */
+export function pontoLivreMaisProximo(
+  camadas: CamadaColisao[], largura: number, altura: number, de: { x: number; y: number }, passo = 6, raio = 900,
+): { x: number; y: number } | null {
+  const x0 = Math.min(Math.max(de.x, PES.rx), largura - PES.rx);
+  const y0 = Math.min(Math.max(de.y, PES.ry), altura - PES.ry);
+  if (x0 === de.x && y0 === de.y && pesLivres(camadas, x0, y0)) return { x: de.x, y: de.y };
+  if (pesLivres(camadas, x0, y0)) return { x: x0, y: y0 };
+  for (let r = passo; r <= raio; r += passo) {
+    let melhor: { x: number; y: number; d: number } | null = null;
+    // Contorno do quadrado de "raio" r: o primeiro anel com ponto livre tem o mais próximo (aprox.).
+    for (let k = -r; k <= r; k += passo) {
+      for (const [x, y] of [[x0 + k, y0 - r], [x0 + k, y0 + r], [x0 - r, y0 + k], [x0 + r, y0 + k]]) {
+        if (x < PES.rx || y < PES.ry || x > largura - PES.rx || y > altura - PES.ry) continue;
+        if (!pesLivres(camadas, x, y)) continue;
+        const d = Math.hypot(x - de.x, y - de.y);
+        if (!melhor || d < melhor.d) melhor = { x, y, d };
+      }
+    }
+    if (melhor) return { x: melhor.x, y: melhor.y };
+  }
+  return null;
+}
+
 /** Centro (média dos vértices) de um polígono. */
 export function centro(pontos: Ponto[]): { x: number; y: number } {
   const s = pontos.reduce((a, [x, y]) => [a[0] + x, a[1] + y], [0, 0]);

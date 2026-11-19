@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { Genero } from '../core/assets';
 import { h } from '../core/ui';
 import { COLUNAS, QUADRO, desenharFolhaChibi } from './chibi';
-import { PES, dentroDoPoligono, encontrarCaminho, pesLivres } from './geometria';
+import { PES, dentroDoPoligono, encontrarCaminho, pesLivres, pontoLivreMaisProximo } from './geometria';
 import { caixaDoContorno, mascaraRecorte } from './recorte';
 import { DIRECOES, type DadosMapa, type Direcao } from './tipos';
 
@@ -53,6 +53,18 @@ export interface Motor {
    * (caminho calculado na malha andável). Resolve ao chegar; false se não houver caminho.
    */
   caminharAte(x: number, y: number): Promise<boolean>;
+  /** Para toda caminhada por script e tween do herói (ao voltar de uma cena, por exemplo). */
+  pararMovimento(): void;
+  /** Religa a câmera ao sprite atual do herói e centraliza nele. */
+  seguirCamera(): void;
+  /** Herói fora dos limites do mapa ou com os pés numa colisão. */
+  foraDaArea(): boolean;
+  /** Ponto andável mais próximo do herói (ou o início do mapa, se não achar nenhum por perto). */
+  pontoSeguro(): { x: number; y: number };
+  /** Fade rápido da câmera (escurece, chama `meio`, clareia). */
+  piscar(meio: () => void, ms?: number): Promise<void>;
+  /** O controle do jogador está bloqueado (diálogo, clímax) ou o herói anda por script? */
+  travado(): boolean;
   /** Id do recorte que está cobrindo o herói agora (ele está atrás dele), ou null. */
   atrasDe(): string | null;
   posicao(): { x: number; y: number; direcao: Direcao };
@@ -278,6 +290,29 @@ export function criarMotor(o: OpcoesMotor): Promise<Motor> {
             animar(false);
             return true;
           },
+          pararMovimento: () => {
+            this.tweens.killTweensOf(heroi);
+            movendoPorScript = false;
+            animar(false);
+          },
+          seguirCamera: () => {
+            cam.stopFollow();
+            cam.startFollow(heroi, false, 0.12, 0.12);
+            cam.centerOn(heroi.x, heroi.y);
+          },
+          foraDaArea: () => heroi.x < 0 || heroi.y < 0 || heroi.x > mapa.largura || heroi.y > mapa.altura || !pesLivres(mapa.colisoes, heroi.x, heroi.y),
+          pontoSeguro: () => pontoLivreMaisProximo(mapa.colisoes, mapa.largura, mapa.altura, { x: heroi.x, y: heroi.y }) ?? { x: mapa.inicio.x, y: mapa.inicio.y },
+          piscar: (meio, ms = 140) => new Promise<void>((ok) => {
+            // Cena pausada (menu aberto): o fade não andaria; faz o "meio" na hora.
+            if (!this.scene.isActive()) { meio(); return ok(); }
+            cam.fadeOut(ms, 0, 0, 0);
+            cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+              meio();
+              cam.fadeIn(ms, 0, 0, 0);
+              ok();
+            });
+          }),
+          travado: () => bloqueado || movendoPorScript,
           atrasDe: () => {
             const b = heroi.getBounds();
             const r = recortes.find((rc) => rc.base > heroi.y && Phaser.Geom.Intersects.RectangleToRectangle(b, rc.img.getBounds()) && cobre(rc.id, b));

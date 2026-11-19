@@ -3,6 +3,8 @@ import LIVROS from '../data/livros.json';
 import MISSOES from '../data/missoes.json';
 import { ASSETS, SFX_CAPITULO, SFX_FASE4, SFX_SONHO, existeAsset, src, urlAsset } from '../core/assets';
 import { audio } from '../core/audio';
+import { ehErroDeModulo, importar, mostrarTelaDeErro } from '../core/carregar';
+import { registrarErro } from '../core/erros';
 import { atualizarCampanha, getEstado, marcarFlag } from '../core/estado';
 import { estadoProgresso, registrarGanchos } from '../core/ganchos';
 import {
@@ -17,6 +19,8 @@ import type { DadosMapa, Direcao } from '../exploracao/tipos';
 import { atende, type Condicao, type Efeitos } from '../narrativa/capitulo';
 import { aplicarEfeitos, criarPalco, tocarMusicaDaCena, type Palco } from '../narrativa/palco';
 import { abrirMenuPausa } from './pausa';
+import { abrirAjudaFullmun } from './tutorial';
+import { definirPausador, dica as dicaTutorial } from '../core/tutorial';
 
 /**
  * Exploração de um mapa da história (Füllmun, salão do templo, biblioteca): o motor do sonho com
@@ -67,6 +71,8 @@ export interface DadosMapaJogo extends DadosMapa {
   baloes?: { quem: string; texto: string; requer?: Condicao; umaVez: string; contador?: { id: string; valor: number } }[];
   /** Espirro de vez em quando (biblioteca). */
   espirros?: boolean;
+  /** Onde o herói fica ao voltar de uma cena (id da cena aberta no mapa → ponto). */
+  retornos?: Record<string, { x: number; y: number; direcao?: Direcao }>;
 }
 type Regra = { requer?: Condicao; cena?: string; tipo?: string | null };
 const CONV = CONVERSAS as Record<string, { conversas: Regra[]; marcadores?: Regra[] }>;
@@ -107,6 +113,8 @@ export function telaMapa(params?: unknown): Tela {
   const rastro: { x: number; y: number }[] = [];
   const gatilhosDentro = new Set<string>();
   const timers: number[] = [];
+  let vigia = 0;
+  let desfazerPausador = () => {};
 
   const controles = new Controles({
     raiz: el, toque, rotuloInteragir: textos.sonho.interagir, rotuloPausa: textos.sonho.pausa,
@@ -314,6 +322,7 @@ export function telaMapa(params?: unknown): Tela {
   function abrirCena(id: string) {
     if (!motor || saiu) return;
     salvarPosicao();
+    cenaAberta = id;
     ocupado = true;
     motor.bloquear(true);
     controles.habilitar(false);
@@ -331,7 +340,9 @@ export function telaMapa(params?: unknown): Tela {
       },
       aoFim: () => void irPara('fimCapitulo', undefined, { duracao: 900 }),
       aoMapa: (m) => {
-        if (m.mapa === idMapa) { fecharCena(); if (m.x !== undefined) motor?.teleportar(m.x, m.y ?? 0); salvarPosicao(); return; }
+        // Mesmo mapa: o herói vai para o ponto antes de a conversa fechar, para quem passa a segui-lo
+        // (a Aylin) já nascer ali, e não onde a conversa começou.
+        if (m.mapa === idMapa) { if (m.x !== undefined) motor?.teleportar(m.x, m.y ?? 0, 'baixo'); fecharCena({ semRetorno: m.x !== undefined }); salvarPosicao(); return; }
         void irPara('mapa', { mapa: m.mapa, x: m.x, y: m.y });
       },
       aoVoltar: () => fecharCena(),
@@ -340,24 +351,35 @@ export function telaMapa(params?: unknown): Tela {
     void palco.entrar(id, 'falas');
   }
 
-  function fecharCena() {
+  /**
+   * Volta de qualquer cena para o mapa: para caminhadas e tweens, põe o herói no ponto de retorno da
+   * cena (JSON do mapa → retornos) ou no empurrão do gatilho, religa a câmera e o controle.
+   */
+  function fecharCena(o: { semRetorno?: boolean } = {}) {
     palco?.destruir();
     palco = null;
     palcoEl.replaceChildren();
     el.classList.remove('com-palco');
     ocupado = false;
+    motor?.pararMovimento();
     motor?.bloquear(false);
     controles.habilitar(true);
     tocarMusicaDaCena(mapa.musica, 1200);
+    const ret = !o.semRetorno && cenaAberta ? mapa.retornos?.[cenaAberta] : undefined;
+    cenaAberta = null;
+    if (ret) { motor?.teleportar(ret.x, ret.y, ret.direcao); empurrarPara = null; }
     if (empurrarPara) { motor?.teleportar(empurrarPara.x, empurrarPara.y); empurrarPara = null; }
+    motor?.seguirCamera();
     atualizar();
     controles.mostrarInteracao(motor?.proximo() != null);
     salvarPosicao();
     verificarContadores();
     verificarBaloes();
     verificarCompendio();
+    aoFicarLivre();
   }
   let empurrarPara: { x: number; y: number } | null = null;
+  let cenaAberta: string | null = null;
 
   /* ------------------------------------------------------------ interação */
 
@@ -474,8 +496,9 @@ export function telaMapa(params?: unknown): Tela {
 
   /* ------------------------------------------------------------ gatilhos e pausa */
 
+  /** Gatilhos de cena: só ao ENTRAR na área (o motor avisa a entrada) e uma vez por entrada. */
   function aoEntrarGatilho(id: string) {
-    if (ocupado || gatilhosDentro.has(id)) return;
+    if (ocupado || palco || fecharPausa || gatilhosDentro.has(id)) return;
     gatilhosDentro.add(id);
     const g = (mapa.gatilhosCena ?? []).find((x) => x.id === id);
     if (!g || !atende(g.requer)) return;
@@ -484,13 +507,92 @@ export function telaMapa(params?: unknown): Tela {
   }
 
   function abrirPausa() {
-    if (fecharPausa || ocupado) return;
+    if (fecharPausa || ocupado || ajudaAberta || document.querySelector('.dica-tutorial')) return;
     salvarPosicao(); // um save manual na pausa grava a posição exata
     motor?.pausar(true);
     controles.habilitar(false);
     fecharPausa = abrirMenuPausa({
       aoFechar: () => { fecharPausa = null; motor?.pausar(false); controles.habilitar(true); },
+      // Botão de emergência: fecha o menu e leva o herói ao ponto seguro mais próximo.
+      destravar: () => { fecharPausa?.(); void resgatar('destravado pelo jogador', false); },
+      ajuda: idMapa === 'fullmun' ? { rotulo: textos.ajudaFullmun.menu, abrir: () => window.setTimeout(abrirAjuda, 0) } : undefined,
     });
+  }
+
+  /* ------------------------------------------------------------ ajuda de Füllmun e dicas */
+
+  let ajudaAberta = false;
+  /** "Füllmun desperta": sozinha na primeira entrada (mesmo sem dicas) e pelo menu de pausa. */
+  function abrirAjuda() {
+    if (!motor || saiu || ajudaAberta) return;
+    ajudaAberta = true;
+    motor.pausar(true);
+    controles.habilitar(false);
+    abrirAjudaFullmun(() => {
+      ajudaAberta = false;
+      if (saiu) return;
+      motor?.pausar(false);
+      if (!ocupado) controles.habilitar(true);
+      dicasDoMapa();
+    });
+  }
+
+  /** Depois de entrar no mapa (ou de uma conversa): ajuda de Füllmun na primeira vez, senão as dicas. */
+  function aoFicarLivre() {
+    if (saiu || ocupado || palco) return;
+    if (idMapa === 'fullmun' && !getEstado().config.ajudaFullmunVista) return abrirAjuda();
+    dicasDoMapa();
+  }
+
+  function dicasDoMapa() {
+    if (saiu || ocupado || ajudaAberta) return;
+    void dicaTutorial('menu');
+    if (idMapa === 'fullmun') void dicaTutorial('salvar');
+    if (objetosVisiveis().some((o) => !o.semIcone && !o.acao)) void dicaTutorial('item-mapa');
+  }
+
+  /* ------------------------------------------------------------ vigia (herói preso ou sem controle) */
+
+  /** Leva o herói ao ponto seguro mais próximo (fade rápido) e devolve câmera e controle. */
+  async function resgatar(motivo: string, registrar = true) {
+    if (!motor || saiu) return;
+    const m = motor;
+    const de = m.posicao();
+    const alvo = m.pontoSeguro();
+    m.pararMovimento();
+    await m.piscar(() => m.teleportar(alvo.x, alvo.y));
+    if (saiu) return;
+    m.seguirCamera();
+    if (!ocupado) { m.bloquear(false); controles.habilitar(true); }
+    salvarPosicao();
+    resgates++;
+    if (registrar) registrarErro(new Error(`Herói ${motivo} em ${idMapa} (${Math.round(de.x)}, ${Math.round(de.y)})`), { mensagem: 'Vigia do mapa' });
+  }
+  let resgates = 0;
+  let foraDesde = 0;
+  let semControleDesde = 0;
+
+  /** A cada segundo: herói dentro do mapa e fora de colisão? Controle ligado quando nada está aberto? */
+  function vigiar() {
+    if (!motor || saiu) return;
+    const agora = performance.now();
+    const algoAberto = ocupado || palco !== null || fecharPausa !== null || !!el.querySelector('.livro') || !!document.querySelector('.modal-fundo, .dica-tutorial, .ajuda-fullmun');
+    if (!algoAberto && !motor.travado() && motor.foraDaArea()) {
+      if (!foraDesde) foraDesde = agora;
+      else if (agora - foraDesde >= 1000) { foraDesde = 0; void resgatar('fora da área'); }
+    } else foraDesde = 0;
+    const semControle = !controles.ativo || motor.travado();
+    if (semControle && !algoAberto) {
+      if (!semControleDesde) semControleDesde = agora;
+      else if (agora - semControleDesde > 10_000) {
+        semControleDesde = 0;
+        motor.pararMovimento();
+        motor.bloquear(false);
+        controles.habilitar(true);
+        motor.seguirCamera();
+        registrarErro(new Error(`Controle desligado há mais de 10 s sem cena em ${idMapa}`), { mensagem: 'Vigia do mapa' });
+      }
+    } else semControleDesde = 0;
   }
 
   /* ------------------------------------------------------------ montagem */
@@ -500,11 +602,11 @@ export function telaMapa(params?: unknown): Tela {
     const raca = p.raca, genero = p.genero;
     const ids = new Set([...(mapa.npcs ?? []).map((n) => n.id), ...(mapa.seguidores ?? []).map((s) => s.id)]);
     const itens = new Set((mapa.objetos ?? []).filter((o) => !o.semIcone).map((o) => o.item));
-    const [{ criarMotor }, phaserMod, temSprite] = await Promise.all([
-      import('../exploracao/motor'), import('phaser'), existeAsset(ASSETS.spriteChibi(raca, genero), 'image'),
+    const [{ criarMotor, Phaser: phaserMod }, temSprite] = await Promise.all([
+      importar(() => import('../exploracao/pacote')), existeAsset(ASSETS.spriteChibi(raca, genero), 'image'),
     ]);
     if (saiu) return;
-    phaser = phaserMod.default ?? phaserMod;
+    phaser = phaserMod;
     const salvo = getEstado().campanha.local;
     const inicio = prm.x !== undefined
       ? { x: prm.x, y: prm.y ?? 0, direcao: 'cima' as Direcao }
@@ -523,7 +625,10 @@ export function telaMapa(params?: unknown): Tela {
         ...[...ids].map((id) => ({ chave: `npc-${id}`, url: src(ASSETS.chibi(id)), tipo: 'folha' as const })),
         ...[...itens].map((id) => ({ chave: `item-${id}`, url: src(ASSETS.item(id)), tipo: 'imagem' as const })),
       ],
-      aoProximidade: (id) => controles.mostrarInteracao(id !== null && !ocupado),
+      aoProximidade: (id) => {
+        controles.mostrarInteracao(id !== null && !ocupado);
+        if (id !== null && !ocupado && !ajudaAberta) void dicaTutorial('interagir');
+      },
       aoEntrarGatilho,
       aoSairGatilho: (id) => gatilhosDentro.delete(id),
       aoPasso: () => audio.sfx('step-marble', { taxa: 0.8 + Math.random() * 0.2, ganho: 0.3 }),
@@ -538,6 +643,13 @@ export function telaMapa(params?: unknown): Tela {
     if (idMapa === 'fullmun') audio.volumeRelativo(1);
     salvarPosicao();
     registrarGanchosMapa();
+    vigia = window.setInterval(vigiar, 1000);
+    // Dica de tutorial aberta: o mapa para (e o controle volta ao fechar, se nada mais estiver aberto).
+    desfazerPausador = definirPausador((sim) => {
+      if (!motor || fecharPausa) return;
+      motor.pausar(sim);
+      controles.habilitar(!sim && !ocupado && !ajudaAberta);
+    });
     if (mapa.espirros) {
       const espirrar = () => { if (!saiu) { if (!ocupado) audio.sfx('espirro', { ganho: 0.7 }); timers.push(window.setTimeout(espirrar, 14_000 + Math.random() * 12_000)); } };
       timers.push(window.setTimeout(espirrar, 9000));
@@ -551,6 +663,7 @@ export function telaMapa(params?: unknown): Tela {
       return abrirCena(a.cena);
     }
     verificarBaloes();
+    aoFicarLivre();
   }
 
   const pararAtraso = aoMudarAtraso(() => { desenharHud(true); window.setTimeout(() => hud.classList.remove('piscando'), 1500); });
@@ -598,6 +711,12 @@ export function telaMapa(params?: unknown): Tela {
         dica: dica.hidden ? null : dica.textContent,
         balao: ultimoBalao,
         livroAberto: !!el.querySelector('.livro'),
+        controle: controles.ativo && !(motor?.travado() ?? true),
+        cameraSegue: motor ? (motor.cena.cameras.main as unknown as { _follow: unknown })._follow === motor.heroi : false,
+        resgates,
+        fora: motor?.foraDaArea() ?? null,
+        heroiNaTela: motor ? motor.cena.cameras.main.worldView.contains(motor.heroi.x, motor.heroi.y) : null,
+        ajudaAberta,
       }),
     });
   }
@@ -605,13 +724,17 @@ export function telaMapa(params?: unknown): Tela {
   return {
     el,
     aoEntrar() {
-      montar().catch((erro) => { console.error('O mapa não carregou.', erro); });
+      montar().catch((erro) => {
+        if (!ehErroDeModulo(erro)) { registrarErro(erro, { mensagem: 'O mapa não carregou' }); mostrarTelaDeErro(); }
+      });
     },
     aoSair() {
       saiu = true;
       salvarPosicao();
       pararAtraso();
       timers.forEach(clearTimeout);
+      clearInterval(vigia);
+      desfazerPausador();
       palco?.destruir();
       controles.destruir();
       motor?.destruir();

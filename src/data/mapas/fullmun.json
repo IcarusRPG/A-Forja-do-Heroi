@@ -1026,6 +1026,9 @@
    }
   }
  ],
+ "retornos": {
+  "c01-aylin-casa": { "x": 1206, "y": 258, "direcao": "baixo" }
+ },
  "seguidores": [
   {
    "id": "aylin",
